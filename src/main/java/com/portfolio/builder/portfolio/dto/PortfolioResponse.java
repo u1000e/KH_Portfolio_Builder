@@ -29,8 +29,8 @@ public class PortfolioResponse {
     public static PortfolioResponse from(Portfolio portfolio) {
         return PortfolioResponse.builder()
                 .id(portfolio.getId())
-                .memberId(portfolio.getMember().getId())
-                .memberName(portfolio.getMember().getName())
+                .memberId(portfolio.getMember() != null ? portfolio.getMember().getId() : null)
+                .memberName(portfolio.getMember() != null ? portfolio.getMember().getName() : "Unknown")
                 .templateType(portfolio.getTemplateType())
                 .title(portfolio.getTitle())
                 .data(portfolio.getData())
@@ -45,8 +45,8 @@ public class PortfolioResponse {
     public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked) {
         return PortfolioResponse.builder()
                 .id(portfolio.getId())
-                .memberId(portfolio.getMember().getId())
-                .memberName(portfolio.getMember().getName())
+                .memberId(portfolio.getMember() != null ? portfolio.getMember().getId() : null)
+                .memberName(portfolio.getMember() != null ? portfolio.getMember().getName() : "Unknown")
                 .templateType(portfolio.getTemplateType())
                 .title(portfolio.getTitle())
                 .data(portfolio.getData())
