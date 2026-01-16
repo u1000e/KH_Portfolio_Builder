@@ -19,9 +19,9 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true ORDER BY p.createdAt DESC")
     List<Portfolio> findByIsPublicTrueOrderByCreatedAtDesc();
 
-    // 공개된 포트폴리오 좋아요 순 정렬 - member가 존재하는 것만
-    @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m LEFT JOIN PortfolioLike pl ON p.id = pl.portfolio.id " +
-           "WHERE p.isPublic = true GROUP BY p, m ORDER BY COUNT(pl.id) DESC, p.createdAt DESC")
+    // 공개된 포트폴리오 좋아요 순 정렬 - 서브쿼리로 ID만 가져온 후 정렬
+    @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true AND p.member IS NOT NULL " +
+           "ORDER BY (SELECT COUNT(pl) FROM PortfolioLike pl WHERE pl.portfolio = p) DESC, p.createdAt DESC")
     List<Portfolio> findPublicPortfoliosOrderByLikes();
 
     // 지점별 공개 포트폴리오 - member가 존재하는 것만
