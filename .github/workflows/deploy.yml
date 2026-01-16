@@ -34,6 +34,11 @@ jobs:
             exit 1
           fi
           echo "빌드파일: $JAR_FILE"
+          # plain.jar 제거
+          rm -f build/libs/*-plain.jar
+          # 파일명 통일
+          mv $JAR_FILE build/libs/portfolio-api.jar
+          ls -la build/libs/
 
       - name: Change Maintenance Mode
         if: github.event_name == 'push'
@@ -74,23 +79,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          source: "build/libs/*[!n].jar"
+          source: "build/libs/portfolio-api.jar"
           target: "/home/ubuntu/deploy/back"
           strip_components: 2
-
-      - name: Rename JAR file
-        if: github.event_name == 'push'
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /home/ubuntu/deploy/back
-            JAR_FILE=$(ls *.jar 2>/dev/null | grep -v plain | head -1)
-            if [ -n "$JAR_FILE" ] && [ "$JAR_FILE" != "portfolio-api.jar" ]; then
-              mv "$JAR_FILE" portfolio-api.jar
-            fi
 
       - name: Restart Container
         if: github.event_name == 'push'
