@@ -1,0 +1,67 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### 민감 정보 (절대 커밋 금지!) ###
+application.yml
+application-prod.yml
+application-private.yml
+application-local.yml
+**/application.yml
+**/application-prod.yml
+**/application-private.yml
+**/application-local.yml
+
+### 환경변수 파일 ###
+.env
+.env.*
+*.env
+
+### JAR 파일 ###
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+### 로그 파일 ###
+*.log
+logs/
+
+### OS 파일 ###
+.DS_Store
+Thumbs.db
+
+### 업로드 폴더 ###
+uploads/
