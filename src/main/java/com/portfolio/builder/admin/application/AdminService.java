@@ -109,7 +109,7 @@ public class AdminService {
     // === 포트폴리오 관리 ===
     @Transactional(readOnly = true)
     public List<PortfolioResponse> getAllPortfolios() {
-        return portfolioRepository.findAll()
+        return portfolioRepository.findAllWithMember()
                 .stream()
                 .map(portfolio -> {
                     int likeCount = portfolioLikeRepository.countByPortfolioId(portfolio.getId());
