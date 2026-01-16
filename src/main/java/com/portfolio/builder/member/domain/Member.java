@@ -27,9 +27,10 @@ public class Member {
     private String accessToken;
 
     // 소속 정보
-    private String position;   // 직급: 직원, 강사, 수강생
-    private String branch;     // 소속: 종로, 강남
-    private String classroom;  // 강의실 (수강생만)
+    private String position;         // 직급: 직원, 강사, 수강생
+    private String branch;           // 소속: 종로, 강남
+    private String classroom;        // 강의실 (수강생만)
+    private String pendingPosition;  // 승인 대기 중인 직급 (강사/직원 신청 시)
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

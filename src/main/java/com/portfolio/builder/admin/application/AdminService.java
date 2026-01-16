@@ -157,6 +157,80 @@ public class AdminService {
         log.info("Comment {} deleted by admin", commentId);
     }
 
+    // === 직급 신청 관리 ===
+    
+    // 대기 중인 직급 신청 목록 조회
+    @Transactional(readOnly = true)
+    public List<MemberResponse> getPendingPositionRequests() {
+        return memberRepository.findByPendingPositionIsNotNull()
+                .stream()
+                .map(MemberResponse::from)
+                .collect(Collectors.toList());
+    }
+    
+    // 직급 신청 승인
+    public MemberResponse approvePositionRequest(Long targetMemberId) {
+        Member member = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+        
+        if (member.getPendingPosition() == null) {
+            throw new RuntimeException("No pending position request");
+        }
+        
+        String approvedPosition = member.getPendingPosition();
+        member.setPosition(approvedPosition);
+        member.setPendingPosition(null);
+        member.setClassroom(null);  // 강사/직원은 강의실 불필요
+        
+        Member updated = memberRepository.save(member);
+        log.info("Member {} position approved to {}", targetMemberId, approvedPosition);
+        return MemberResponse.from(updated);
+    }
+    
+    // 직급 신청 거절
+    public MemberResponse rejectPositionRequest(Long targetMemberId) {
+        Member member = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+        
+        if (member.getPendingPosition() == null) {
+            throw new RuntimeException("No pending position request");
+        }
+        
+        String rejectedPosition = member.getPendingPosition();
+        member.setPendingPosition(null);  // 대기 중인 신청 제거
+        
+        Member updated = memberRepository.save(member);
+        log.info("Member {} position request rejected (was: {})", targetMemberId, rejectedPosition);
+        return MemberResponse.from(updated);
+    }
+    
+    // 회원 직급 직접 변경 (관리자)
+    public MemberResponse updateMemberPosition(Long targetMemberId, String position) {
+        Member member = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+        
+        if (!isValidPosition(position)) {
+            throw new RuntimeException("Invalid position: " + position);
+        }
+        
+        member.setPosition(position);
+        member.setPendingPosition(null);
+        
+        // 수강생이 아니면 강의실 제거
+        if (!"수강생".equals(position)) {
+            member.setClassroom(null);
+        }
+        
+        Member updated = memberRepository.save(member);
+        log.info("Member {} position updated to {} by admin", targetMemberId, position);
+        return MemberResponse.from(updated);
+    }
+    
+    private boolean isValidPosition(String position) {
+        return position != null && 
+               (position.equals("직원") || position.equals("강사") || position.equals("수강생"));
+    }
+
     // === 통계 ===
     @Transactional(readOnly = true)
     public Map<String, Object> getStatistics() {
@@ -170,6 +244,9 @@ public class AdminService {
         stats.put("activeMembers", memberRepository.findByStatus(Member.Status.ACTIVE).size());
         stats.put("pendingMembers", memberRepository.findByStatus(Member.Status.PENDING).size());
         stats.put("suspendedMembers", memberRepository.findByStatus(Member.Status.SUSPENDED).size());
+        
+        // 직급 신청 대기 수
+        stats.put("pendingPositionRequests", memberRepository.findByPendingPositionIsNotNull().size());
         
         return stats;
     }

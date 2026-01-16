@@ -18,4 +18,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findByPosition(String position);
 
     List<Member> findByBranch(String branch);
+    
+    List<Member> findByPendingPositionIsNotNull();
 }

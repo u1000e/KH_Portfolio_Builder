@@ -227,11 +227,27 @@ public class AuthService {
             throw new IllegalArgumentException("유효하지 않은 소속입니다. (종로, 강남 중 선택)");
         }
         
-        member.setPosition(request.getPosition());
+        // 강사/직원 신청은 관리자 승인 필요
+        if ("강사".equals(request.getPosition()) || "직원".equals(request.getPosition())) {
+            // 이미 해당 직급이면 그대로 유지
+            if (!request.getPosition().equals(member.getPosition())) {
+                member.setPendingPosition(request.getPosition());
+                log.info("Member {} requested position change to {} (pending approval)", memberId, request.getPosition());
+            }
+            // 기존 position이 없으면 수강생으로 설정 (최초 설정 시)
+            if (member.getPosition() == null) {
+                member.setPosition("수강생");
+            }
+        } else {
+            // 수강생은 바로 적용
+            member.setPosition(request.getPosition());
+            member.setPendingPosition(null);  // 대기 중인 신청 취소
+        }
+        
         member.setBranch(request.getBranch());
         
         // 수강생인 경우만 강의실 설정
-        if ("수강생".equals(request.getPosition())) {
+        if ("수강생".equals(member.getPosition())) {
             member.setClassroom(request.getClassroom());
         } else {
             member.setClassroom(null);

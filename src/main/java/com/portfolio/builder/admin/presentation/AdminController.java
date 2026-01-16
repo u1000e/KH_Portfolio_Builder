@@ -63,6 +63,39 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    // === 직급 신청 관리 ===
+    @GetMapping("/position-requests")
+    public ResponseEntity<List<MemberResponse>> getPendingPositionRequests(
+            @RequestAttribute(name = "memberId") Long memberId) {
+        adminService.validateAdmin(memberId);
+        return ResponseEntity.ok(adminService.getPendingPositionRequests());
+    }
+
+    @PutMapping("/members/{id}/position/approve")
+    public ResponseEntity<MemberResponse> approvePositionRequest(
+            @RequestAttribute(name = "memberId") Long memberId,
+            @PathVariable("id") Long id) {
+        adminService.validateAdmin(memberId);
+        return ResponseEntity.ok(adminService.approvePositionRequest(id));
+    }
+
+    @PutMapping("/members/{id}/position/reject")
+    public ResponseEntity<MemberResponse> rejectPositionRequest(
+            @RequestAttribute(name = "memberId") Long memberId,
+            @PathVariable("id") Long id) {
+        adminService.validateAdmin(memberId);
+        return ResponseEntity.ok(adminService.rejectPositionRequest(id));
+    }
+
+    @PutMapping("/members/{id}/position")
+    public ResponseEntity<MemberResponse> updateMemberPosition(
+            @RequestAttribute(name = "memberId") Long memberId,
+            @PathVariable("id") Long id,
+            @RequestBody Map<String, String> request) {
+        adminService.validateAdmin(memberId);
+        return ResponseEntity.ok(adminService.updateMemberPosition(id, request.get("position")));
+    }
+
     // === 포트폴리오 관리 ===
     @GetMapping("/portfolios")
     public ResponseEntity<List<PortfolioResponse>> getAllPortfolios(
