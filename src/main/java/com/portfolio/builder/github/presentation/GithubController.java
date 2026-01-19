@@ -44,4 +44,10 @@ public class GithubController {
             @PathVariable("repoName") String repoName) {
         return ResponseEntity.ok(githubService.getRepositoryDetails(memberId, repoName));
     }
+
+    @GetMapping("/contributions")
+    public ResponseEntity<Map<String, Object>> getContributions(
+            @RequestAttribute(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(githubService.getContributions(memberId));
+    }
 }

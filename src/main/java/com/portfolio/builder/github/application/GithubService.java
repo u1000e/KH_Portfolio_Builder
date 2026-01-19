@@ -163,4 +163,78 @@ public class GithubService {
             throw new RuntimeException("Failed to fetch repository details");
         }
     }
+
+    /**
+     * GitHub GraphQL API를 사용하여 잔디(Contribution) 데이터 가져오기
+     */
+    public Map<String, Object> getContributions(Long memberId) {
+        String accessToken = authService.getGithubAccessToken(memberId);
+        String username = authService.getGithubUsername(memberId);
+
+        String graphqlUrl = "https://api.github.com/graphql";
+
+        // GraphQL 쿼리
+        String query = """
+            query($username: String!) {
+                user(login: $username) {
+                    contributionsCollection {
+                        totalContributions
+                        contributionCalendar {
+                            totalContributions
+                            weeks {
+                                contributionDays {
+                                    date
+                                    contributionCount
+                                    contributionLevel
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """;
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("username", username);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("query", query);
+        requestBody.put("variables", variables);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+        try {
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    graphqlUrl,
+                    HttpMethod.POST,
+                    request,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+
+            Map<String, Object> body = response.getBody();
+            if (body == null || body.containsKey("errors")) {
+                log.error("GraphQL error: {}", body);
+                return Collections.emptyMap();
+            }
+
+            // 데이터 추출
+            Map<String, Object> data = (Map<String, Object>) body.get("data");
+            Map<String, Object> user = (Map<String, Object>) data.get("user");
+            Map<String, Object> contributionsCollection = (Map<String, Object>) user.get("contributionsCollection");
+            Map<String, Object> calendar = (Map<String, Object>) contributionsCollection.get("contributionCalendar");
+
+            return Map.of(
+                    "totalContributions", calendar.get("totalContributions"),
+                    "weeks", calendar.get("weeks")
+            );
+
+        } catch (Exception e) {
+            log.error("Failed to fetch GitHub contributions: ", e);
+            return Collections.emptyMap();
+        }
+    }
 }
