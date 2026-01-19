@@ -42,8 +42,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/comments/portfolio/**").permitAll()
                 .requestMatchers("/error").permitAll()
-                // 관리자 전용 엔드포인트
-                .requestMatchers("/api/admin/**").authenticated()
+                // 관리자 전용 엔드포인트 - ADMIN 권한만 접근 가능
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 // 나머지는 인증 필요
                 .anyRequest().authenticated()
             )
