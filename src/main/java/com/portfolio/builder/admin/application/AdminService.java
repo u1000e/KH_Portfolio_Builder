@@ -230,6 +230,45 @@ public class AdminService {
         return position != null && 
                (position.equals("직원") || position.equals("강사") || position.equals("수강생"));
     }
+    
+    // 회원 소속(branch) 변경 (관리자)
+    public MemberResponse updateMemberBranch(Long targetMemberId, String branch, String classroom) {
+        Member member = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+        
+        if (!isValidBranch(branch)) {
+            throw new RuntimeException("Invalid branch: " + branch);
+        }
+        
+        member.setBranch(branch);
+        
+        // 강의실 설정 (수강생만)
+        if ("수강생".equals(member.getPosition()) && classroom != null && !classroom.isEmpty()) {
+            if (!isValidClassroom(branch, classroom)) {
+                throw new RuntimeException("Invalid classroom: " + classroom + " for branch: " + branch);
+            }
+            member.setClassroom(classroom);
+        } else {
+            member.setClassroom(null);
+        }
+        
+        Member updated = memberRepository.save(member);
+        log.info("Member {} branch updated to {} (classroom: {}) by admin", targetMemberId, branch, classroom);
+        return MemberResponse.from(updated);
+    }
+    
+    private boolean isValidBranch(String branch) {
+        return branch != null && (branch.equals("종로") || branch.equals("강남"));
+    }
+    
+    private boolean isValidClassroom(String branch, String classroom) {
+        if ("종로".equals(branch)) {
+            return classroom.matches("^(301|302|501|502)$");
+        } else if ("강남".equals(branch)) {
+            return classroom.matches("^[A-DGHIQRSTU]$");
+        }
+        return false;
+    }
 
     // === 통계 ===
     @Transactional(readOnly = true)
