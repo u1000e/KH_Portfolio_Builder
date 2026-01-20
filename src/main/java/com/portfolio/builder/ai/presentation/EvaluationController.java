@@ -22,7 +22,7 @@ public class EvaluationController {
      */
     @PostMapping("/{id}/evaluate")
     public ResponseEntity<EvaluationResponse> evaluate(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @AuthenticationPrincipal Long memberId) {
         
         log.info("Portfolio evaluation requested - portfolioId: {}, memberId: {}", id, memberId);

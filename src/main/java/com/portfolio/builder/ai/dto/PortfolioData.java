@@ -50,10 +50,34 @@ public class PortfolioData {
         private String description;
         private String role;
         private String period;
-        private List<String> techStack;
+        private String tech;           // 기술 스택 (문자열)
+        private List<String> techStack; // 기술 스택 (배열) - 호환용
+        private String link;
         private String githubUrl;
         private String demoUrl;
         private String imageUrl;
+        private String thumbnail;
+        private String features;
+        private String featureDetail;
+        private String reflection;
+        
+        /**
+         * 기술 스택 존재 여부 확인 (tech 또는 techStack)
+         */
+        public boolean hasTechStack() {
+            if (tech != null && !tech.isBlank()) return true;
+            if (techStack != null && !techStack.isEmpty()) return true;
+            return false;
+        }
+        
+        /**
+         * 기술 스택 문자열 반환
+         */
+        public String getTechString() {
+            if (tech != null && !tech.isBlank()) return tech;
+            if (techStack != null && !techStack.isEmpty()) return String.join(", ", techStack);
+            return "";
+        }
     }
     
     @Data

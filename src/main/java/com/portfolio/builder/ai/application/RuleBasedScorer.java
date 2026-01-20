@@ -133,7 +133,7 @@ public class RuleBasedScorer {
             
             // 프로젝트에 기술 스택 명시 (5점)
             boolean hasProjectTech = data.getProjects().stream()
-                .anyMatch(p -> p.getTechStack() != null && !p.getTechStack().isEmpty());
+                .anyMatch(PortfolioData.ProjectData::hasTechStack);
             if (hasProjectTech) {
                 score += 5;
             } else {
