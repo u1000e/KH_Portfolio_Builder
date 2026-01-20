@@ -36,6 +36,7 @@ public class PortfolioService {
                 .data(request.getData())
                 .isPublic(request.getIsPublic() != null ? request.getIsPublic() : false)
                 .showContributionGraph(request.getShowContributionGraph() != null ? request.getShowContributionGraph() : true)
+                .contributionGraphSnapshot(request.getContributionGraphSnapshot())
                 .build();
 
         Portfolio saved = portfolioRepository.save(portfolio);
@@ -94,6 +95,9 @@ public class PortfolioService {
         }
         if (request.getShowContributionGraph() != null) {
             portfolio.setShowContributionGraph(request.getShowContributionGraph());
+        }
+        if (request.getContributionGraphSnapshot() != null) {
+            portfolio.setContributionGraphSnapshot(request.getContributionGraphSnapshot());
         }
 
         Portfolio updated = portfolioRepository.save(portfolio);

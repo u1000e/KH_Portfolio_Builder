@@ -14,4 +14,5 @@ public class PortfolioRequest {
     private String data;  // JSON string
     private Boolean isPublic;
     private Boolean showContributionGraph;
+    private String contributionGraphSnapshot;  // GitHub 잔디 스냅샷 JSON
 }

@@ -23,6 +23,7 @@ public class PortfolioResponse {
     private String data;  // JSON string
     private Boolean isPublic;
     private Boolean showContributionGraph;
+    private String contributionGraphSnapshot;  // GitHub 잔디 스냅샷 JSON
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -61,6 +62,7 @@ public class PortfolioResponse {
                 .data(portfolio.getData())
                 .isPublic(portfolio.getIsPublic())
                 .showContributionGraph(portfolio.getShowContributionGraph())
+                .contributionGraphSnapshot(portfolio.getContributionGraphSnapshot())
                 .createdAt(portfolio.getCreatedAt())
                 .updatedAt(portfolio.getUpdatedAt())
                 .likeCount(0)
@@ -79,6 +81,7 @@ public class PortfolioResponse {
                 .data(portfolio.getData())
                 .isPublic(portfolio.getIsPublic())
                 .showContributionGraph(portfolio.getShowContributionGraph())
+                .contributionGraphSnapshot(portfolio.getContributionGraphSnapshot())
                 .createdAt(portfolio.getCreatedAt())
                 .updatedAt(portfolio.getUpdatedAt())
                 .likeCount(likeCount)

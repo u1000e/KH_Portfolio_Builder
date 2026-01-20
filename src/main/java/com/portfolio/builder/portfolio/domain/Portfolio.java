@@ -37,6 +37,10 @@ public class Portfolio {
     @Builder.Default
     private Boolean showContributionGraph = true;  // GitHub 잔디 표시 여부
 
+    @Lob
+    @Column(columnDefinition = "CLOB")
+    private String contributionGraphSnapshot;  // GitHub 잔디 스냅샷 JSON
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
