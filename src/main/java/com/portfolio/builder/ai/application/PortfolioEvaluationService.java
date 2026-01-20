@@ -109,12 +109,21 @@ public class PortfolioEvaluationService {
      */
     private PortfolioData parseData(String dataJson) {
         if (dataJson == null || dataJson.isBlank()) {
+            log.warn("Portfolio data is null or blank");
             return new PortfolioData();
         }
         try {
-            return objectMapper.readValue(dataJson, PortfolioData.class);
+            log.debug("Parsing portfolio data: {}", dataJson.substring(0, Math.min(200, dataJson.length())));
+            PortfolioData data = objectMapper.readValue(dataJson, PortfolioData.class);
+            log.info("Parsed portfolio data - name: {}, skills: {}, projects: {}", 
+                data.getName(), 
+                data.getSkills() != null ? data.getSkills().size() : 0,
+                data.getProjects() != null ? data.getProjects().size() : 0);
+            return data;
         } catch (Exception e) {
-            log.error("Failed to parse portfolio data: {}", e.getMessage());
+            log.error("Failed to parse portfolio data: {} - JSON preview: {}", 
+                e.getMessage(), 
+                dataJson.substring(0, Math.min(500, dataJson.length())));
             return new PortfolioData();
         }
     }
