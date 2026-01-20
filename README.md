@@ -61,6 +61,15 @@ aws:
   region: ap-northeast-2
   s3:
     bucket: <S3_BUCKET_NAME>
+
+# Spring AI - OpenAI 설정
+spring.ai:
+  openai:
+    api-key: ${OPENAI_API_KEY}
+    chat:
+      options:
+        model: gpt-4o-mini
+        temperature: 0.3
 ```
 
 ### 2. 실행
