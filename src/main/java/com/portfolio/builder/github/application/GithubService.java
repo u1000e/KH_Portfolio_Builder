@@ -170,6 +170,8 @@ public class GithubService {
     public Map<String, Object> getContributions(Long memberId) {
         String accessToken = authService.getGithubAccessToken(memberId);
         String username = authService.getGithubUsername(memberId);
+        
+        log.info("Fetching contributions for user: {}", username);
 
         String graphqlUrl = "https://api.github.com/graphql";
 
@@ -216,6 +218,8 @@ public class GithubService {
             );
 
             Map<String, Object> body = response.getBody();
+            log.info("GraphQL response body: {}", body);
+            
             if (body == null || body.containsKey("errors")) {
                 log.error("GraphQL error: {}", body);
                 return Collections.emptyMap();
@@ -223,10 +227,22 @@ public class GithubService {
 
             // 데이터 추출
             Map<String, Object> data = (Map<String, Object>) body.get("data");
+            if (data == null) {
+                log.error("No data in response");
+                return Collections.emptyMap();
+            }
+            
             Map<String, Object> user = (Map<String, Object>) data.get("user");
+            if (user == null) {
+                log.error("No user in data");
+                return Collections.emptyMap();
+            }
+            
             Map<String, Object> contributionsCollection = (Map<String, Object>) user.get("contributionsCollection");
             Map<String, Object> calendar = (Map<String, Object>) contributionsCollection.get("contributionCalendar");
 
+            log.info("Successfully fetched contributions. Total: {}", calendar.get("totalContributions"));
+            
             return Map.of(
                     "totalContributions", calendar.get("totalContributions"),
                     "weeks", calendar.get("weeks")
