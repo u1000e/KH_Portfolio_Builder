@@ -1,11 +1,14 @@
 package com.portfolio.builder.ai.application;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.builder.ai.dto.AiFeedback;
 import com.portfolio.builder.ai.dto.EvaluationScores;
 import com.portfolio.builder.ai.dto.PortfolioSummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,63 +23,101 @@ import java.util.List;
 public class AiFeedbackGenerator {
     
     private final ChatClient chatClient;
+    private final ObjectMapper objectMapper;
     
     /**
      * 점수와 포트폴리오 요약을 바탕으로 AI 피드백 생성
      */
     public AiFeedback generateFeedback(EvaluationScores scores, PortfolioSummary summary) {
-        String prompt = buildPrompt(scores, summary);
+        String promptText = buildPrompt(scores, summary);
         
         try {
-            return chatClient.prompt()
-                    .user(prompt)
+            // PromptTemplate을 우회하기 위해 직접 Prompt 생성
+            Prompt prompt = new Prompt(new UserMessage(promptText));
+            String response = chatClient.prompt(prompt)
                     .call()
-                    .entity(AiFeedback.class);
+                    .content();
+            
+            log.debug("AI Response: {}", response);
+            return parseResponse(response, scores);
         } catch (Exception e) {
             log.error("AI 피드백 생성 실패, 기본 피드백 반환", e);
             return createDefaultFeedback(scores);
         }
     }
     
+    /**
+     * AI 응답 파싱
+     */
+    private AiFeedback parseResponse(String response, EvaluationScores scores) {
+        try {
+            // JSON 부분 추출
+            String json = extractJson(response);
+            return objectMapper.readValue(json, AiFeedback.class);
+        } catch (Exception e) {
+            log.warn("AI 응답 파싱 실패, 기본 피드백 반환: {}", e.getMessage());
+            return createDefaultFeedback(scores);
+        }
+    }
+    
+    /**
+     * 응답에서 JSON 추출
+     */
+    private String extractJson(String response) {
+        // ```json ... ``` 블록 추출
+        if (response.contains("```json")) {
+            int start = response.indexOf("```json") + 7;
+            int end = response.indexOf("```", start);
+            if (end > start) {
+                return response.substring(start, end).trim();
+            }
+        }
+        
+        // ``` ... ``` 블록 추출
+        if (response.contains("```")) {
+            int start = response.indexOf("```") + 3;
+            int end = response.indexOf("```", start);
+            if (end > start) {
+                return response.substring(start, end).trim();
+            }
+        }
+        
+        // JSON 객체 직접 추출
+        int start = response.indexOf("{");
+        int end = response.lastIndexOf("}");
+        if (start >= 0 && end > start) {
+            return response.substring(start, end + 1);
+        }
+        
+        return response;
+    }
+    
     private String buildPrompt(EvaluationScores scores, PortfolioSummary summary) {
-        return """
-            당신은 개발자 포트폴리오 멘토입니다.
-            다음 평가 결과를 바탕으로 건설적인 피드백을 작성해주세요.
-            
-            ## 평가 점수
-            - 총점: %d/100
-            - 완성도: %d/25 %s
-            - 기술력: %d/25 %s
-            - 트러블슈팅: %d/25 %s
-            - 표현력: %d/15 %s
-            - 활동성: %d/10 %s
-            
-            ## 포트폴리오 요약
-            - 이름: %s
-            - 스킬: %s
-            - 프로젝트 수: %d개
-            - 트러블슈팅 수: %d개
-            
-            위 정보를 바탕으로 다음 형식으로 응답해주세요:
-            - overallFeedback: 전체적인 피드백 (2-3문장, 격려하는 톤)
-            - tips: 구체적인 개선 팁 3개 (배열)
-            
-            반드시 JSON 형식으로만 응답하세요. 예시:
-            {"overallFeedback": "피드백 내용", "tips": ["팁1", "팁2", "팁3"]}
-            """.formatted(
-                scores.getTotal(),
-                scores.getCompleteness(), formatDetails(scores.getCompletenessDetails()),
-                scores.getTechnical(), formatDetails(scores.getTechnicalDetails()),
-                scores.getTroubleshooting(), formatDetails(scores.getTroubleshootingDetails()),
-                scores.getExpression(), formatDetails(scores.getExpressionDetails()),
-                scores.getActivity(), formatDetails(scores.getActivityDetails()),
-                summary.getName() != null ? summary.getName() : "미입력",
-                summary.getSkills() != null && !summary.getSkills().isEmpty() 
-                    ? String.join(", ", summary.getSkills().subList(0, Math.min(5, summary.getSkills().size()))) 
-                    : "미입력",
-                summary.getProjectCount(),
-                summary.getTroubleshootingCount()
-            );
+        StringBuilder sb = new StringBuilder();
+        sb.append("당신은 개발자 포트폴리오 멘토입니다.\n");
+        sb.append("다음 평가 결과를 바탕으로 건설적인 피드백을 작성해주세요.\n\n");
+        
+        sb.append("## 평가 점수\n");
+        sb.append(String.format("- 총점: %d/100\n", scores.getTotal()));
+        sb.append(String.format("- 완성도: %d/25 %s\n", scores.getCompleteness(), formatDetails(scores.getCompletenessDetails())));
+        sb.append(String.format("- 기술력: %d/25 %s\n", scores.getTechnical(), formatDetails(scores.getTechnicalDetails())));
+        sb.append(String.format("- 트러블슈팅: %d/25 %s\n", scores.getTroubleshooting(), formatDetails(scores.getTroubleshootingDetails())));
+        sb.append(String.format("- 표현력: %d/15 %s\n", scores.getExpression(), formatDetails(scores.getExpressionDetails())));
+        sb.append(String.format("- 활동성: %d/10 %s\n\n", scores.getActivity(), formatDetails(scores.getActivityDetails())));
+        
+        sb.append("## 포트폴리오 요약\n");
+        sb.append(String.format("- 이름: %s\n", summary.getName() != null ? summary.getName() : "미입력"));
+        String skillsStr = summary.getSkills() != null && !summary.getSkills().isEmpty()
+            ? String.join(", ", summary.getSkills().subList(0, Math.min(5, summary.getSkills().size())))
+            : "미입력";
+        sb.append(String.format("- 스킬: %s\n", skillsStr));
+        sb.append(String.format("- 프로젝트 수: %d개\n", summary.getProjectCount()));
+        sb.append(String.format("- 트러블슈팅 수: %d개\n\n", summary.getTroubleshootingCount()));
+        
+        sb.append("응답 형식: JSON으로 응답해주세요.\n");
+        sb.append("필드: overallFeedback (전체 피드백 2-3문장), tips (개선 팁 3개 배열)\n");
+        
+        return sb.toString();
     }
     
     private String formatDetails(List<String> details) {
