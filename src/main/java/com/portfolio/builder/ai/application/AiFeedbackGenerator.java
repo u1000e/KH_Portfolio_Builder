@@ -57,13 +57,12 @@ public class AiFeedbackGenerator {
             - 프로젝트 수: %d개
             - 트러블슈팅 수: %d개
             
-            위 정보를 바탕으로 JSON 형식으로 응답해주세요:
-            {
-              "overallFeedback": "전체적인 피드백 (2-3문장, 격려하는 톤)",
-              "tips": ["구체적인 개선 팁 1", "구체적인 개선 팁 2", "구체적인 개선 팁 3"]
-            }
+            위 정보를 바탕으로 다음 형식으로 응답해주세요:
+            - overallFeedback: 전체적인 피드백 (2-3문장, 격려하는 톤)
+            - tips: 구체적인 개선 팁 3개 (배열)
             
-            중요: 반드시 위 JSON 형식으로만 응답하세요.
+            반드시 JSON 형식으로만 응답하세요. 예시:
+            {"overallFeedback": "피드백 내용", "tips": ["팁1", "팁2", "팁3"]}
             """.formatted(
                 scores.getTotal(),
                 scores.getCompleteness(), formatDetails(scores.getCompletenessDetails()),
