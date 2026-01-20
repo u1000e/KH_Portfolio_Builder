@@ -180,7 +180,6 @@ public class GithubService {
             query($username: String!) {
                 user(login: $username) {
                     contributionsCollection {
-                        totalContributions
                         contributionCalendar {
                             totalContributions
                             weeks {
