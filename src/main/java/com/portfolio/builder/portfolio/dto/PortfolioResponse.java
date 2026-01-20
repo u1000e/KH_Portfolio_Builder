@@ -22,6 +22,7 @@ public class PortfolioResponse {
     private String title;
     private String data;  // JSON string
     private Boolean isPublic;
+    private Boolean showContributionGraph;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -59,6 +60,7 @@ public class PortfolioResponse {
                 .title(portfolio.getTitle())
                 .data(portfolio.getData())
                 .isPublic(portfolio.getIsPublic())
+                .showContributionGraph(portfolio.getShowContributionGraph())
                 .createdAt(portfolio.getCreatedAt())
                 .updatedAt(portfolio.getUpdatedAt())
                 .likeCount(0)
@@ -76,6 +78,7 @@ public class PortfolioResponse {
                 .title(portfolio.getTitle())
                 .data(portfolio.getData())
                 .isPublic(portfolio.getIsPublic())
+                .showContributionGraph(portfolio.getShowContributionGraph())
                 .createdAt(portfolio.getCreatedAt())
                 .updatedAt(portfolio.getUpdatedAt())
                 .likeCount(likeCount)

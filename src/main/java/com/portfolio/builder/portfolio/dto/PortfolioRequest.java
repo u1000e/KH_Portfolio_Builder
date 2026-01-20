@@ -13,4 +13,5 @@ public class PortfolioRequest {
     private String title;
     private String data;  // JSON string
     private Boolean isPublic;
+    private Boolean showContributionGraph;
 }

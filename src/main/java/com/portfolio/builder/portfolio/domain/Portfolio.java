@@ -35,6 +35,9 @@ public class Portfolio {
     private Boolean isPublic = false;
 
     @Builder.Default
+    private Boolean showContributionGraph = true;  // GitHub 잔디 표시 여부
+
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Builder.Default
