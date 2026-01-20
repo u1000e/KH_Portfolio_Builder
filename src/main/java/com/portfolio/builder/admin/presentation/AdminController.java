@@ -105,6 +105,15 @@ public class AdminController {
         return ResponseEntity.ok(adminService.updateMemberBranch(id, request.get("branch"), request.get("classroom")));
     }
 
+    @PutMapping("/members/{id}/cohort")
+    public ResponseEntity<MemberResponse> updateMemberCohort(
+            @RequestAttribute(name = "memberId") Long memberId,
+            @PathVariable("id") Long id,
+            @RequestBody Map<String, String> request) {
+        adminService.validateAdmin(memberId);
+        return ResponseEntity.ok(adminService.updateMemberCohort(id, request.get("cohort")));
+    }
+
     // === 포트폴리오 관리 ===
     @GetMapping("/portfolios")
     public ResponseEntity<List<PortfolioResponse>> getAllPortfolios(

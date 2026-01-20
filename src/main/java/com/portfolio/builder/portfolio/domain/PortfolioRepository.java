@@ -27,6 +27,18 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     // 지점별 공개 포트폴리오 - member가 존재하는 것만
     @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true AND m.branch = :branch ORDER BY p.createdAt DESC")
     List<Portfolio> findByMemberBranchAndIsPublicTrue(@Param("branch") String branch);
+    
+    // 지점 + 강의실별 공개 포트폴리오
+    @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true AND m.branch = :branch AND m.classroom = :classroom ORDER BY p.createdAt DESC")
+    List<Portfolio> findByMemberBranchAndClassroomAndIsPublicTrue(@Param("branch") String branch, @Param("classroom") String classroom);
+    
+    // 지점 + 강의실 + 기수별 공개 포트폴리오
+    @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true AND m.branch = :branch AND m.classroom = :classroom AND m.cohort = :cohort ORDER BY p.createdAt DESC")
+    List<Portfolio> findByMemberBranchAndClassroomAndCohortAndIsPublicTrue(@Param("branch") String branch, @Param("classroom") String classroom, @Param("cohort") String cohort);
+    
+    // 전체 공개 포트폴리오 (직원/강사용)
+    @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true ORDER BY p.createdAt DESC")
+    List<Portfolio> findAllPublicPortfolios();
 
     // 특정 회원의 공개된 포트폴리오
     @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE m.id = :memberId AND p.isPublic = true ORDER BY p.createdAt DESC")

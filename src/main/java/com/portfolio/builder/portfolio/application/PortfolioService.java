@@ -169,6 +169,42 @@ public class PortfolioService {
                 })
                 .collect(Collectors.toList());
     }
+    
+    // 필터링된 공개 포트폴리오 조회 (직원/강사용)
+    @Transactional(readOnly = true)
+    public List<PortfolioResponse> getFilteredPortfolios(String branch, String classroom, String cohort, Long currentMemberId) {
+        Member currentMember = currentMemberId != null ? 
+                memberRepository.findById(currentMemberId).orElse(null) : null;
+        
+        List<Portfolio> portfolios;
+        
+        boolean hasBranch = branch != null && !branch.isEmpty();
+        boolean hasClassroom = classroom != null && !classroom.isEmpty();
+        boolean hasCohort = cohort != null && !cohort.isEmpty();
+        
+        if (hasBranch && hasClassroom && hasCohort) {
+            // 소속 + 강의실 + 기수 모두 필터
+            portfolios = portfolioRepository.findByMemberBranchAndClassroomAndCohortAndIsPublicTrue(branch, classroom, cohort);
+        } else if (hasBranch && hasClassroom) {
+            // 소속 + 강의실 필터
+            portfolios = portfolioRepository.findByMemberBranchAndClassroomAndIsPublicTrue(branch, classroom);
+        } else if (hasBranch) {
+            // 소속만 필터
+            portfolios = portfolioRepository.findByMemberBranchAndIsPublicTrue(branch);
+        } else {
+            // 필터 없으면 전체 공개
+            portfolios = portfolioRepository.findAllPublicPortfolios();
+        }
+        
+        return portfolios.stream()
+                .map(portfolio -> {
+                    int likeCount = portfolioLikeRepository.countByPortfolioId(portfolio.getId());
+                    boolean isLiked = currentMember != null && 
+                                     portfolioLikeRepository.existsByPortfolioAndMember(portfolio, currentMember);
+                    return PortfolioResponse.from(portfolio, likeCount, isLiked);
+                })
+                .collect(Collectors.toList());
+    }
 
     // 공개 포트폴리오 상세 조회 (갤러리에서 접근)
     @Transactional(readOnly = true)

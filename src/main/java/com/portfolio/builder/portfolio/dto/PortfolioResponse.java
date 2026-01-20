@@ -18,6 +18,9 @@ public class PortfolioResponse {
     private Long id;
     private Long memberId;
     private String memberName;
+    private String memberBranch;  // 회원 소속
+    private String memberClassroom;  // 회원 강의실
+    private String memberCohort;  // 회원 기수
     private String templateType;
     private String title;
     private String data;  // JSON string
@@ -57,6 +60,9 @@ public class PortfolioResponse {
                 .id(portfolio.getId())
                 .memberId(member != null ? member.getId() : null)
                 .memberName(member != null ? member.getName() : "Unknown (삭제된 사용자)")
+                .memberBranch(member != null ? member.getBranch() : null)
+                .memberClassroom(member != null ? member.getClassroom() : null)
+                .memberCohort(member != null ? member.getCohort() : null)
                 .templateType(portfolio.getTemplateType())
                 .title(portfolio.getTitle())
                 .data(portfolio.getData())
@@ -76,6 +82,9 @@ public class PortfolioResponse {
                 .id(portfolio.getId())
                 .memberId(member != null ? member.getId() : null)
                 .memberName(member != null ? member.getName() : "Unknown (삭제된 사용자)")
+                .memberBranch(member != null ? member.getBranch() : null)
+                .memberClassroom(member != null ? member.getClassroom() : null)
+                .memberCohort(member != null ? member.getCohort() : null)
                 .templateType(portfolio.getTemplateType())
                 .title(portfolio.getTitle())
                 .data(portfolio.getData())

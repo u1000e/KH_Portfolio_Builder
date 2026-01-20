@@ -257,6 +257,23 @@ public class AdminService {
         return MemberResponse.from(updated);
     }
     
+    // 회원 기수(cohort) 변경 (관리자)
+    public MemberResponse updateMemberCohort(Long targetMemberId, String cohort) {
+        Member member = memberRepository.findById(targetMemberId)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+        
+        // 수강생만 기수 설정 가능
+        if (!"수강생".equals(member.getPosition())) {
+            throw new RuntimeException("Only students can have cohort");
+        }
+        
+        member.setCohort(cohort);
+        
+        Member updated = memberRepository.save(member);
+        log.info("Member {} cohort updated to {} by admin", targetMemberId, cohort);
+        return MemberResponse.from(updated);
+    }
+    
     private boolean isValidBranch(String branch) {
         return branch != null && (branch.equals("종로") || branch.equals("강남"));
     }
