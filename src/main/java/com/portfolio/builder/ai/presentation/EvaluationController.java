@@ -2,7 +2,6 @@ package com.portfolio.builder.ai.presentation;
 
 import com.portfolio.builder.ai.application.PortfolioEvaluationService;
 import com.portfolio.builder.ai.dto.EvaluationResponse;
-import com.portfolio.builder.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +23,11 @@ public class EvaluationController {
     @PostMapping("/{id}/evaluate")
     public ResponseEntity<EvaluationResponse> evaluate(
             @PathVariable Long id,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal Long memberId) {
         
-        log.info("Portfolio evaluation requested - portfolioId: {}, memberId: {}", id, userDetails.getMemberId());
+        log.info("Portfolio evaluation requested - portfolioId: {}, memberId: {}", id, memberId);
         
-        EvaluationResponse response = evaluationService.evaluate(id, userDetails.getMemberId());
+        EvaluationResponse response = evaluationService.evaluate(id, memberId);
         
         log.info("Portfolio evaluation completed - portfolioId: {}, totalScore: {}", id, response.getTotalScore());
         
