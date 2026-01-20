@@ -63,7 +63,7 @@ public class RuleBasedScorer {
         }
         
         // 스킬 개수 (5점)
-        int skillCount = getSize(data.getSkills());
+        int skillCount = getSize(data.getSkillNames());
         if (skillCount >= 7) {
             score += 5;
         } else if (skillCount >= 4) {
@@ -101,7 +101,7 @@ public class RuleBasedScorer {
         int score = 0;
         List<String> details = new ArrayList<>();
         
-        List<String> skills = data.getSkills() != null ? data.getSkills() : List.of();
+        List<String> skills = data.getSkillNames();
         
         // 기술 스택 다양성 (10점)
         Set<String> categories = categorizeTechStack(skills);

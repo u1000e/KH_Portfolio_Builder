@@ -81,7 +81,7 @@ public class PortfolioEvaluationService {
         // 4. AI 피드백 생성
         PortfolioSummary summary = PortfolioSummary.builder()
             .name(data.getName())
-            .skills(data.getSkills() != null ? data.getSkills() : List.of())
+            .skills(data.getSkillNames())
             .projectCount(data.getProjects() != null ? data.getProjects().size() : 0)
             .troubleshootingCount(troubleshootings.size())
             .build();
@@ -117,7 +117,7 @@ public class PortfolioEvaluationService {
             PortfolioData data = objectMapper.readValue(dataJson, PortfolioData.class);
             log.info("Parsed portfolio data - name: {}, skills: {}, projects: {}", 
                 data.getName(), 
-                data.getSkills() != null ? data.getSkills().size() : 0,
+                data.getSkillNames().size(),
                 data.getProjects() != null ? data.getProjects().size() : 0);
             return data;
         } catch (Exception e) {

@@ -15,13 +15,32 @@ public class PortfolioData {
     private String email;
     private String phone;
     private String introduction;
-    private List<String> skills = new ArrayList<>();
+    private List<SkillData> skills = new ArrayList<>();
     private List<ProjectData> projects = new ArrayList<>();
     private List<EducationData> educations = new ArrayList<>();
     private List<ExperienceData> experiences = new ArrayList<>();
     private List<CertificateData> certificates = new ArrayList<>();
     private String avatarUrl;
     private String colorTheme;
+    
+    /**
+     * 스킬 이름만 추출
+     */
+    public List<String> getSkillNames() {
+        if (skills == null) return List.of();
+        return skills.stream()
+                .map(SkillData::getName)
+                .filter(name -> name != null && !name.isBlank())
+                .toList();
+    }
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SkillData {
+        private String name;
+        private Integer level;
+    }
     
     @Data
     @NoArgsConstructor
