@@ -3,7 +3,7 @@ package com.portfolio.builder.global.ratelimit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @Slf4j
 public class RateLimitService {
     
-    private final RedisTemplate<String, String> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
     
     @Value("${rate-limit.evaluate.daily-limit:5}")
     private int dailyLimit;
