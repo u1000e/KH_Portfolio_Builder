@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EvaluationResponse {
-    private int totalScore;                    // 총점 (100점 만점)
+    private int totalScore;                    // 총점 (130점 만점)
     private ScoreBreakdown breakdown;          // 세부 점수
     private String overallFeedback;            // AI 생성 종합 피드백
     private List<String> tips;                 // AI 생성 개선 팁

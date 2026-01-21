@@ -23,7 +23,7 @@ public class EvaluationController {
     /**
      * 포트폴리오 AI 평가 요청
      * POST /api/portfolios/{id}/evaluate
-     * Rate Limit: 1일 5회
+     * Rate Limit: 1일 3회
      */
     @PostMapping("/{id}/evaluate")
     public ResponseEntity<?> evaluate(
@@ -36,9 +36,9 @@ public class EvaluationController {
             
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                 .body(RateLimitExceededResponse.builder()
-                    .message("일일 AI 평가 횟수(5회)를 초과했습니다. 내일 다시 시도해주세요.")
-                    .dailyLimit(5)
-                    .used(5)
+                    .message("일일 AI 평가 횟수(3회)를 초과했습니다. 내일 다시 시도해주세요.")
+                    .dailyLimit(3)
+                    .used(3)
                     .remaining(0)
                     .build());
         }

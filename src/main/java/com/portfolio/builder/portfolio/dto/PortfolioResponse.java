@@ -107,14 +107,15 @@ public class PortfolioResponse {
     }
     
     /**
-     * AI 점수를 등급으로 변환
+     * AI 점수를 등급으로 변환 (130점 만점, 85% 기준)
      */
     private static String calculateGrade(Integer score) {
         if (score == null) return null;
-        if (score >= 90) return "S";
-        if (score >= 80) return "A";
-        if (score >= 70) return "B";
-        if (score >= 60) return "C";
-        return "D";
+        if (score >= 111) return "S";  // 85%+
+        if (score >= 98) return "A";   // 75%+
+        if (score >= 85) return "B";   // 65%+
+        if (score >= 72) return "C";   // 55%+
+        if (score >= 59) return "D";   // 45%+
+        return "F";
     }
 }

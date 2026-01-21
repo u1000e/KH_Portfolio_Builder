@@ -16,7 +16,8 @@ import java.util.List;
 
 /**
  * 포트폴리오 평가 통합 서비스
- * 규칙 기반 점수 계산 + AI 피드백 생성
+ * 규칙 기반 점수 계산 + AI 표현력 평가 + AI 피드백 생성
+ * 총 130점 만점 (완성도30 + 기술력30 + 트러블슈팅25 + 표현력20 + 활동성25)
  */
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ import java.util.List;
 public class PortfolioEvaluationService {
     
     private final RuleBasedScorer ruleBasedScorer;
+    private final AiExpressionEvaluator aiExpressionEvaluator;
     private final AiFeedbackGenerator aiFeedbackGenerator;
     private final PortfolioRepository portfolioRepository;
     private final TroubleshootingRepository troubleshootingRepository;
@@ -49,15 +51,30 @@ public class PortfolioEvaluationService {
         PortfolioData data = parseData(portfolio.getData());
         List<Troubleshooting> troubleshootings = troubleshootingRepository.findByPortfolioIdOrderByCreatedAtDesc(portfolioId);
         
-        // 2. 규칙 기반 점수 계산
+        // 2. 규칙 기반 점수 계산 (130점 만점)
         ScoreResult completeness = ruleBasedScorer.calculateCompleteness(data);
         ScoreResult technical = ruleBasedScorer.calculateTechnical(data);
         ScoreResult troubleshooting = ruleBasedScorer.calculateTroubleshooting(troubleshootings);
-        ScoreResult expression = ruleBasedScorer.calculateExpression(data);
         ScoreResult activity = ruleBasedScorer.calculateActivity(
             portfolio.getShowContributionGraph(),
-            portfolio.getContributionGraphSnapshot()
+            portfolio.getContributionGraphSnapshot(),
+            data
         );
+        
+        // 3. AI 표현력 평가 (규칙 기반 + AI 보정)
+        ScoreResult ruleExpression = ruleBasedScorer.calculateExpression(data);
+        AiExpressionEvaluator.ExpressionResult aiExpression = aiExpressionEvaluator.evaluate(data, troubleshootings);
+        
+        // AI 점수와 규칙 점수 혼합 (AI 70%, 규칙 30%)
+        int expressionScore = (int) Math.round(aiExpression.score() * 0.7 + ruleExpression.getScore() * 0.3);
+        expressionScore = Math.min(20, Math.max(0, expressionScore)); // 0~20 범위 보장
+        
+        // AI 피드백 추가
+        List<String> expressionDetails = new java.util.ArrayList<>(ruleExpression.getDetails());
+        if (aiExpression.feedback() != null && !aiExpression.feedback().isBlank()) {
+            expressionDetails.add(0, "🤖 " + aiExpression.feedback());
+        }
+        ScoreResult expression = new ScoreResult(expressionScore, 20, expressionDetails);
         
         int totalScore = completeness.getScore() + technical.getScore() + 
                         troubleshooting.getScore() + expression.getScore() + activity.getScore();
