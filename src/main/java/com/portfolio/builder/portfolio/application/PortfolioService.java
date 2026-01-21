@@ -170,11 +170,15 @@ public class PortfolioService {
                 .collect(Collectors.toList());
     }
     
-    // 필터링된 공개 포트폴리오 조회 (직원/강사용)
+    // 필터링된 포트폴리오 조회 (직원/강사는 비공개 포함, 일반은 공개만)
     @Transactional(readOnly = true)
     public List<PortfolioResponse> getFilteredPortfolios(String branch, String classroom, String cohort, Long currentMemberId) {
         Member currentMember = currentMemberId != null ? 
                 memberRepository.findById(currentMemberId).orElse(null) : null;
+        
+        // 직원/강사 여부 확인
+        boolean isStaff = currentMember != null && 
+                ("직원".equals(currentMember.getPosition()) || "강사".equals(currentMember.getPosition()));
         
         List<Portfolio> portfolios;
         
@@ -182,18 +186,28 @@ public class PortfolioService {
         boolean hasClassroom = classroom != null && !classroom.isEmpty();
         boolean hasCohort = cohort != null && !cohort.isEmpty();
         
-        if (hasBranch && hasClassroom && hasCohort) {
-            // 소속 + 강의실 + 기수 모두 필터
-            portfolios = portfolioRepository.findByMemberBranchAndClassroomAndCohortAndIsPublicTrue(branch, classroom, cohort);
-        } else if (hasBranch && hasClassroom) {
-            // 소속 + 강의실 필터
-            portfolios = portfolioRepository.findByMemberBranchAndClassroomAndIsPublicTrue(branch, classroom);
-        } else if (hasBranch) {
-            // 소속만 필터
-            portfolios = portfolioRepository.findByMemberBranchAndIsPublicTrue(branch);
+        if (isStaff) {
+            // 직원/강사: 비공개 포함 전체 조회
+            if (hasBranch && hasClassroom && hasCohort) {
+                portfolios = portfolioRepository.findByMemberBranchAndClassroomAndCohort(branch, classroom, cohort);
+            } else if (hasBranch && hasClassroom) {
+                portfolios = portfolioRepository.findByMemberBranchAndClassroom(branch, classroom);
+            } else if (hasBranch) {
+                portfolios = portfolioRepository.findByMemberBranch(branch);
+            } else {
+                portfolios = portfolioRepository.findAllWithMember();
+            }
         } else {
-            // 필터 없으면 전체 공개
-            portfolios = portfolioRepository.findAllPublicPortfolios();
+            // 일반 사용자: 공개 포트폴리오만
+            if (hasBranch && hasClassroom && hasCohort) {
+                portfolios = portfolioRepository.findByMemberBranchAndClassroomAndCohortAndIsPublicTrue(branch, classroom, cohort);
+            } else if (hasBranch && hasClassroom) {
+                portfolios = portfolioRepository.findByMemberBranchAndClassroomAndIsPublicTrue(branch, classroom);
+            } else if (hasBranch) {
+                portfolios = portfolioRepository.findByMemberBranchAndIsPublicTrue(branch);
+            } else {
+                portfolios = portfolioRepository.findAllPublicPortfolios();
+            }
         }
         
         return portfolios.stream()
@@ -206,19 +220,25 @@ public class PortfolioService {
                 .collect(Collectors.toList());
     }
 
-    // 공개 포트폴리오 상세 조회 (갤러리에서 접근)
+    // 포트폴리오 상세 조회 (갤러리에서 접근 - 직원/강사는 비공개도 조회 가능)
     @Transactional(readOnly = true)
     public PortfolioResponse getPublicPortfolio(Long portfolioId, Long currentMemberId) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
                 .orElseThrow(() -> new RuntimeException("Portfolio not found"));
 
-        if (!portfolio.getIsPublic()) {
+        Member currentMember = currentMemberId != null ? 
+                memberRepository.findById(currentMemberId).orElse(null) : null;
+        
+        // 직원/강사 여부 확인
+        boolean isStaff = currentMember != null && 
+                ("직원".equals(currentMember.getPosition()) || "강사".equals(currentMember.getPosition()));
+        
+        // 비공개 포트폴리오는 직원/강사만 조회 가능
+        if (!portfolio.getIsPublic() && !isStaff) {
             throw new RuntimeException("This portfolio is not public");
         }
 
         int likeCount = portfolioLikeRepository.countByPortfolioId(portfolioId);
-        Member currentMember = currentMemberId != null ? 
-                memberRepository.findById(currentMemberId).orElse(null) : null;
         boolean isLiked = currentMember != null && 
                          portfolioLikeRepository.existsByPortfolioAndMember(portfolio, currentMember);
 

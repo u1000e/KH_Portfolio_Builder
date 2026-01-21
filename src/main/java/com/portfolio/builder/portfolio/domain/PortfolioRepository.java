@@ -39,6 +39,16 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     // 전체 공개 포트폴리오 (직원/강사용)
     @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true ORDER BY p.createdAt DESC")
     List<Portfolio> findAllPublicPortfolios();
+    
+    // === 직원/강사용: 비공개 포함 전체 조회 ===
+    @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE m.branch = :branch ORDER BY p.createdAt DESC")
+    List<Portfolio> findByMemberBranch(@Param("branch") String branch);
+    
+    @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE m.branch = :branch AND m.classroom = :classroom ORDER BY p.createdAt DESC")
+    List<Portfolio> findByMemberBranchAndClassroom(@Param("branch") String branch, @Param("classroom") String classroom);
+    
+    @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE m.branch = :branch AND m.classroom = :classroom AND m.cohort = :cohort ORDER BY p.createdAt DESC")
+    List<Portfolio> findByMemberBranchAndClassroomAndCohort(@Param("branch") String branch, @Param("classroom") String classroom, @Param("cohort") String cohort);
 
     // 특정 회원의 공개된 포트폴리오
     @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE m.id = :memberId AND p.isPublic = true ORDER BY p.createdAt DESC")
