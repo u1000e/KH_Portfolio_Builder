@@ -148,7 +148,7 @@ public class RuleBasedScorer {
     
     /**
      * 트러블슈팅 점수 (25점 만점)
-     * - 트러블슈팅 개수: 15점
+     * - 트러블슈팅 개수: 15점 (최대 3개 기준)
      * - 트러블슈팅 상세도: 10점
      */
     public ScoreResult calculateTroubleshooting(List<Troubleshooting> troubleshootings) {
@@ -157,14 +157,15 @@ public class RuleBasedScorer {
         
         int count = troubleshootings != null ? troubleshootings.size() : 0;
         
-        // 트러블슈팅 개수 (15점)
-        if (count >= 5) {
+        // 트러블슈팅 개수 (15점) - 최대 3개 기준
+        if (count >= 3) {
             score += 15;
-        } else if (count >= 3) {
+        } else if (count >= 2) {
             score += 10;
+            details.add("트러블슈팅을 1개 더 추가하면 만점을 받을 수 있습니다");
         } else if (count >= 1) {
             score += 5;
-            details.add("트러블슈팅 사례를 더 추가하면 좋습니다 (3개 이상 권장)");
+            details.add("트러블슈팅 사례를 더 추가하면 좋습니다 (3개 권장)");
         } else {
             details.add("트러블슈팅 사례를 추가해주세요 - 문제 해결 능력을 보여줄 수 있습니다");
             return new ScoreResult(score, 25, details);
