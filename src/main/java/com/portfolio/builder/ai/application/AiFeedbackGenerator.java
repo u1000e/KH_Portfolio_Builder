@@ -97,6 +97,11 @@ public class AiFeedbackGenerator {
         sb.append("당신은 개발자 포트폴리오 멘토입니다.\n");
         sb.append("다음 평가 결과를 바탕으로 건설적인 피드백을 작성해주세요.\n\n");
         
+        sb.append("## 중요 제약사항\n");
+        sb.append("- 이 서비스는 템플릿 기반 포트폴리오 빌더입니다\n");
+        sb.append("- 디자인, 레이아웃, 색상, 폰트 등 시각적 요소는 템플릿으로 제공되므로 언급하지 마세요\n");
+        sb.append("- 오직 '콘텐츠' 관련 피드백만 제공하세요 (자기소개, 프로젝트 설명, 기술스택, 트러블슈팅 등)\n\n");
+        
         sb.append("## 평가 점수\n");
         sb.append(String.format("- 총점: %d/100\n", scores.getTotal()));
         sb.append(String.format("- 완성도: %d/25 %s\n", scores.getCompleteness(), formatDetails(scores.getCompletenessDetails())));
