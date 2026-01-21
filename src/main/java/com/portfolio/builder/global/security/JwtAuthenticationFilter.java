@@ -33,7 +33,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
 
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+        // 토큰이 있는 경우
+        if (StringUtils.hasText(token)) {
+            // 토큰이 유효하지 않으면 401 응답
+            if (!jwtTokenProvider.validateToken(token)) {
+                log.warn("Token validation failed for request: {}", request.getRequestURI());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\":\"Token expired or invalid\",\"code\":\"TOKEN_EXPIRED\"}");
+                return; // 필터 체인 중단
+            }
+            
+            // 토큰이 유효하면 인증 설정
             Long memberId = jwtTokenProvider.getMemberId(token);
             Optional<Member> memberOpt = memberRepository.findById(memberId);
             
@@ -49,8 +60,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authentication = 
                     new UsernamePasswordAuthenticationToken(memberId, null, authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                // 토큰은 유효하지만 회원이 없는 경우 (탈퇴 등)
+                log.warn("Member not found for token memberId: {}", memberId);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\":\"Member not found\",\"code\":\"MEMBER_NOT_FOUND\"}");
+                return;
             }
         }
+        // 토큰이 없는 경우 → 그대로 진행 (공개 API용)
 
         filterChain.doFilter(request, response);
     }
