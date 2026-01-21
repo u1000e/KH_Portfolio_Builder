@@ -41,6 +41,8 @@ public class Portfolio {
     @Column(columnDefinition = "CLOB")
     private String contributionGraphSnapshot;  // GitHub 잔디 스냅샷 JSON
 
+    private Integer aiScore;  // 마지막 AI 평가 점수 (null = 미평가)
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 

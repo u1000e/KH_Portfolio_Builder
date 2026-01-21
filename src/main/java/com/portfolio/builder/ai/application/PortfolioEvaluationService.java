@@ -21,7 +21,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional(readOnly = true)
 public class PortfolioEvaluationService {
     
     private final RuleBasedScorer ruleBasedScorer;
@@ -88,7 +87,12 @@ public class PortfolioEvaluationService {
         
         AiFeedback aiFeedback = aiFeedbackGenerator.generateFeedback(scores, summary);
         
-        // 5. 최종 응답 조합
+        // 5. AI 점수 저장
+        portfolio.setAiScore(totalScore);
+        portfolioRepository.save(portfolio);
+        log.info("Portfolio {} AI score saved: {}", portfolioId, totalScore);
+        
+        // 6. 최종 응답 조합
         return EvaluationResponse.builder()
             .totalScore(totalScore)
             .breakdown(ScoreBreakdown.builder()

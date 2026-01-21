@@ -33,6 +33,10 @@ public class PortfolioResponse {
     // 좋아요 관련 필드
     private Integer likeCount;
     private Boolean isLiked;  // 현재 사용자의 좋아요 여부
+    
+    // AI 평가 관련 필드
+    private Integer aiScore;  // AI 평가 점수 (null = 미평가)
+    private String aiGrade;   // AI 등급 (S, A, B, C, null)
 
     /**
      * Lazy 로딩된 Member 프록시를 안전하게 초기화합니다.
@@ -73,6 +77,8 @@ public class PortfolioResponse {
                 .updatedAt(portfolio.getUpdatedAt())
                 .likeCount(0)
                 .isLiked(false)
+                .aiScore(portfolio.getAiScore())
+                .aiGrade(calculateGrade(portfolio.getAiScore()))
                 .build();
     }
 
@@ -95,6 +101,20 @@ public class PortfolioResponse {
                 .updatedAt(portfolio.getUpdatedAt())
                 .likeCount(likeCount)
                 .isLiked(isLiked)
+                .aiScore(portfolio.getAiScore())
+                .aiGrade(calculateGrade(portfolio.getAiScore()))
                 .build();
+    }
+    
+    /**
+     * AI 점수를 등급으로 변환
+     */
+    private static String calculateGrade(Integer score) {
+        if (score == null) return null;
+        if (score >= 90) return "S";
+        if (score >= 80) return "A";
+        if (score >= 70) return "B";
+        if (score >= 60) return "C";
+        return "D";
     }
 }
