@@ -12,9 +12,9 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    List<Comment> findByPortfolioOrderByCreatedAtDesc(Portfolio portfolio);
+    List<Comment> findByPortfolioOrderByCreatedAtAsc(Portfolio portfolio);
 
-    @Query("SELECT c FROM Comment c JOIN FETCH c.member WHERE c.portfolio = :portfolio ORDER BY c.createdAt DESC")
+    @Query("SELECT c FROM Comment c JOIN FETCH c.member WHERE c.portfolio = :portfolio ORDER BY c.createdAt ASC")
     List<Comment> findByPortfolioWithMember(@Param("portfolio") Portfolio portfolio);
 
     @Query("SELECT c FROM Comment c JOIN FETCH c.member JOIN FETCH c.portfolio ORDER BY c.createdAt DESC")
