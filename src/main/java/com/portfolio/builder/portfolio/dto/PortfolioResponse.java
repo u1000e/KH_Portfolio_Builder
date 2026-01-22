@@ -37,6 +37,10 @@ public class PortfolioResponse {
     // AI 평가 관련 필드
     private Integer aiScore;  // AI 평가 점수 (null = 미평가)
     private String aiGrade;   // AI 등급 (S, A, B, C, null)
+    
+    // 퀸즈 배지 관련 필드
+    private Integer badgeCount;  // 총 배지 수
+    private java.util.List<String> recentBadges;  // 최근 배지 아이콘 (4개)
 
     /**
      * Lazy 로딩된 Member 프록시를 안전하게 초기화합니다.
@@ -79,6 +83,8 @@ public class PortfolioResponse {
                 .isLiked(false)
                 .aiScore(portfolio.getAiScore())
                 .aiGrade(calculateGrade(portfolio.getAiScore()))
+                .badgeCount(0)
+                .recentBadges(java.util.List.of())
                 .build();
     }
 
@@ -103,6 +109,34 @@ public class PortfolioResponse {
                 .isLiked(isLiked)
                 .aiScore(portfolio.getAiScore())
                 .aiGrade(calculateGrade(portfolio.getAiScore()))
+                .badgeCount(0)
+                .recentBadges(java.util.List.of())
+                .build();
+    }
+
+    public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges) {
+        Member member = safeGetMember(portfolio);
+        return PortfolioResponse.builder()
+                .id(portfolio.getId())
+                .memberId(member != null ? member.getId() : null)
+                .memberName(member != null ? member.getName() : "Unknown (삭제된 사용자)")
+                .memberBranch(member != null ? member.getBranch() : null)
+                .memberClassroom(member != null ? member.getClassroom() : null)
+                .memberCohort(member != null ? member.getCohort() : null)
+                .templateType(portfolio.getTemplateType())
+                .title(portfolio.getTitle())
+                .data(portfolio.getData())
+                .isPublic(portfolio.getIsPublic())
+                .showContributionGraph(portfolio.getShowContributionGraph())
+                .contributionGraphSnapshot(portfolio.getContributionGraphSnapshot())
+                .createdAt(portfolio.getCreatedAt())
+                .updatedAt(portfolio.getUpdatedAt())
+                .likeCount(likeCount)
+                .isLiked(isLiked)
+                .aiScore(portfolio.getAiScore())
+                .aiGrade(calculateGrade(portfolio.getAiScore()))
+                .badgeCount(badgeCount)
+                .recentBadges(recentBadges)
                 .build();
     }
     

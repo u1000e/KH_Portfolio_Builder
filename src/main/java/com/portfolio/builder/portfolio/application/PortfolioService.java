@@ -7,12 +7,16 @@ import com.portfolio.builder.portfolio.domain.PortfolioLikeRepository;
 import com.portfolio.builder.portfolio.domain.PortfolioRepository;
 import com.portfolio.builder.portfolio.dto.PortfolioRequest;
 import com.portfolio.builder.portfolio.dto.PortfolioResponse;
+import com.portfolio.builder.quiz.domain.Badge;
+import com.portfolio.builder.quiz.repository.BadgeRepository;
+import com.portfolio.builder.quiz.service.BadgeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +28,8 @@ public class PortfolioService {
     private final PortfolioRepository portfolioRepository;
     private final PortfolioLikeRepository portfolioLikeRepository;
     private final MemberRepository memberRepository;
+    private final BadgeRepository badgeRepository;
+    private final BadgeService badgeService;
 
     public PortfolioResponse createPortfolio(Long memberId, PortfolioRequest request) {
         Member member = memberRepository.findById(memberId)
@@ -131,7 +137,20 @@ public class PortfolioService {
                     int likeCount = portfolioLikeRepository.countByPortfolioId(portfolio.getId());
                     boolean isLiked = currentMember != null && 
                                      portfolioLikeRepository.existsByPortfolioAndMember(portfolio, currentMember);
-                    return PortfolioResponse.from(portfolio, likeCount, isLiked);
+                    
+                    // 배지 정보 조회
+                    Long ownerId = portfolio.getMember() != null ? portfolio.getMember().getId() : null;
+                    int badgeCount = 0;
+                    List<String> recentBadges = List.of();
+                    if (ownerId != null) {
+                        badgeCount = (int) badgeRepository.countByMemberId(ownerId);
+                        recentBadges = badgeRepository.findTop4ByMemberIdOrderByEarnedAtDesc(ownerId)
+                                .stream()
+                                .map(badge -> badgeService.getBadgeIcon(badge.getBadgeId()))
+                                .collect(Collectors.toList());
+                    }
+                    
+                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges);
                 })
                 .collect(Collectors.toList());
     }
@@ -148,7 +167,20 @@ public class PortfolioService {
                     int likeCount = portfolioLikeRepository.countByPortfolioId(portfolio.getId());
                     boolean isLiked = currentMember != null && 
                                      portfolioLikeRepository.existsByPortfolioAndMember(portfolio, currentMember);
-                    return PortfolioResponse.from(portfolio, likeCount, isLiked);
+                    
+                    // 배지 정보 조회
+                    Long ownerId = portfolio.getMember() != null ? portfolio.getMember().getId() : null;
+                    int badgeCount = 0;
+                    List<String> recentBadges = List.of();
+                    if (ownerId != null) {
+                        badgeCount = (int) badgeRepository.countByMemberId(ownerId);
+                        recentBadges = badgeRepository.findTop4ByMemberIdOrderByEarnedAtDesc(ownerId)
+                                .stream()
+                                .map(badge -> badgeService.getBadgeIcon(badge.getBadgeId()))
+                                .collect(Collectors.toList());
+                    }
+                    
+                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges);
                 })
                 .collect(Collectors.toList());
     }

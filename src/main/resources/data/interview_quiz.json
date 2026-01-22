@@ -1,0 +1,1791 @@
+{
+  "quizzes": [
+    {
+      "category": "HTML/CSS",
+      "type": "OX",
+      "question": "<div> 태그는 시맨틱 태그이다.",
+      "answer": false,
+      "explanation": "<div>는 의미 없는 컨테이너 태그로, 시맨틱 태그가 아닙니다. 시맨틱 태그는 <header>, <nav>, <main>, <article>, <section>, <footer> 등 태그 자체가 콘텐츠의 의미를 나타내는 태그입니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "OX",
+      "question": "Flexbox에서 justify-content는 교차축(cross axis) 정렬을 담당한다.",
+      "answer": false,
+      "explanation": "justify-content는 주축(main axis) 정렬을 담당합니다. 교차축 정렬은 align-items 또는 align-content가 담당합니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "OX",
+      "question": "CSS Grid에서 fr 단위는 사용 가능한 공간을 비율로 나눠 갖는다.",
+      "answer": true,
+      "explanation": "fr(fraction)은 Grid 컨테이너의 남은 공간을 비율로 분배합니다. 예를 들어 grid-template-columns: 1fr 2fr은 공간을 1:2 비율로 나눕니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "OX",
+      "question": "box-sizing: border-box를 설정하면 padding과 border가 width에 포함된다.",
+      "answer": true,
+      "explanation": "border-box는 padding과 border를 요소의 width와 height에 포함시킵니다. 기본값인 content-box에서는 padding과 border가 별도로 추가됩니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "OX",
+      "question": "position: absolute는 항상 브라우저 창을 기준으로 위치가 결정된다.",
+      "answer": false,
+      "explanation": "absolute는 가장 가까운 position이 지정된(static이 아닌) 조상 요소를 기준으로 합니다. 그러한 조상이 없으면 body 기준입니다. 브라우저 창 기준은 position: fixed입니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "OX",
+      "question": "CSS 선택자에서 #id는 .class보다 명시도(specificity)가 높다.",
+      "answer": true,
+      "explanation": "CSS 명시도 순서는 인라인 스타일 > #id > .class > 태그 입니다. id 선택자(100점)가 class 선택자(10점)보다 우선순위가 높습니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "OX",
+      "question": "미디어 쿼리의 min-width: 768px은 768px 미만의 화면에 적용된다.",
+      "answer": false,
+      "explanation": "min-width: 768px은 768px 이상의 화면에 적용됩니다. 768px 미만에 적용하려면 max-width: 767px을 사용해야 합니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "OX",
+      "question": "margin 속성에 음수 값을 사용할 수 있다.",
+      "answer": true,
+      "explanation": "margin은 음수 값을 가질 수 있으며, 요소를 해당 방향으로 끌어당기는 효과를 줍니다. 반면 padding은 음수 값을 가질 수 없습니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "OX",
+      "question": "인라인 요소에는 width와 height를 직접 지정할 수 없다.",
+      "answer": true,
+      "explanation": "인라인 요소(span, a 등)는 콘텐츠 크기만큼만 공간을 차지하며 width, height가 적용되지 않습니다. 적용하려면 display: inline-block으로 변경해야 합니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "OX",
+      "question": "z-index는 position 속성이 static이어도 작동한다.",
+      "answer": false,
+      "explanation": "z-index는 position이 static이 아닌 요소(relative, absolute, fixed, sticky)에서만 작동합니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "MULTIPLE",
+      "question": "다음 중 시맨틱 태그가 아닌 것은?",
+      "options": ["<article>", "<section>", "<div>", "<nav>"],
+      "answer": 2,
+      "explanation": "<div>는 콘텐츠의 의미를 나타내지 않는 범용 컨테이너입니다. article, section, nav는 각각 독립적 콘텐츠, 구획, 내비게이션을 의미하는 시맨틱 태그입니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "MULTIPLE",
+      "question": "Flexbox에서 아이템들을 수직 중앙 정렬하려면 어떤 속성을 사용하는가? (flex-direction: row 기준)",
+      "options": [
+        "justify-content: center",
+        "align-items: center",
+        "text-align: center",
+        "vertical-align: middle"
+      ],
+      "answer": 1,
+      "explanation": "flex-direction: row일 때 align-items는 교차축(세로) 정렬을 담당합니다. justify-content는 주축(가로) 정렬입니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "MULTIPLE",
+      "question": "CSS Grid에서 3개의 동일한 너비 컬럼을 만드는 올바른 방법은?",
+      "options": [
+        "grid-template-columns: 3",
+        "grid-template-columns: repeat(3, 1fr)",
+        "grid-columns: 3",
+        "display: grid-3"
+      ],
+      "answer": 1,
+      "explanation": "repeat(3, 1fr)은 1fr을 3번 반복하여 동일한 너비의 3개 컬럼을 만듭니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "MULTIPLE",
+      "question": "다음 CSS 선택자 중 명시도(specificity)가 가장 높은 것은?",
+      "options": ["div p", ".container .item", "#header", "body div.content"],
+      "answer": 2,
+      "explanation": "#header(id 선택자)가 100점으로 가장 높습니다. .container .item은 20점, body div.content는 12점, div p는 2점입니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "MULTIPLE",
+      "question": "position: sticky의 특징으로 올바른 것은?",
+      "options": [
+        "항상 화면에 고정된다",
+        "스크롤 시 특정 위치에 도달하면 고정된다",
+        "다른 요소와 겹치지 않는다",
+        "z-index를 사용할 수 없다"
+      ],
+      "answer": 1,
+      "explanation": "sticky는 평소에는 relative처럼 동작하다가, 스크롤하여 지정된 임계값에 도달하면 fixed처럼 고정됩니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "MULTIPLE",
+      "question": "반응형 웹을 위해 HTML head에 추가하는 메타 태그의 name 속성값은?",
+      "options": ["responsive", "viewport", "device-width", "mobile"],
+      "answer": 1,
+      "explanation": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">을 사용하여 모바일에서 페이지가 올바르게 표시되도록 합니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "MULTIPLE",
+      "question": "Box Model에서 요소의 실제 차지 공간 계산 시 포함되지 않는 것은?",
+      "options": ["content", "padding", "border", "outline"],
+      "answer": 3,
+      "explanation": "outline은 요소의 레이아웃에 영향을 주지 않고 border 바깥에 그려집니다. Box Model은 content + padding + border + margin으로 구성됩니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "MULTIPLE",
+      "question": "CSS에서 부모 요소의 글꼴 크기를 기준으로 하는 상대 단위는?",
+      "options": ["rem", "em", "vw", "px"],
+      "answer": 1,
+      "explanation": "em은 해당 요소의 font-size를 기준으로 계산됩니다. 단, font-size 속성에 em을 사용할 때는 부모 요소의 font-size를 기준으로 합니다. rem은 루트(html) 요소 기준입니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "MULTIPLE",
+      "question": "Flexbox에서 아이템이 컨테이너를 넘칠 때 줄바꿈을 허용하는 속성은?",
+      "options": [
+        "flex-direction: wrap",
+        "flex-wrap: wrap",
+        "flex-overflow: wrap",
+        "overflow: wrap"
+      ],
+      "answer": 1,
+      "explanation": "flex-wrap: wrap을 설정하면 아이템들이 한 줄에 다 들어가지 않을 때 다음 줄로 넘어갑니다. 기본값은 nowrap입니다."
+    },
+    {
+      "category": "HTML/CSS",
+      "type": "MULTIPLE",
+      "question": "다음 중 블록 레벨 요소가 아닌 것은?",
+      "options": ["<div>", "<p>", "<span>", "<h1>"],
+      "answer": 2,
+      "explanation": "<span>은 인라인 요소로, 콘텐츠 크기만큼만 공간을 차지합니다. div, p, h1은 모두 블록 레벨 요소입니다."
+    },
+
+    {
+      "category": "JavaScript",
+      "type": "OX",
+      "question": "let과 const로 선언한 변수도 호이스팅된다.",
+      "answer": true,
+      "explanation": "let과 const도 호이스팅되지만, 선언 전에 접근하면 ReferenceError가 발생합니다. 이를 TDZ(Temporal Dead Zone)라고 합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "OX",
+      "question": "클로저를 사용하면 함수가 생성될 당시의 외부 변수에 접근할 수 있다.",
+      "answer": true,
+      "explanation": "클로저는 함수가 선언될 때의 렉시컬 환경을 기억하여, 함수가 실행 컨텍스트를 벗어나도 해당 환경의 변수에 접근할 수 있게 합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "OX",
+      "question": "화살표 함수는 자신만의 this를 가진다.",
+      "answer": false,
+      "explanation": "화살표 함수는 자신만의 this를 가지지 않고, 상위 스코프의 this를 그대로 사용합니다(lexical this)."
+    },
+    {
+      "category": "JavaScript",
+      "type": "OX",
+      "question": "Promise.all()은 하나의 Promise가 reject되면 즉시 reject된다.",
+      "answer": true,
+      "explanation": "Promise.all()은 하나라도 reject되면 즉시 해당 에러로 reject됩니다. 모든 결과가 필요할 때는 Promise.allSettled()를 사용합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "OX",
+      "question": "이벤트 루프에서 마이크로태스크는 매크로태스크보다 먼저 실행된다.",
+      "answer": true,
+      "explanation": "콜 스택이 비면 마이크로태스크 큐(Promise.then 등)를 먼저 모두 처리한 후, 매크로태스크 큐(setTimeout 등)에서 하나씩 처리합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "OX",
+      "question": "const로 선언한 객체의 속성은 변경할 수 없다.",
+      "answer": false,
+      "explanation": "const는 재할당만 금지합니다. 객체의 참조값은 고정되지만, 내부 속성은 변경 가능합니다. 완전한 불변성은 Object.freeze()를 사용해야 합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "OX",
+      "question": "async 함수는 항상 Promise를 반환한다.",
+      "answer": true,
+      "explanation": "async 함수는 항상 Promise를 반환합니다. return 값이 Promise가 아니면 자동으로 Promise.resolve()로 감싸집니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "OX",
+      "question": "typeof null의 결과는 'null'이다.",
+      "answer": false,
+      "explanation": "typeof null은 'object'를 반환합니다. 이는 JavaScript 초기 버전의 버그로, 하위 호환성을 위해 수정되지 않았습니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "OX",
+      "question": "for...in 루프는 배열의 인덱스를 순회한다.",
+      "answer": true,
+      "explanation": "for...in은 객체의 열거 가능한 속성 키를 순회합니다. 배열에서는 인덱스(문자열)를 순회합니다. 값 순회는 for...of를 사용합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "OX",
+      "question": "==와 ===의 차이는 타입 변환 여부이다.",
+      "answer": true,
+      "explanation": "==(동등 연산자)는 타입 변환 후 비교하고, ===(일치 연산자)는 타입 변환 없이 값과 타입 모두 비교합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "MULTIPLE",
+      "question": "다음 코드의 출력 순서는?\nconsole.log(1);\nsetTimeout(() => console.log(2), 0);\nPromise.resolve().then(() => console.log(3));\nconsole.log(4);",
+      "options": ["1, 2, 3, 4", "1, 4, 2, 3", "1, 4, 3, 2", "1, 3, 4, 2"],
+      "answer": 2,
+      "explanation": "동기 코드(1, 4)가 먼저 실행되고, 마이크로태스크(Promise - 3)가 매크로태스크(setTimeout - 2)보다 먼저 실행됩니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "MULTIPLE",
+      "question": "클로저의 주요 활용 사례가 아닌 것은?",
+      "options": [
+        "데이터 은닉(private 변수)",
+        "함수 팩토리",
+        "배열 정렬",
+        "상태 유지"
+      ],
+      "answer": 2,
+      "explanation": "배열 정렬은 Array.sort() 메서드로 수행하며 클로저와 직접적인 관련이 없습니다. 클로저는 데이터 은닉, 함수 팩토리, 상태 유지 등에 활용됩니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "MULTIPLE",
+      "question": "다음 중 this가 전역 객체를 가리키지 않는 경우는?",
+      "options": [
+        "일반 함수 호출",
+        "객체의 메서드 호출",
+        "콜백 함수 내부 (setTimeout 등)",
+        "전역 스코프"
+      ],
+      "answer": 1,
+      "explanation": "객체의 메서드로 호출되면 this는 해당 객체를 가리킵니다. 일반 함수 호출, setTimeout 콜백, 전역 스코프에서 this는 전역 객체입니다(non-strict mode 기준). strict mode에서는 일반 함수의 this가 undefined입니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "MULTIPLE",
+      "question": "ES6에서 도입된 문법이 아닌 것은?",
+      "options": ["화살표 함수", "템플릿 리터럴", "async/await", "let과 const"],
+      "answer": 2,
+      "explanation": "async/await는 ES2017(ES8)에서 도입되었습니다. 화살표 함수, 템플릿 리터럴, let/const는 ES6(ES2015)에서 도입되었습니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "MULTIPLE",
+      "question": "다음 중 얕은 복사(shallow copy)를 수행하는 방법은?",
+      "options": [
+        "JSON.parse(JSON.stringify(obj))",
+        "structuredClone(obj)",
+        "Object.assign({}, obj)",
+        "위 모두 깊은 복사"
+      ],
+      "answer": 2,
+      "explanation": "Object.assign()과 스프레드 연산자는 얕은 복사를 수행합니다. JSON 방식과 structuredClone()은 깊은 복사를 수행합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "MULTIPLE",
+      "question": "프로토타입 체인에서 속성을 찾는 순서는?",
+      "options": [
+        "Object.prototype → 인스턴스 → 생성자.prototype",
+        "인스턴스 → 생성자.prototype → Object.prototype",
+        "생성자.prototype → 인스턴스 → Object.prototype",
+        "Object.prototype → 생성자.prototype → 인스턴스"
+      ],
+      "answer": 1,
+      "explanation": "속성 접근 시 먼저 인스턴스 자신의 속성을 찾고, 없으면 프로토타입 체인을 따라 올라가며 탐색합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "MULTIPLE",
+      "question": "다음 코드의 결과는?\nlet a = [1, 2, 3];\nlet b = a;\nb.push(4);\nconsole.log(a.length);",
+      "options": ["3", "4", "undefined", "에러 발생"],
+      "answer": 1,
+      "explanation": "배열은 참조 타입이므로 b = a는 같은 배열을 참조합니다. b에 4를 추가하면 a도 영향을 받아 길이가 4가 됩니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "MULTIPLE",
+      "question": "스코프 체인을 따라 변수를 검색할 때 찾는 순서는?",
+      "options": [
+        "전역 → 외부 함수 → 현재 스코프",
+        "현재 스코프 → 외부 함수 → 전역 스코프",
+        "외부 함수 → 현재 → 전역",
+        "현재 → 전역 → 외부 함수"
+      ],
+      "answer": 1,
+      "explanation": "변수 검색은 현재 스코프에서 시작하여 외부 스코프로 나가며, 최종적으로 전역 스코프까지 탐색합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "MULTIPLE",
+      "question": "다음 중 배열 메서드의 특징으로 틀린 것은?",
+      "options": [
+        "map()은 새 배열을 반환한다",
+        "forEach()는 undefined를 반환한다",
+        "filter()는 원본 배열을 수정한다",
+        "reduce()는 단일 값을 반환한다"
+      ],
+      "answer": 2,
+      "explanation": "filter()는 조건에 맞는 요소로 새 배열을 반환하며 원본을 수정하지 않습니다. push, pop, splice 등이 원본을 수정합니다."
+    },
+    {
+      "category": "JavaScript",
+      "type": "MULTIPLE",
+      "question": "다음 중 Rest 파라미터의 올바른 사용법은?",
+      "options": [
+        "function fn(...args, last) {}",
+        "function fn(first, ...args) {}",
+        "function fn(...args1, ...args2) {}",
+        "function fn(...args = []) {}"
+      ],
+      "answer": 1,
+      "explanation": "Rest 파라미터(...args)는 반드시 매개변수 목록의 마지막에 위치해야 합니다. 여러 개 사용하거나 기본값을 지정할 수 없습니다."
+    },
+
+    {
+      "category": "React",
+      "type": "OX",
+      "question": "가상 DOM은 실제 DOM보다 항상 빠르다.",
+      "answer": false,
+      "explanation": "가상 DOM은 항상 빠른 것이 아니라, 복잡한 UI 업데이트에서 효율적입니다. 간단한 변경에는 실제 DOM 직접 조작이 더 빠를 수 있습니다."
+    },
+    {
+      "category": "React",
+      "type": "OX",
+      "question": "useState의 set 함수를 호출하면 컴포넌트가 즉시 리렌더링된다.",
+      "answer": false,
+      "explanation": "React는 여러 상태 업데이트를 배치(batch)하여 한 번에 처리합니다. set 함수 호출은 리렌더링을 예약할 뿐 즉시 실행하지 않습니다."
+    },
+    {
+      "category": "React",
+      "type": "OX",
+      "question": "useEffect의 의존성 배열이 빈 배열이면 마운트 시에만 실행된다.",
+      "answer": true,
+      "explanation": "useEffect(() => {...}, [])에서 빈 의존성 배열은 마운트 시 한 번만 실행됨을 의미합니다. cleanup 함수는 언마운트 시 실행됩니다."
+    },
+    {
+      "category": "React",
+      "type": "OX",
+      "question": "Props는 자식 컴포넌트에서 수정할 수 있다.",
+      "answer": false,
+      "explanation": "Props는 읽기 전용(read-only)입니다. 부모에서 자식으로 단방향으로 전달되며, 자식은 props를 직접 수정할 수 없습니다."
+    },
+    {
+      "category": "React",
+      "type": "OX",
+      "question": "JSX에서 class 대신 className을 사용해야 한다.",
+      "answer": true,
+      "explanation": "JSX는 JavaScript의 확장이므로 예약어인 class 대신 className을 사용합니다. 마찬가지로 for 대신 htmlFor를 사용합니다."
+    },
+    {
+      "category": "React",
+      "type": "OX",
+      "question": "함수형 컴포넌트에서는 생명주기 메서드를 직접 사용할 수 없다.",
+      "answer": true,
+      "explanation": "componentDidMount 같은 생명주기 메서드는 클래스 컴포넌트 전용입니다. 함수형 컴포넌트에서는 useEffect Hook으로 동일한 기능을 구현합니다."
+    },
+    {
+      "category": "React",
+      "type": "OX",
+      "question": "React에서 key prop은 리스트 아이템의 고유 식별을 위해 사용된다.",
+      "answer": true,
+      "explanation": "key는 React가 리스트의 어떤 아이템이 변경, 추가, 제거되었는지 식별하는 데 사용됩니다. 고유하고 안정적인 값을 사용해야 합니다."
+    },
+    {
+      "category": "React",
+      "type": "OX",
+      "question": "useRef로 생성한 값이 변경되어도 리렌더링이 발생하지 않는다.",
+      "answer": true,
+      "explanation": "useRef는 .current 속성에 값을 저장하며, 이 값이 변경되어도 리렌더링을 트리거하지 않습니다. DOM 요소 접근이나 이전 값 저장에 유용합니다."
+    },
+    {
+      "category": "React",
+      "type": "OX",
+      "question": "Context API를 사용하면 Redux가 필요 없다.",
+      "answer": false,
+      "explanation": "Context API와 Redux는 다른 목적을 가집니다. Context는 prop drilling 해결에, Redux는 복잡한 상태 로직과 미들웨어가 필요할 때 적합합니다."
+    },
+    {
+      "category": "React",
+      "type": "OX",
+      "question": "React 컴포넌트는 반드시 하나의 루트 요소만 반환해야 한다.",
+      "answer": true,
+      "explanation": "컴포넌트는 단일 루트 요소를 반환해야 합니다. 여러 요소를 반환하려면 Fragment(<>...</>)를 사용합니다."
+    },
+    {
+      "category": "React",
+      "type": "MULTIPLE",
+      "question": "React의 가상 DOM이 성능 향상에 기여하는 주된 이유는?",
+      "options": [
+        "실제 DOM보다 메모리를 적게 사용해서",
+        "변경된 부분만 찾아 실제 DOM에 적용해서",
+        "브라우저 렌더링 엔진을 우회해서",
+        "JavaScript 실행 속도가 빨라서"
+      ],
+      "answer": 1,
+      "explanation": "가상 DOM은 이전과 현재 상태를 비교(diffing)하여 실제로 변경된 부분만 실제 DOM에 최소한으로 업데이트합니다."
+    },
+    {
+      "category": "React",
+      "type": "MULTIPLE",
+      "question": "다음 중 Hooks의 규칙으로 올바른 것은?",
+      "options": [
+        "조건문 안에서 Hook을 호출할 수 있다",
+        "일반 함수에서 Hook을 호출할 수 있다",
+        "반복문 안에서 Hook을 호출할 수 있다",
+        "컴포넌트의 최상위에서만 Hook을 호출해야 한다"
+      ],
+      "answer": 3,
+      "explanation": "Hook은 컴포넌트 최상위에서만 호출해야 하며, 조건문, 반복문, 중첩 함수 안에서 호출하면 안 됩니다."
+    },
+    {
+      "category": "React",
+      "type": "MULTIPLE",
+      "question": "useEffect에서 cleanup 함수가 호출되는 시점은?",
+      "options": [
+        "컴포넌트 마운트 직전",
+        "다음 effect 실행 전과 언마운트 시",
+        "상태가 변경될 때만",
+        "첫 렌더링 후에만"
+      ],
+      "answer": 1,
+      "explanation": "cleanup 함수는 다음 effect가 실행되기 전과 컴포넌트가 언마운트될 때 호출됩니다."
+    },
+    {
+      "category": "React",
+      "type": "MULTIPLE",
+      "question": "상태 끌어올리기(Lifting State Up)의 목적은?",
+      "options": [
+        "성능 최적화",
+        "코드 재사용",
+        "여러 컴포넌트 간 상태 공유",
+        "메모리 절약"
+      ],
+      "answer": 2,
+      "explanation": "상태 끌어올리기는 두 개 이상의 컴포넌트가 동일한 상태를 공유해야 할 때, 공통 조상 컴포넌트로 상태를 옮기는 패턴입니다."
+    },
+    {
+      "category": "React",
+      "type": "MULTIPLE",
+      "question": "useMemo와 useCallback의 공통점은?",
+      "options": [
+        "둘 다 함수를 메모이제이션한다",
+        "둘 다 값을 메모이제이션한다",
+        "둘 다 의존성 배열을 사용한다",
+        "둘 다 리렌더링을 방지한다"
+      ],
+      "answer": 2,
+      "explanation": "useMemo는 계산된 값을, useCallback은 함수를 메모이제이션합니다. 둘 다 의존성 배열을 받아 의존성이 변경될 때만 재계산합니다."
+    },
+    {
+      "category": "React",
+      "type": "MULTIPLE",
+      "question": "React에서 조건부 렌더링 방법이 아닌 것은?",
+      "options": [
+        "삼항 연산자 (? :)",
+        "&& 연산자",
+        "if-else 문을 JSX 안에 직접 사용",
+        "변수에 JSX 요소 할당 후 사용"
+      ],
+      "answer": 2,
+      "explanation": "JSX 안에서는 if-else 문을 직접 사용할 수 없습니다(표현식만 가능). 삼항 연산자, && 연산자를 사용합니다."
+    },
+    {
+      "category": "React",
+      "type": "MULTIPLE",
+      "question": "useState의 초기값 지연 초기화 방법은?",
+      "options": [
+        "useState(expensiveCalculation())",
+        "useState(() => expensiveCalculation())",
+        "useState(null).then(expensiveCalculation)",
+        "useStateLazy(expensiveCalculation)"
+      ],
+      "answer": 1,
+      "explanation": "useState에 함수를 전달하면 초기 렌더링 시에만 해당 함수가 실행됩니다. 비용이 큰 계산은 함수로 감싸는 것이 좋습니다."
+    },
+    {
+      "category": "React",
+      "type": "MULTIPLE",
+      "question": "React.memo의 역할은?",
+      "options": [
+        "상태를 메모이제이션한다",
+        "이벤트 핸들러를 메모이제이션한다",
+        "props가 변경되지 않으면 리렌더링을 건너뛴다",
+        "Context 값을 캐시한다"
+      ],
+      "answer": 2,
+      "explanation": "React.memo는 고차 컴포넌트로, props가 변경되지 않으면 컴포넌트의 리렌더링을 건너뜁니다."
+    },
+    {
+      "category": "React",
+      "type": "MULTIPLE",
+      "question": "제어 컴포넌트(Controlled Component)의 특징은?",
+      "options": [
+        "DOM이 폼 데이터를 관리한다",
+        "React 상태가 폼 데이터의 유일한 진실 공급원이다",
+        "ref를 사용하여 값을 가져온다",
+        "기본 HTML 폼 동작을 사용한다"
+      ],
+      "answer": 1,
+      "explanation": "제어 컴포넌트는 폼 요소의 값을 React 상태로 관리합니다. value와 onChange를 통해 상태와 동기화합니다."
+    },
+    {
+      "category": "React",
+      "type": "MULTIPLE",
+      "question": "React의 단방향 데이터 흐름에 대한 설명으로 옳은 것은?",
+      "options": [
+        "양방향 데이터 바인딩이 기본이다",
+        "자식에서 부모로 직접 상태 전달 가능",
+        "데이터는 부모에서 자식으로 props를 통해 전달된다",
+        "상태 변경은 자식에서만 가능하다"
+      ],
+      "answer": 2,
+      "explanation": "React는 단방향 데이터 흐름을 따릅니다. 데이터는 props를 통해 부모에서 자식으로 전달됩니다."
+    },
+
+    {
+      "category": "Spring",
+      "type": "OX",
+      "question": "DI(Dependency Injection)는 객체 간의 결합도를 높이는 설계 패턴이다.",
+      "answer": false,
+      "explanation": "DI는 객체 간의 결합도를 낮추는(느슨한 결합) 설계 패턴입니다. 의존성을 외부에서 주입받아 테스트와 유지보수를 용이하게 합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "OX",
+      "question": "IoC(Inversion of Control)에서 객체의 생성과 생명주기 관리를 개발자가 직접 담당한다.",
+      "answer": false,
+      "explanation": "IoC는 제어의 역전으로, 객체의 생성, 의존성 주입, 생명주기 관리를 Spring 컨테이너가 담당합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "OX",
+      "question": "AOP(Aspect-Oriented Programming)는 횡단 관심사를 모듈화하는 기법이다.",
+      "answer": true,
+      "explanation": "AOP는 로깅, 트랜잭션, 보안 등 여러 모듈에 공통으로 적용되는 횡단 관심사를 분리하여 모듈화합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "OX",
+      "question": "Spring MVC에서 @Controller와 @RestController의 차이는 View 반환 여부이다.",
+      "answer": true,
+      "explanation": "@Controller는 View를 반환하고, @RestController는 @Controller + @ResponseBody로 JSON/XML 데이터를 직접 반환합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "OX",
+      "question": "MyBatis에서 #{}와 ${}는 동일한 기능을 한다.",
+      "answer": false,
+      "explanation": "#{}는 PreparedStatement 파라미터 바인딩으로 SQL Injection을 방지합니다. ${}는 문자열 치환으로 SQL Injection에 취약합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "OX",
+      "question": "Spring Bean의 기본 스코프는 singleton이다.",
+      "answer": true,
+      "explanation": "Spring Bean의 기본 스코프는 singleton으로, IoC 컨테이너당 하나의 인스턴스만 생성됩니다."
+    },
+    {
+      "category": "Spring",
+      "type": "OX",
+      "question": "@Autowired는 타입을 기준으로 의존성을 주입한다.",
+      "answer": true,
+      "explanation": "@Autowired는 기본적으로 타입(Type)을 기준으로 Bean을 찾아 주입합니다. 같은 타입이 여러 개면 @Qualifier로 지정합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "OX",
+      "question": "REST API에서 PUT과 PATCH는 동일한 역할을 한다.",
+      "answer": false,
+      "explanation": "PUT은 리소스 전체를 대체(교체)하고, PATCH는 리소스의 일부만 수정합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "OX",
+      "question": "@Transactional 어노테이션은 RuntimeException 발생 시 기본적으로 자동 롤백한다.",
+      "answer": true,
+      "explanation": "@Transactional은 기본적으로 RuntimeException과 Error 발생 시 자동 롤백합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "OX",
+      "question": "Spring Boot는 Spring Framework를 대체하는 새로운 프레임워크이다.",
+      "answer": false,
+      "explanation": "Spring Boot는 Spring을 대체하는 것이 아니라, Spring 기반 애플리케이션을 쉽게 만들 수 있도록 도와주는 도구입니다."
+    },
+    {
+      "category": "Spring",
+      "type": "MULTIPLE",
+      "question": "Spring에서 의존성 주입(DI) 방식이 아닌 것은?",
+      "options": ["생성자 주입", "Setter 주입", "필드 주입", "인터페이스 주입"],
+      "answer": 3,
+      "explanation": "Spring은 생성자 주입, Setter 주입, 필드 주입을 지원합니다. 인터페이스 주입은 Spring에서 사용하지 않습니다."
+    },
+    {
+      "category": "Spring",
+      "type": "MULTIPLE",
+      "question": "AOP에서 실제 비즈니스 로직이 실행되는 지점을 무엇이라 하는가?",
+      "options": ["Advice", "Pointcut", "JoinPoint", "Aspect"],
+      "answer": 2,
+      "explanation": "JoinPoint는 Advice가 적용될 수 있는 지점입니다. Advice는 실행 코드, Pointcut은 선별 표현식, Aspect는 모듈입니다."
+    },
+    {
+      "category": "Spring",
+      "type": "MULTIPLE",
+      "question": "Spring MVC의 요청 처리 순서로 올바른 것은?",
+      "options": [
+        "Controller → DispatcherServlet → ViewResolver → View",
+        "DispatcherServlet → Handler Mapping → Controller → ViewResolver → View",
+        "Handler Mapping → Controller → DispatcherServlet → View",
+        "ViewResolver → Controller → DispatcherServlet → View"
+      ],
+      "answer": 1,
+      "explanation": "요청은 DispatcherServlet → Handler Mapping → Controller → ViewResolver → View 순으로 처리됩니다."
+    },
+    {
+      "category": "Spring",
+      "type": "MULTIPLE",
+      "question": "MyBatis에서 동적 SQL을 작성할 때 사용하지 않는 태그는?",
+      "options": ["<if>", "<foreach>", "<switch>", "<where>"],
+      "answer": 2,
+      "explanation": "MyBatis는 <if>, <choose>, <foreach>, <where>, <set> 등을 제공합니다. <switch>는 없으며 대신 <choose>를 사용합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "MULTIPLE",
+      "question": "다음 중 Bean 등록 방법이 아닌 것은?",
+      "options": [
+        "@Component 어노테이션",
+        "@Bean 어노테이션",
+        "XML 설정",
+        "@Inject 어노테이션"
+      ],
+      "answer": 3,
+      "explanation": "@Inject는 의존성 주입을 위한 어노테이션이지 Bean 등록 방법이 아닙니다."
+    },
+    {
+      "category": "Spring",
+      "type": "MULTIPLE",
+      "question": "@RequestMapping의 method 속성을 대체하는 어노테이션이 아닌 것은?",
+      "options": [
+        "@GetMapping",
+        "@PostMapping",
+        "@RequestBody",
+        "@DeleteMapping"
+      ],
+      "answer": 2,
+      "explanation": "@RequestBody는 HTTP 요청 본문을 객체로 변환하는 어노테이션입니다. HTTP 메서드 축약 어노테이션이 아닙니다."
+    },
+    {
+      "category": "Spring",
+      "type": "MULTIPLE",
+      "question": "REST API 설계 원칙으로 올바르지 않은 것은?",
+      "options": [
+        "URI에 동사를 사용한다",
+        "HTTP 메서드로 행위를 표현한다",
+        "리소스는 명사로 표현한다",
+        "적절한 HTTP 상태 코드를 반환한다"
+      ],
+      "answer": 0,
+      "explanation": "REST에서 URI는 리소스를 명사로 표현하고, 행위는 HTTP 메서드로 표현합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "MULTIPLE",
+      "question": "Spring AOP에서 메서드 실행 전후에 모두 실행되는 Advice 타입은?",
+      "options": ["@Before", "@After", "@Around", "@AfterReturning"],
+      "answer": 2,
+      "explanation": "@Around는 대상 메서드 실행 전후를 모두 제어할 수 있으며, proceed()로 실제 메서드를 호출합니다."
+    },
+    {
+      "category": "Spring",
+      "type": "MULTIPLE",
+      "question": "@Service, @Repository, @Controller의 공통점은?",
+      "options": [
+        "모두 AOP 관련 어노테이션이다",
+        "모두 @Component를 포함한다",
+        "모두 웹 요청을 처리한다",
+        "모두 데이터베이스와 연결된다"
+      ],
+      "answer": 1,
+      "explanation": "@Service, @Repository, @Controller는 모두 @Component의 특수화된 형태입니다."
+    },
+    {
+      "category": "Spring",
+      "type": "MULTIPLE",
+      "question": "프로퍼티 파일의 값을 주입받을 때 사용하는 어노테이션은?",
+      "options": ["@Autowired", "@Value", "@Resource", "@Inject"],
+      "answer": 1,
+      "explanation": "@Value는 properties 파일의 값을 주입받습니다. @Value(\"${property.name}\") 형태로 사용합니다."
+    },
+
+    {
+      "category": "Database",
+      "type": "OX",
+      "question": "정규화를 많이 할수록 항상 성능이 좋아진다.",
+      "answer": false,
+      "explanation": "과도한 정규화는 조인이 많아져 성능 저하를 유발할 수 있습니다. 데이터 무결성과 성능 사이의 균형이 필요합니다."
+    },
+    {
+      "category": "Database",
+      "type": "OX",
+      "question": "서브쿼리는 항상 JOIN보다 느리다.",
+      "answer": false,
+      "explanation": "서브쿼리와 JOIN의 성능은 데이터베이스 엔진, 인덱스, 데이터 양 등에 따라 다릅니다. 상황에 따라 적절한 방법을 선택해야 합니다."
+    },
+    {
+      "category": "Database",
+      "type": "OX",
+      "question": "트랜잭션의 ACID 중 Durability는 트랜잭션 완료 후 데이터가 영구 저장됨을 보장한다.",
+      "answer": true,
+      "explanation": "Durability(지속성)는 커밋된 트랜잭션의 결과가 영구적으로 저장되어 시스템 장애가 발생해도 유지됨을 보장합니다."
+    },
+    {
+      "category": "Database",
+      "type": "OX",
+      "question": "INNER JOIN은 두 테이블의 교집합을 반환한다.",
+      "answer": true,
+      "explanation": "INNER JOIN은 조인 조건을 만족하는 행만 반환하므로 두 테이블의 교집합에 해당합니다."
+    },
+    {
+      "category": "Database",
+      "type": "OX",
+      "question": "기본키(Primary Key)는 NULL 값을 가질 수 있다.",
+      "answer": false,
+      "explanation": "기본키는 개체 무결성 제약으로 NULL을 허용하지 않으며, 유일(Unique)해야 합니다."
+    },
+    {
+      "category": "Database",
+      "type": "OX",
+      "question": "외래키(Foreign Key)는 다른 테이블의 기본키만 참조할 수 있다.",
+      "answer": false,
+      "explanation": "외래키는 다른 테이블의 기본키 또는 UNIQUE 제약이 있는 컬럼을 참조할 수 있습니다."
+    },
+    {
+      "category": "Database",
+      "type": "OX",
+      "question": "인덱스를 많이 만들수록 SELECT 쿼리 성능이 항상 좋아진다.",
+      "answer": false,
+      "explanation": "인덱스는 SELECT를 빠르게 하지만, INSERT, UPDATE, DELETE 시 인덱스 갱신으로 성능이 저하됩니다."
+    },
+    {
+      "category": "Database",
+      "type": "OX",
+      "question": "GROUP BY 사용 시 SELECT에는 그룹 함수와 GROUP BY 컬럼만 올 수 있다.",
+      "answer": true,
+      "explanation": "GROUP BY 사용 시 SELECT 절에는 그룹 함수(SUM, COUNT 등)와 GROUP BY에 명시된 컬럼만 올 수 있습니다."
+    },
+    {
+      "category": "Database",
+      "type": "OX",
+      "question": "WHERE 절에서는 집계 함수(SUM, COUNT 등)를 사용할 수 없다.",
+      "answer": true,
+      "explanation": "WHERE 절은 그룹화 전에 개별 행을 필터링하므로 집계 함수를 사용할 수 없습니다. 집계 함수 조건은 HAVING 절에서 사용해야 합니다."
+    },
+    {
+      "category": "Database",
+      "type": "OX",
+      "question": "제1정규형(1NF)은 모든 컬럼이 원자값을 가져야 한다는 조건이다.",
+      "answer": true,
+      "explanation": "제1정규형은 테이블의 모든 컬럼이 원자값(더 이상 분해할 수 없는 값)을 가져야 합니다."
+    },
+    {
+      "category": "Database",
+      "type": "MULTIPLE",
+      "question": "제2정규형(2NF)을 만족하기 위한 조건은?",
+      "options": [
+        "모든 컬럼이 원자값을 가진다",
+        "부분 함수적 종속을 제거한다",
+        "이행적 함수 종속을 제거한다",
+        "다치 종속을 제거한다"
+      ],
+      "answer": 1,
+      "explanation": "2NF는 1NF를 만족하면서 부분 함수적 종속을 제거한 상태입니다. 이행적 함수 종속 제거는 3NF입니다."
+    },
+    {
+      "category": "Database",
+      "type": "MULTIPLE",
+      "question": "ACID 중 여러 트랜잭션이 동시에 실행될 때 서로 영향을 주지 않음을 보장하는 것은?",
+      "options": ["Atomicity", "Consistency", "Isolation", "Durability"],
+      "answer": 2,
+      "explanation": "Isolation(격리성)은 동시에 실행되는 트랜잭션들이 서로 영향을 주지 않고 독립적으로 실행되게 합니다."
+    },
+    {
+      "category": "Database",
+      "type": "MULTIPLE",
+      "question": "LEFT OUTER JOIN의 결과로 올바른 설명은?",
+      "options": [
+        "양쪽 테이블의 모든 행을 반환한다",
+        "왼쪽 테이블의 모든 행과 매칭되는 오른쪽 행을 반환한다",
+        "오른쪽 테이블의 모든 행과 매칭되는 왼쪽 행",
+        "조건에 맞는 행만 반환한다"
+      ],
+      "answer": 1,
+      "explanation": "LEFT OUTER JOIN은 왼쪽 테이블의 모든 행을 유지하고, 오른쪽 테이블에서 매칭되는 행을 결합합니다."
+    },
+    {
+      "category": "Database",
+      "type": "MULTIPLE",
+      "question": "SQL 실행 순서로 올바른 것은?",
+      "options": [
+        "SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY",
+        "FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY",
+        "FROM → GROUP BY → WHERE → HAVING → SELECT → ORDER BY",
+        "SELECT → FROM → GROUP BY → WHERE → HAVING → ORDER BY"
+      ],
+      "answer": 1,
+      "explanation": "SQL 실행 순서는 FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY입니다."
+    },
+    {
+      "category": "Database",
+      "type": "MULTIPLE",
+      "question": "다음 중 DDL(Data Definition Language)에 해당하지 않는 것은?",
+      "options": ["CREATE", "ALTER", "INSERT", "DROP"],
+      "answer": 2,
+      "explanation": "INSERT는 DML(Data Manipulation Language)입니다. DDL은 CREATE, ALTER, DROP, TRUNCATE 등입니다."
+    },
+    {
+      "category": "Database",
+      "type": "MULTIPLE",
+      "question": "서브쿼리가 사용될 수 없는 위치는?",
+      "options": ["SELECT 절", "FROM 절", "WHERE 절", "GROUP BY 절"],
+      "answer": 3,
+      "explanation": "서브쿼리는 SELECT, FROM, WHERE, HAVING 절에서 사용할 수 있지만, GROUP BY에서는 직접 사용할 수 없습니다."
+    },
+    {
+      "category": "Database",
+      "type": "MULTIPLE",
+      "question": "다음 중 트랜잭션의 격리 수준이 아닌 것은?",
+      "options": [
+        "READ UNCOMMITTED",
+        "READ COMMITTED",
+        "WRITE COMMITTED",
+        "SERIALIZABLE"
+      ],
+      "answer": 2,
+      "explanation": "표준 격리 수준은 READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ, SERIALIZABLE입니다."
+    },
+    {
+      "category": "Database",
+      "type": "MULTIPLE",
+      "question": "인덱스의 자료구조로 가장 많이 사용되는 것은?",
+      "options": ["해시 테이블", "B-Tree", "링크드 리스트", "배열"],
+      "answer": 1,
+      "explanation": "B-Tree는 범위 검색과 정렬에 효율적이며 대부분의 RDBMS에서 기본 인덱스 구조로 사용됩니다."
+    },
+    {
+      "category": "Database",
+      "type": "MULTIPLE",
+      "question": "DELETE, TRUNCATE, DROP의 차이점으로 틀린 것은?",
+      "options": [
+        "DELETE는 롤백이 가능하다",
+        "TRUNCATE는 테이블 구조는 유지한다",
+        "DROP은 테이블 자체를 삭제한다",
+        "TRUNCATE는 WHERE 조건을 사용할 수 있다"
+      ],
+      "answer": 3,
+      "explanation": "TRUNCATE는 WHERE 조건 없이 테이블의 모든 데이터를 삭제합니다. DELETE만 조건부 삭제가 가능합니다."
+    },
+    {
+      "category": "Database",
+      "type": "MULTIPLE",
+      "question": "NULL 값을 비교할 때 사용하는 올바른 연산자는?",
+      "options": ["= NULL", "== NULL", "IS NULL", "EQUALS NULL"],
+      "answer": 2,
+      "explanation": "NULL은 값이 아니라 '값이 없음'을 나타내므로 = 연산자로 비교할 수 없습니다. IS NULL을 사용해야 합니다."
+    },
+
+    {
+      "category": "Network",
+      "type": "OX",
+      "question": "HTTP GET 요청은 요청 본문(body)을 가질 수 없다.",
+      "answer": false,
+      "explanation": "HTTP 스펙상 GET 요청도 body를 가질 수 있지만, 서버에서 무시될 수 있어 권장되지 않습니다."
+    },
+    {
+      "category": "Network",
+      "type": "OX",
+      "question": "REST는 프로토콜이다.",
+      "answer": false,
+      "explanation": "REST(Representational State Transfer)는 아키텍처 스타일이자 설계 원칙입니다. 프로토콜은 아닙니다."
+    },
+    {
+      "category": "Network",
+      "type": "OX",
+      "question": "CORS 오류는 서버에서 발생한다.",
+      "answer": false,
+      "explanation": "CORS는 브라우저의 보안 정책으로, 브라우저에서 차단합니다. 서버는 응답 헤더로 허용 여부만 알려줍니다."
+    },
+    {
+      "category": "Network",
+      "type": "OX",
+      "question": "세션은 서버에, 쿠키는 클라이언트에 저장된다.",
+      "answer": true,
+      "explanation": "쿠키는 클라이언트(브라우저)에 저장되고, 세션 데이터는 서버에 저장됩니다."
+    },
+    {
+      "category": "Network",
+      "type": "OX",
+      "question": "TCP는 비연결형 프로토콜이다.",
+      "answer": false,
+      "explanation": "TCP는 연결 지향형 프로토콜로, 3-way handshake로 연결을 수립합니다. 비연결형은 UDP입니다."
+    },
+    {
+      "category": "Network",
+      "type": "OX",
+      "question": "DNS는 도메인 이름을 IP 주소로 변환한다.",
+      "answer": true,
+      "explanation": "DNS(Domain Name System)는 도메인 이름을 컴퓨터가 사용하는 IP 주소로 변환하는 시스템입니다."
+    },
+    {
+      "category": "Network",
+      "type": "OX",
+      "question": "HTTPS는 HTTP보다 포트 번호가 작다.",
+      "answer": false,
+      "explanation": "HTTP의 기본 포트는 80, HTTPS의 기본 포트는 443입니다. HTTPS가 더 큰 포트 번호를 사용합니다."
+    },
+    {
+      "category": "Network",
+      "type": "OX",
+      "question": "JWT(JSON Web Token)는 서버에 상태를 저장하지 않는 인증 방식이다.",
+      "answer": true,
+      "explanation": "JWT는 Stateless 인증 방식으로, 토큰 자체에 사용자 정보가 포함되어 서버가 세션을 저장하지 않습니다."
+    },
+    {
+      "category": "Network",
+      "type": "OX",
+      "question": "HTTP/2는 하나의 연결에서 여러 요청을 동시에 처리할 수 있다.",
+      "answer": true,
+      "explanation": "HTTP/2는 멀티플렉싱을 지원하여 하나의 TCP 연결에서 여러 요청/응답을 동시에 처리할 수 있습니다."
+    },
+    {
+      "category": "Network",
+      "type": "OX",
+      "question": "SSL과 TLS는 완전히 다른 보안 프로토콜이다.",
+      "answer": false,
+      "explanation": "TLS는 SSL의 후속 버전입니다. SSL 3.0 이후 TLS 1.0으로 명칭이 변경되었습니다."
+    },
+    {
+      "category": "Network",
+      "type": "MULTIPLE",
+      "question": "다음 HTTP 메서드 중 멱등성(idempotent)을 가지지 않는 것은?",
+      "options": ["GET", "PUT", "POST", "DELETE"],
+      "answer": 2,
+      "explanation": "POST는 여러 번 요청하면 리소스가 중복 생성될 수 있어 멱등성이 없습니다."
+    },
+    {
+      "category": "Network",
+      "type": "MULTIPLE",
+      "question": "REST API 설계에서 특정 사용자를 조회하는 올바른 URI는?",
+      "options": [
+        "GET /getUser?id=1",
+        "GET /user/get/1",
+        "GET /users/1",
+        "POST /users/find/1"
+      ],
+      "answer": 2,
+      "explanation": "REST에서는 리소스를 URI로, 행위를 HTTP 메서드로 표현합니다. 복수형 명사(/users)를 사용합니다."
+    },
+    {
+      "category": "Network",
+      "type": "MULTIPLE",
+      "question": "CORS preflight 요청에 사용되는 HTTP 메서드는?",
+      "options": ["GET", "POST", "OPTIONS", "HEAD"],
+      "answer": 2,
+      "explanation": "브라우저는 특정 조건의 cross-origin 요청 전에 OPTIONS 메서드로 preflight 요청을 보냅니다."
+    },
+    {
+      "category": "Network",
+      "type": "MULTIPLE",
+      "question": "쿠키의 HttpOnly 속성의 역할은?",
+      "options": [
+        "HTTPS에서만 쿠키 전송",
+        "JavaScript에서 쿠키 접근 차단",
+        "같은 사이트에서만 쿠키 전송",
+        "쿠키 만료 시간 설정"
+      ],
+      "answer": 1,
+      "explanation": "HttpOnly는 JavaScript의 document.cookie로 쿠키에 접근하는 것을 차단하여 XSS 공격을 방지합니다."
+    },
+    {
+      "category": "Network",
+      "type": "MULTIPLE",
+      "question": "TCP 3-way handshake의 순서로 올바른 것은?",
+      "options": [
+        "SYN → ACK → SYN-ACK",
+        "SYN → SYN-ACK → ACK",
+        "ACK → SYN → SYN-ACK",
+        "SYN-ACK → SYN → ACK"
+      ],
+      "answer": 1,
+      "explanation": "TCP 연결 수립은 클라이언트 SYN → 서버 SYN-ACK → 클라이언트 ACK 순으로 진행됩니다."
+    },
+    {
+      "category": "Network",
+      "type": "MULTIPLE",
+      "question": "다음 중 UDP의 특징이 아닌 것은?",
+      "options": [
+        "비연결형 프로토콜이다",
+        "데이터 순서를 보장한다",
+        "빠른 전송 속도를 제공한다",
+        "실시간 스트리밍에 적합하다"
+      ],
+      "answer": 1,
+      "explanation": "UDP는 데이터 순서와 신뢰성을 보장하지 않습니다. 대신 오버헤드가 적어 빠릅니다."
+    },
+    {
+      "category": "Network",
+      "type": "MULTIPLE",
+      "question": "HTTP 상태 코드 401과 403의 차이점은?",
+      "options": [
+        "401은 인증 실패, 403은 권한 없음",
+        "401은 권한 없음, 403은 인증 실패",
+        "401은 서버 오류, 403은 클라이언트 오류",
+        "둘 다 같은 의미이다"
+      ],
+      "answer": 0,
+      "explanation": "401 Unauthorized는 인증 필요/실패, 403 Forbidden은 인증은 되었지만 권한이 없는 경우입니다."
+    },
+    {
+      "category": "Network",
+      "type": "MULTIPLE",
+      "question": "세션 기반 인증과 토큰 기반 인증의 차이점으로 올바른 것은?",
+      "options": [
+        "세션은 클라이언트에, 토큰은 서버에 상태 저장",
+        "세션은 서버에, 토큰은 클라이언트에 상태 저장",
+        "둘 다 서버에 상태 저장",
+        "둘 다 클라이언트에 상태 저장"
+      ],
+      "answer": 1,
+      "explanation": "세션 인증은 서버가 세션 정보를 저장소에 보관합니다(Stateful). 토큰 인증(JWT 등)은 토큰 자체에 정보를 담아 서버가 별도 저장소 없이 검증만 수행합니다(Stateless)."
+    },
+    {
+      "category": "Network",
+      "type": "MULTIPLE",
+      "question": "HTTPS가 HTTP보다 안전한 이유는?",
+      "options": [
+        "더 빠른 전송 속도",
+        "데이터 암호화와 서버 인증",
+        "캐싱 기능 지원",
+        "더 작은 데이터 크기"
+      ],
+      "answer": 1,
+      "explanation": "HTTPS는 TLS/SSL을 사용하여 데이터를 암호화하고, 인증서를 통해 서버의 신원을 확인합니다."
+    },
+    {
+      "category": "Network",
+      "type": "MULTIPLE",
+      "question": "웹소켓(WebSocket)의 특징으로 틀린 것은?",
+      "options": [
+        "양방향 통신을 지원한다",
+        "HTTP와 같은 요청-응답 방식이다",
+        "실시간 채팅에 적합하다",
+        "연결을 유지한 상태로 통신한다"
+      ],
+      "answer": 1,
+      "explanation": "WebSocket은 HTTP의 요청-응답 방식과 달리, 연결을 유지하며 양방향으로 자유롭게 통신합니다."
+    },
+
+    {
+      "category": "CS 기초",
+      "type": "OX",
+      "question": "배열(Array)은 요소의 삽입과 삭제가 연결 리스트보다 빠르다.",
+      "answer": false,
+      "explanation": "배열은 중간 삽입/삭제 시 요소들을 이동해야 하므로 O(n)입니다. 연결 리스트는 삽입/삭제 위치를 알고 있다면 포인터 변경만으로 O(1)이지만, 위치를 찾는 데 O(n)이 소요됩니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "OX",
+      "question": "스택(Stack)은 FIFO(First In First Out) 구조이다.",
+      "answer": false,
+      "explanation": "스택은 LIFO(Last In First Out) 구조로, 마지막에 삽입된 요소가 먼저 나옵니다. FIFO는 큐(Queue)입니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "OX",
+      "question": "이진 탐색의 시간 복잡도는 O(log n)이다.",
+      "answer": true,
+      "explanation": "이진 탐색은 정렬된 데이터에서 중간값과 비교하여 탐색 범위를 절반씩 줄여나가므로 O(log n)입니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "OX",
+      "question": "해시 테이블의 평균 검색 시간 복잡도는 O(1)이다.",
+      "answer": true,
+      "explanation": "해시 테이블은 해시 함수를 통해 키를 인덱스로 변환하여 평균 O(1)에 검색합니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "OX",
+      "question": "프로세스와 스레드는 같은 개념이다.",
+      "answer": false,
+      "explanation": "프로세스는 실행 중인 프로그램으로 독립된 메모리를 가집니다. 스레드는 프로세스 내의 실행 단위로 메모리를 공유합니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "OX",
+      "question": "완전 이진 트리는 모든 노드가 정확히 두 개의 자식을 가진다.",
+      "answer": false,
+      "explanation": "완전 이진 트리는 마지막 레벨을 제외한 모든 레벨이 채워져 있고, 마지막 레벨은 왼쪽부터 채워진 트리입니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "OX",
+      "question": "퀵 정렬의 최악의 경우 시간 복잡도는 O(n²)이다.",
+      "answer": true,
+      "explanation": "퀵 정렬은 피벗 선택에 따라 성능이 달라집니다. 이미 정렬된 데이터에서 최악의 경우 O(n²)이 됩니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "OX",
+      "question": "데드락은 두 개 이상의 프로세스가 서로의 자원을 기다리며 무한 대기하는 상태이다.",
+      "answer": true,
+      "explanation": "데드락은 상호 배제, 점유와 대기, 비선점, 순환 대기 네 가지 조건이 모두 만족될 때 발생합니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "OX",
+      "question": "가상 메모리를 사용하면 물리 메모리보다 큰 프로그램을 실행할 수 있다.",
+      "answer": true,
+      "explanation": "가상 메모리는 디스크 공간을 메모리처럼 사용하여, 물리 메모리보다 큰 프로그램을 실행할 수 있게 합니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "OX",
+      "question": "재귀 함수는 항상 반복문보다 메모리를 적게 사용한다.",
+      "answer": false,
+      "explanation": "재귀 함수는 호출마다 스택 프레임이 쌓여 메모리를 더 많이 사용합니다. 깊은 재귀는 스택 오버플로우를 유발할 수 있습니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "MULTIPLE",
+      "question": "다음 자료구조 중 LIFO 특성을 가지는 것은?",
+      "options": ["Queue", "Stack", "Deque", "Priority Queue"],
+      "answer": 1,
+      "explanation": "Stack은 LIFO(Last In First Out) 구조로, push와 pop 연산을 통해 마지막에 들어온 데이터가 먼저 나갑니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "MULTIPLE",
+      "question": "이진 탐색 트리(BST)의 특징으로 올바른 것은?",
+      "options": [
+        "왼쪽 자식이 부모보다 크다",
+        "오른쪽 자식이 부모보다 작다",
+        "왼쪽 자식이 부모보다 작다",
+        "모든 자식이 부모와 같다"
+      ],
+      "answer": 2,
+      "explanation": "BST에서 왼쪽 서브트리의 모든 노드는 부모보다 작고, 오른쪽 서브트리의 모든 노드는 부모보다 큽니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "MULTIPLE",
+      "question": "다음 정렬 알고리즘 중 평균 시간 복잡도가 O(n²)인 것은?",
+      "options": ["퀵 정렬", "병합 정렬", "버블 정렬", "힙 정렬"],
+      "answer": 2,
+      "explanation": "버블 정렬은 평균 및 최악의 경우 O(n²)입니다. 퀵, 병합, 힙 정렬은 평균 O(n log n)입니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "MULTIPLE",
+      "question": "해시 충돌을 해결하는 방법이 아닌 것은?",
+      "options": [
+        "체이닝(Chaining)",
+        "개방 주소법(Open Addressing)",
+        "이진 탐색(Binary Search)",
+        "선형 탐사(Linear Probing)"
+      ],
+      "answer": 2,
+      "explanation": "이진 탐색은 정렬된 데이터에서 검색하는 알고리즘으로, 해시 충돌 해결과는 관련이 없습니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "MULTIPLE",
+      "question": "프로세스와 스레드의 차이점으로 올바른 것은?",
+      "options": [
+        "스레드는 독립된 메모리 공간을 가진다",
+        "프로세스는 스레드보다 가볍다",
+        "같은 프로세스 내 스레드들은 힙 메모리를 공유한다",
+        "프로세스 간 통신이 스레드 간 통신보다 쉽다"
+      ],
+      "answer": 2,
+      "explanation": "같은 프로세스 내 스레드들은 코드, 데이터, 힙 영역을 공유하고, 스택만 독립적으로 가집니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "MULTIPLE",
+      "question": "BFS(너비 우선 탐색)에서 사용하는 자료구조는?",
+      "options": ["Stack", "Queue", "Heap", "Tree"],
+      "answer": 1,
+      "explanation": "BFS는 Queue를 사용하여 같은 레벨의 노드를 먼저 탐색합니다. DFS는 Stack(또는 재귀)을 사용합니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "MULTIPLE",
+      "question": "다음 중 안정 정렬(Stable Sort)이 아닌 것은?",
+      "options": ["버블 정렬", "삽입 정렬", "퀵 정렬", "병합 정렬"],
+      "answer": 2,
+      "explanation": "퀵 정렬은 동일한 값의 상대적 순서가 보장되지 않는 불안정 정렬입니다. 버블, 삽입, 병합 정렬은 안정 정렬입니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "MULTIPLE",
+      "question": "운영체제의 CPU 스케줄링 알고리즘이 아닌 것은?",
+      "options": [
+        "FCFS(First Come First Served)",
+        "SJF(Shortest Job First)",
+        "Round Robin",
+        "Binary Search"
+      ],
+      "answer": 3,
+      "explanation": "Binary Search는 탐색 알고리즘입니다. FCFS, SJF, Round Robin, Priority Scheduling 등이 CPU 스케줄링 알고리즘입니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "MULTIPLE",
+      "question": "페이지 교체 알고리즘 중 LRU의 의미는?",
+      "options": [
+        "가장 먼저 들어온 페이지 교체",
+        "가장 오래 사용되지 않은 페이지 교체",
+        "가장 적게 사용된 페이지 교체",
+        "무작위 페이지 교체"
+      ],
+      "answer": 1,
+      "explanation": "LRU(Least Recently Used)는 가장 오래 사용되지 않은 페이지를 교체합니다. FIFO는 가장 먼저 들어온 페이지, LFU는 가장 적게 사용된 페이지를 교체합니다."
+    },
+    {
+      "category": "CS 기초",
+      "type": "MULTIPLE",
+      "question": "그래프에서 최단 경로를 찾는 알고리즘이 아닌 것은?",
+      "options": [
+        "다익스트라(Dijkstra)",
+        "벨만-포드(Bellman-Ford)",
+        "플로이드-워셜(Floyd-Warshall)",
+        "크루스칼(Kruskal)"
+      ],
+      "answer": 3,
+      "explanation": "크루스칼 알고리즘은 최소 신장 트리(MST)를 찾는 알고리즘입니다. 다익스트라, 벨만-포드, 플로이드-워셜은 최단 경로 알고리즘입니다."
+    },
+
+    {
+      "category": "Java",
+      "type": "OX",
+      "question": "Java는 클래스의 다중 상속을 지원한다.",
+      "answer": false,
+      "explanation": "Java는 클래스의 다중 상속을 지원하지 않습니다. 대신 인터페이스를 통한 다중 구현은 가능합니다."
+    },
+    {
+      "category": "Java",
+      "type": "OX",
+      "question": "인터페이스의 모든 메서드는 기본적으로 public abstract이다.",
+      "answer": true,
+      "explanation": "인터페이스의 메서드는 기본적으로 public abstract입니다. Java 8부터 default와 static 메서드도 가능합니다."
+    },
+    {
+      "category": "Java",
+      "type": "OX",
+      "question": "final 키워드가 붙은 변수는 값을 변경할 수 없다.",
+      "answer": true,
+      "explanation": "final 변수는 한 번 초기화되면 값을 변경할 수 없습니다. 단, final 객체의 내부 상태는 변경 가능합니다."
+    },
+    {
+      "category": "Java",
+      "type": "OX",
+      "question": "오버로딩(Overloading)은 메서드 이름과 매개변수가 모두 동일해야 한다.",
+      "answer": false,
+      "explanation": "오버로딩은 같은 이름의 메서드를 매개변수의 타입이나 개수를 다르게 하여 여러 개 정의하는 것입니다."
+    },
+    {
+      "category": "Java",
+      "type": "OX",
+      "question": "추상 클래스는 인스턴스를 직접 생성할 수 없다.",
+      "answer": true,
+      "explanation": "추상 클래스(abstract class)는 직접 인스턴스화할 수 없으며, 상속받은 구현 클래스에서 인스턴스를 생성해야 합니다."
+    },
+    {
+      "category": "Java",
+      "type": "OX",
+      "question": "static 메서드에서 this 키워드를 사용할 수 있다.",
+      "answer": false,
+      "explanation": "static 메서드는 인스턴스가 아닌 클래스에 속하므로 this(현재 인스턴스 참조)를 사용할 수 없습니다."
+    },
+    {
+      "category": "Java",
+      "type": "OX",
+      "question": "String 객체는 불변(immutable)이다.",
+      "answer": true,
+      "explanation": "String 객체는 한 번 생성되면 내용을 변경할 수 없습니다. 문자열 연산 시 새로운 객체가 생성됩니다."
+    },
+    {
+      "category": "Java",
+      "type": "OX",
+      "question": "ArrayList는 동기화(synchronized)를 지원한다.",
+      "answer": false,
+      "explanation": "ArrayList는 동기화를 지원하지 않습니다. 동기화가 필요하면 Vector나 Collections.synchronizedList()를 사용합니다."
+    },
+    {
+      "category": "Java",
+      "type": "OX",
+      "question": "private 멤버는 같은 패키지 내에서 접근할 수 있다.",
+      "answer": false,
+      "explanation": "private 멤버는 해당 클래스 내에서만 접근 가능합니다. 같은 패키지 접근은 default 접근 제어자입니다."
+    },
+    {
+      "category": "Java",
+      "type": "OX",
+      "question": "try 블록에서 return을 해도 finally 블록은 실행된다.",
+      "answer": true,
+      "explanation": "finally 블록은 예외 발생 여부나 return과 관계없이 항상 실행됩니다. 단, System.exit() 호출 시는 예외입니다."
+    },
+    {
+      "category": "Java",
+      "type": "MULTIPLE",
+      "question": "다음 중 객체지향 프로그래밍의 4대 특성이 아닌 것은?",
+      "options": ["캡슐화", "상속", "다형성", "직렬화"],
+      "answer": 3,
+      "explanation": "객체지향의 4대 특성은 캡슐화, 상속, 다형성, 추상화입니다. 직렬화는 객체를 바이트 스트림으로 변환하는 기술입니다."
+    },
+    {
+      "category": "Java",
+      "type": "MULTIPLE",
+      "question": "접근 제어자의 범위가 좁은 것부터 넓은 순서로 나열한 것은?",
+      "options": [
+        "private → default → protected → public",
+        "public → protected → default → private",
+        "private → protected → default → public",
+        "default → private → protected → public"
+      ],
+      "answer": 0,
+      "explanation": "접근 범위: private(같은 클래스) → default(같은 패키지) → protected(같은 패키지 + 자식 클래스) → public(전체)"
+    },
+    {
+      "category": "Java",
+      "type": "MULTIPLE",
+      "question": "오버라이딩(Overriding)의 조건으로 틀린 것은?",
+      "options": [
+        "메서드 이름이 같아야 한다",
+        "매개변수가 같아야 한다",
+        "예외를 더 많이 던질 수 있다",
+        "접근 제어자를 더 좁게 할 수 있다"
+      ],
+      "answer": 3,
+      "explanation": "오버라이딩 시 접근 제어자는 부모보다 같거나 넓어야 합니다. 좁게 변경하면 컴파일 에러가 발생합니다."
+    },
+    {
+      "category": "Java",
+      "type": "MULTIPLE",
+      "question": "다음 중 Checked Exception이 아닌 것은?",
+      "options": [
+        "IOException",
+        "SQLException",
+        "NullPointerException",
+        "FileNotFoundException"
+      ],
+      "answer": 2,
+      "explanation": "NullPointerException은 RuntimeException을 상속한 Unchecked Exception입니다. 컴파일러가 예외 처리를 강제하지 않습니다."
+    },
+    {
+      "category": "Java",
+      "type": "MULTIPLE",
+      "question": "Java 컬렉션에서 중복을 허용하지 않고 순서가 없는 것은?",
+      "options": ["ArrayList", "LinkedList", "HashSet", "TreeMap"],
+      "answer": 2,
+      "explanation": "HashSet은 중복을 허용하지 않고 순서를 보장하지 않습니다. ArrayList와 LinkedList는 중복 허용, TreeMap은 Map입니다."
+    },
+    {
+      "category": "Java",
+      "type": "MULTIPLE",
+      "question": "다음 중 기본 자료형(primitive type)이 아닌 것은?",
+      "options": ["int", "char", "String", "boolean"],
+      "answer": 2,
+      "explanation": "String은 클래스(참조 타입)입니다. Java의 기본 자료형은 byte, short, int, long, float, double, char, boolean 8가지입니다."
+    },
+    {
+      "category": "Java",
+      "type": "MULTIPLE",
+      "question": "인터페이스와 추상 클래스의 차이점으로 올바른 것은?",
+      "options": [
+        "인터페이스는 생성자를 가질 수 있다",
+        "추상 클래스는 다중 구현이 가능하다",
+        "인터페이스는 인스턴스 변수를 가질 수 없다",
+        "추상 클래스는 메서드 구현을 가질 수 없다"
+      ],
+      "answer": 2,
+      "explanation": "인터페이스는 상수(public static final)만 가질 수 있고 인스턴스 변수를 가질 수 없습니다. 추상 클래스는 둘 다 가능합니다."
+    },
+    {
+      "category": "Java",
+      "type": "MULTIPLE",
+      "question": "다음 중 String을 비교할 때 권장되는 방법은?",
+      "options": [
+        "str1 == str2",
+        "str1.equals(str2)",
+        "str1.compareTo(str2)",
+        "str1.compare(str2)"
+      ],
+      "answer": 1,
+      "explanation": "==는 참조(주소) 비교이고, equals()는 내용 비교입니다. String 내용 비교에는 equals()를 사용해야 합니다."
+    },
+    {
+      "category": "Java",
+      "type": "MULTIPLE",
+      "question": "HashMap과 Hashtable의 차이점으로 올바른 것은?",
+      "options": [
+        "HashMap은 동기화를 지원한다",
+        "Hashtable은 null 키를 허용한다",
+        "HashMap은 null 키를 허용한다",
+        "둘 다 완전히 동일하다"
+      ],
+      "answer": 2,
+      "explanation": "HashMap은 동기화를 지원하지 않고 null 키/값을 허용합니다. Hashtable은 동기화를 지원하지만 null을 허용하지 않습니다."
+    },
+    {
+      "category": "Java",
+      "type": "MULTIPLE",
+      "question": "JVM 메모리 구조에서 객체가 생성되는 영역은?",
+      "options": ["Stack", "Heap", "Method Area", "PC Register"],
+      "answer": 1,
+      "explanation": "객체와 배열은 Heap 영역에 생성됩니다. Stack은 지역 변수와 메서드 호출 정보, Method Area는 클래스 정보가 저장됩니다."
+    },
+
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "HTML에서 링크를 만들 때 사용하는 태그는?",
+      "options": ["<link>", "<a>", "<href>", "<url>"],
+      "answer": 1,
+      "explanation": "<a> 태그는 anchor의 약자로, 하이퍼링크를 만들 때 사용합니다. href 속성에 이동할 URL을 지정합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "HTML 문서의 제목을 정의하는 태그는?",
+      "options": ["<head>", "<title>", "<header>", "<h1>"],
+      "answer": 1,
+      "explanation": "<title> 태그는 브라우저 탭에 표시되는 문서의 제목을 정의합니다. <head> 태그 안에 위치해야 합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "HTML에서 이미지를 삽입하는 태그는?",
+      "options": ["<image>", "<picture>", "<img>", "<photo>"],
+      "answer": 2,
+      "explanation": "<img> 태그는 이미지를 삽입할 때 사용합니다. src 속성에 이미지 경로를, alt 속성에 대체 텍스트를 지정합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "HTML에서 순서 없는 목록을 만드는 태그는?",
+      "options": ["<ol>", "<ul>", "<li>", "<list>"],
+      "answer": 1,
+      "explanation": "<ul> 태그는 Unordered List의 약자로, 순서 없는 목록(불릿 포인트)을 만듭니다. 각 항목은 <li> 태그로 감쌉니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "HTML에서 줄바꿈을 하는 태그는?",
+      "options": ["<break>", "<lb>", "<br>", "<newline>"],
+      "answer": 2,
+      "explanation": "<br> 태그는 Break의 약자로, 텍스트 내에서 줄바꿈을 할 때 사용합니다. 닫는 태그가 없는 빈 요소입니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "HTML 폼에서 사용자 입력을 받는 기본 태그는?",
+      "options": ["<form>", "<input>", "<text>", "<field>"],
+      "answer": 1,
+      "explanation": "<input> 태그는 다양한 형태의 사용자 입력을 받습니다. type 속성으로 text, password, checkbox 등을 지정할 수 있습니다."
+    },
+    {
+      "category": "입문",
+      "type": "OX",
+      "question": "HTML에서 <div>와 <span>은 모두 레이아웃용 태그이다.",
+      "answer": true,
+      "explanation": "맞습니다. <div>는 블록 레벨, <span>은 인라인 레벨 요소로 레이아웃과 스타일링을 위한 컨테이너 역할을 합니다."
+    },
+    {
+      "category": "입문",
+      "type": "OX",
+      "question": "HTML 태그는 대소문자를 구분한다.",
+      "answer": false,
+      "explanation": "틀립니다. HTML 태그는 대소문자를 구분하지 않습니다. <DIV>, <div>, <Div> 모두 같은 태그로 인식됩니다. 하지만 소문자 사용을 권장합니다."
+    },
+
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "CSS에서 글자 색을 바꾸는 속성은?",
+      "options": ["font-color", "text-color", "color", "background-color"],
+      "answer": 2,
+      "explanation": "color 속성은 텍스트의 색상을 지정합니다. background-color는 배경색을 지정하는 속성입니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "CSS에서 글자 크기를 조절하는 속성은?",
+      "options": ["text-size", "font-size", "size", "font-height"],
+      "answer": 1,
+      "explanation": "font-size 속성은 텍스트의 크기를 지정합니다. px, em, rem, % 등 다양한 단위를 사용할 수 있습니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "CSS에서 요소의 바깥 여백을 설정하는 속성은?",
+      "options": ["padding", "margin", "border", "spacing"],
+      "answer": 1,
+      "explanation": "margin은 요소의 바깥 여백을, padding은 요소의 안쪽 여백을 설정합니다. border는 테두리를 그립니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "CSS에서 배경 이미지를 설정하는 속성은?",
+      "options": [
+        "background-img",
+        "bg-image",
+        "background-image",
+        "image-background"
+      ],
+      "answer": 2,
+      "explanation": "background-image 속성은 요소의 배경에 이미지를 설정합니다. url() 함수와 함께 사용합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "CSS 선택자 중 클래스를 선택할 때 사용하는 기호는?",
+      "options": ["#", ".", "@", "*"],
+      "answer": 1,
+      "explanation": "점(.)은 클래스 선택자를 나타냅니다. 예: .myClass { } #은 ID 선택자, *은 전체 선택자입니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "CSS에서 텍스트를 가운데 정렬하는 속성과 값은?",
+      "options": [
+        "text-align: center",
+        "align: center",
+        "text-center: true",
+        "center-text: on"
+      ],
+      "answer": 0,
+      "explanation": "text-align: center는 인라인 콘텐츠를 가운데 정렬합니다. 블록 요소 자체를 가운데로 하려면 margin: auto를 사용합니다."
+    },
+    {
+      "category": "입문",
+      "type": "OX",
+      "question": "CSS에서 id 선택자는 # 기호를 사용한다.",
+      "answer": true,
+      "explanation": "맞습니다. #myId { } 형태로 사용합니다. ID는 페이지에서 유일해야 하며, 클래스보다 우선순위가 높습니다."
+    },
+    {
+      "category": "입문",
+      "type": "OX",
+      "question": "CSS 파일은 HTML의 <body> 태그 안에 링크해야 한다.",
+      "answer": false,
+      "explanation": "틀립니다. CSS 파일은 <head> 태그 안에 <link> 태그로 연결합니다. <link rel=\"stylesheet\" href=\"style.css\">"
+    },
+
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "JavaScript에서 변수를 선언하는 키워드가 아닌 것은?",
+      "options": ["var", "let", "const", "int"],
+      "answer": 3,
+      "explanation": "JavaScript에서는 var, let, const로 변수를 선언합니다. int는 Java, C 등에서 사용하는 정수 타입 키워드입니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "JavaScript에서 콘솔에 메시지를 출력하는 함수는?",
+      "options": ["print()", "console.log()", "echo()", "write()"],
+      "answer": 1,
+      "explanation": "console.log()는 브라우저 개발자 도구 콘솔에 메시지를 출력합니다. 디버깅할 때 가장 많이 사용됩니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "JavaScript에서 함수를 정의하는 키워드는?",
+      "options": ["func", "def", "function", "fn"],
+      "answer": 2,
+      "explanation": "function 키워드로 함수를 정의합니다. 예: function sayHello() { } ES6부터는 화살표 함수 () => {}도 사용합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "JavaScript에서 배열을 생성하는 올바른 방법은?",
+      "options": ["array(1, 2, 3)", "[1, 2, 3]", "{1, 2, 3}", "(1, 2, 3)"],
+      "answer": 1,
+      "explanation": "대괄호 []를 사용해 배열을 생성합니다. 예: let arr = [1, 2, 3]; 중괄호 {}는 객체를 만들 때 사용합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "JavaScript에서 문자열을 연결할 때 사용하는 연산자는?",
+      "options": ["&", "+", ".", "++"],
+      "answer": 1,
+      "explanation": "+ 연산자는 문자열을 연결합니다. 예: \"Hello\" + \" World\" = \"Hello World\". ES6 템플릿 리터럴도 사용 가능합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "JavaScript에서 조건문을 작성할 때 사용하는 키워드는?",
+      "options": ["when", "case", "if", "check"],
+      "answer": 2,
+      "explanation": "if 문은 조건에 따라 코드를 실행합니다. if (조건) { } else { } 형태로 사용합니다."
+    },
+    {
+      "category": "입문",
+      "type": "OX",
+      "question": "JavaScript에서 === 는 값과 타입을 모두 비교한다.",
+      "answer": true,
+      "explanation": "맞습니다. ===는 엄격한 동등 비교로 값과 타입을 모두 비교합니다. ==는 값만 비교하고 타입 변환을 수행합니다."
+    },
+    {
+      "category": "입문",
+      "type": "OX",
+      "question": "JavaScript는 대소문자를 구분하지 않는다.",
+      "answer": false,
+      "explanation": "틀립니다. JavaScript는 대소문자를 구분합니다. myVariable과 MyVariable은 서로 다른 변수입니다."
+    },
+
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "Java에서 화면에 출력하는 메서드는?",
+      "options": ["print()", "console.log()", "System.out.println()", "echo()"],
+      "answer": 2,
+      "explanation": "System.out.println()은 콘솔에 텍스트를 출력하고 줄바꿈합니다. print()는 줄바꿈 없이 출력합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "Java에서 정수형 변수를 선언하는 키워드는?",
+      "options": ["integer", "num", "int", "number"],
+      "answer": 2,
+      "explanation": "int는 32비트 정수를 저장하는 기본 자료형입니다. long은 64비트, short는 16비트 정수를 저장합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "Java에서 문자열을 저장하는 클래스는?",
+      "options": ["Text", "Str", "String", "Char"],
+      "answer": 2,
+      "explanation": "String 클래스는 문자열을 저장합니다. char는 단일 문자만 저장하는 기본 자료형입니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "Java 프로그램의 시작점이 되는 메서드는?",
+      "options": ["start()", "run()", "main()", "init()"],
+      "answer": 2,
+      "explanation": "public static void main(String[] args)는 Java 프로그램의 진입점입니다. JVM이 이 메서드를 가장 먼저 실행합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "Java에서 반복문이 아닌 것은?",
+      "options": ["for", "while", "loop", "do-while"],
+      "answer": 2,
+      "explanation": "Java의 반복문은 for, while, do-while 세 가지입니다. loop는 Java의 키워드가 아닙니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "Java에서 클래스를 정의하는 키워드는?",
+      "options": ["define", "struct", "class", "type"],
+      "answer": 2,
+      "explanation": "class 키워드로 클래스를 정의합니다. 예: public class MyClass { } struct는 C/C++에서 사용합니다."
+    },
+    {
+      "category": "입문",
+      "type": "OX",
+      "question": "Java에서 변수 이름은 숫자로 시작할 수 있다.",
+      "answer": false,
+      "explanation": "틀립니다. 변수 이름은 문자, $, _로 시작해야 합니다. 숫자로 시작하면 컴파일 오류가 발생합니다."
+    },
+    {
+      "category": "입문",
+      "type": "OX",
+      "question": "Java에서 // 기호는 한 줄 주석을 의미한다.",
+      "answer": true,
+      "explanation": "맞습니다. //는 한 줄 주석, /* */는 여러 줄 주석, /** */는 문서화 주석(Javadoc)입니다."
+    },
+
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "SQL에서 데이터를 조회할 때 사용하는 명령어는?",
+      "options": ["GET", "FETCH", "SELECT", "READ"],
+      "answer": 2,
+      "explanation": "SELECT 문은 테이블에서 데이터를 조회합니다. SELECT 컬럼명 FROM 테이블명 형식으로 사용합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "SQL에서 새로운 데이터를 추가할 때 사용하는 명령어는?",
+      "options": ["ADD", "INSERT", "CREATE", "PUT"],
+      "answer": 1,
+      "explanation": "INSERT INTO 테이블명 VALUES (값들) 형식으로 새 행을 추가합니다. CREATE는 테이블 생성에 사용됩니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "SQL에서 데이터를 수정할 때 사용하는 명령어는?",
+      "options": ["MODIFY", "CHANGE", "UPDATE", "EDIT"],
+      "answer": 2,
+      "explanation": "UPDATE 테이블명 SET 컬럼=값 WHERE 조건 형식으로 데이터를 수정합니다. WHERE 절이 없으면 모든 행이 수정됩니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "SQL에서 데이터를 삭제할 때 사용하는 명령어는?",
+      "options": ["REMOVE", "DELETE", "DROP", "CLEAR"],
+      "answer": 1,
+      "explanation": "DELETE FROM 테이블명 WHERE 조건으로 행을 삭제합니다. DROP은 테이블 자체를 삭제하는 명령어입니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "SQL에서 조건을 지정할 때 사용하는 키워드는?",
+      "options": ["IF", "WHEN", "WHERE", "CONDITION"],
+      "answer": 2,
+      "explanation": "WHERE 절은 조건을 지정하여 특정 행만 선택합니다. SELECT * FROM 테이블 WHERE 조건 형식으로 사용합니다."
+    },
+    {
+      "category": "입문",
+      "type": "MULTIPLE",
+      "question": "SQL에서 결과를 정렬할 때 사용하는 키워드는?",
+      "options": ["SORT BY", "ORDER BY", "ARRANGE BY", "GROUP BY"],
+      "answer": 1,
+      "explanation": "ORDER BY 컬럼명 ASC/DESC로 결과를 정렬합니다. ASC는 오름차순(기본), DESC는 내림차순입니다."
+    },
+    {
+      "category": "입문",
+      "type": "OX",
+      "question": "SQL에서 NULL은 0과 같은 의미이다.",
+      "answer": false,
+      "explanation": "틀립니다. NULL은 값이 없음을 의미하며 0이나 빈 문자열과 다릅니다. NULL 비교는 IS NULL, IS NOT NULL을 사용합니다."
+    },
+    {
+      "category": "입문",
+      "type": "OX",
+      "question": "SQL 명령어는 대소문자를 구분하지 않는다.",
+      "answer": true,
+      "explanation": "맞습니다. SELECT, select, Select 모두 같은 명령어입니다. 하지만 가독성을 위해 대문자로 작성하는 것이 관례입니다."
+    }
+  ]
+}
