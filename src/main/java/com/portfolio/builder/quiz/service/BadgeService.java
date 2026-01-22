@@ -56,17 +56,18 @@ public class BadgeService {
             new BadgeDefinition("master_network", "Network 마스터", "Network 20문제 모두 완료!", "🌐", 20),
             new BadgeDefinition("master_cs", "CS 기초 마스터", "CS 기초 20문제 모두 완료!", "💡", 20),
             new BadgeDefinition("master_java", "Java 마스터", "Java 20문제 모두 완료!", "☕", 20),
+            new BadgeDefinition("master_devops", "DevOps 마스터", "DevOps 22문제 모두 완료!", "🐳", 22),
             
             // 특별
-            new BadgeDefinition("all_categories", "전 분야 학습", "모든 카테고리에서 최소 5문제씩!", "🎓", 8),
-            new BadgeDefinition("perfect_day", "완벽한 하루", "하루 5문제 모두 정답!", "💯", 5),
+            new BadgeDefinition("all_categories", "전 분야 학습", "모든 카테고리에서 최소 5문제씩!", "🎓", 9),
+            new BadgeDefinition("perfect_day", "완벽한 하루", "하루 10문제 모두 정답!", "💯", 10),
             
             // 입문 & 복습
             new BadgeDefinition("master_beginner", "입문 완료", "입문 40문제 모두 완료!", "🌱", 40),
             new BadgeDefinition("review_master", "복습의 왕", "복습 모드로 20문제 이상 풀기!", "🔄", 20),
             
             // 최종 완료
-            new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 24)
+            new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 25)
     );
 
     /**
@@ -222,6 +223,8 @@ public class BadgeService {
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "CS 기초") >= 20;
             case "master_java":
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java") >= 20;
+            case "master_devops":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "DevOps") >= 22;
 
             // 입문 완료
             case "master_beginner":
@@ -268,6 +271,9 @@ public class BadgeService {
             case "master_beginner":
                 Long beginnerCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "입문");
                 return Math.min(100, (int)(beginnerCount * 100 / 40));
+            case "master_devops":
+                Long devopsCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "DevOps");
+                return Math.min(100, (int)(devopsCount * 100 / 22));
             case "review_master":
                 Long reviewCount = quizAttemptRepository.countReviewModeByMemberId(memberId);
                 return Math.min(100, (int)(reviewCount * 100 / 20));
