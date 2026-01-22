@@ -92,7 +92,7 @@ public class PortfolioController {
         return ResponseEntity.ok(portfolioService.getPortfoliosByBranch(branch, memberId));
     }
     
-    // 필터링된 공개 포트폴리오 (직원/강사용)
+    // 필터링된 공개 포트폴리오 (운영팀/강사용)
     @GetMapping("/public/filter")
     public ResponseEntity<List<PortfolioResponse>> getFilteredPortfolios(
             @RequestParam(name = "branch", required = false) String branch,

@@ -180,7 +180,7 @@ public class AdminService {
         String approvedPosition = member.getPendingPosition();
         member.setPosition(approvedPosition);
         member.setPendingPosition(null);
-        member.setClassroom(null);  // 강사/직원은 강의실 불필요
+        member.setClassroom(null);  // 강사/운영팀은 강의실 불필요
         
         Member updated = memberRepository.save(member);
         log.info("Member {} position approved to {}", targetMemberId, approvedPosition);
@@ -228,7 +228,7 @@ public class AdminService {
     
     private boolean isValidPosition(String position) {
         return position != null && 
-               (position.equals("직원") || position.equals("강사") || position.equals("수강생"));
+               (position.equals("운영팀") || position.equals("강사") || position.equals("수강생"));
     }
     
     // 회원 소속(branch) 변경 (관리자)

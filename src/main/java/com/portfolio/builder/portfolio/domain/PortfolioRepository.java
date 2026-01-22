@@ -36,11 +36,11 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true AND m.branch = :branch AND m.classroom = :classroom AND m.cohort = :cohort ORDER BY p.createdAt DESC")
     List<Portfolio> findByMemberBranchAndClassroomAndCohortAndIsPublicTrue(@Param("branch") String branch, @Param("classroom") String classroom, @Param("cohort") String cohort);
     
-    // 전체 공개 포트폴리오 (직원/강사용)
+    // 전체 공개 포트폴리오 (운영팀/강사용)
     @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true ORDER BY p.createdAt DESC")
     List<Portfolio> findAllPublicPortfolios();
     
-    // === 직원/강사용: 비공개 포함 전체 조회 ===
+    // === 운영팀/강사용: 비공개 포함 전체 조회 ===
     @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE m.branch = :branch ORDER BY p.createdAt DESC")
     List<Portfolio> findByMemberBranch(@Param("branch") String branch);
     
@@ -57,6 +57,10 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     // 전체 포트폴리오 (관리자용) - member가 존재하는 것만
     @Query("SELECT p FROM Portfolio p JOIN FETCH p.member m ORDER BY p.createdAt DESC")
     List<Portfolio> findAllWithMember();
+
+    // 특정 회원의 모든 포트폴리오 (회원 탈퇴용)
+    @Query("SELECT p FROM Portfolio p WHERE p.member.id = :memberId")
+    List<Portfolio> findByMemberId(@Param("memberId") Long memberId);
 
     long countByMember(Member member);
 }

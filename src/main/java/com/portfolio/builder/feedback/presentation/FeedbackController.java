@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 강사/직원의 포트폴리오 피드백 API
+ * 강사/운영팀의 포트폴리오 피드백 API
  */
 @RestController
 @RequestMapping("/api/feedbacks")
@@ -33,7 +33,7 @@ public class FeedbackController {
     private final FeedbackService feedbackService;
 
     /**
-     * 피드백 작성 (직원/강사만)
+     * 피드백 작성 (운영팀/강사만)
      * POST /api/feedbacks/portfolio/{portfolioId}
      */
     @PostMapping("/portfolio/{portfolioId}")
@@ -47,7 +47,7 @@ public class FeedbackController {
     }
 
     /**
-     * 피드백 목록 조회 (소유자/직원/강사/관리자)
+     * 피드백 목록 조회 (소유자/운영팀/강사/관리자)
      * GET /api/feedbacks/portfolio/{portfolioId}
      */
     @GetMapping("/portfolio/{portfolioId}")

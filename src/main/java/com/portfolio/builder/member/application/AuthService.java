@@ -221,14 +221,14 @@ public class AuthService {
         
         // 유효성 검사
         if (!isValidPosition(request.getPosition())) {
-            throw new IllegalArgumentException("유효하지 않은 직급입니다. (직원, 강사, 수강생 중 선택)");
+            throw new IllegalArgumentException("유효하지 않은 직급입니다. (운영팀, 강사, 수강생 중 선택)");
         }
         if (!isValidBranch(request.getBranch())) {
             throw new IllegalArgumentException("유효하지 않은 소속입니다. (종로, 강남 중 선택)");
         }
         
-        // 강사/직원 신청은 관리자 승인 필요
-        if ("강사".equals(request.getPosition()) || "직원".equals(request.getPosition())) {
+        // 강사/운영팀 신청은 관리자 승인 필요
+        if ("강사".equals(request.getPosition()) || "운영팀".equals(request.getPosition())) {
             // 이미 해당 직급이면 그대로 유지
             if (!request.getPosition().equals(member.getPosition())) {
                 member.setPendingPosition(request.getPosition());
@@ -264,7 +264,7 @@ public class AuthService {
     
     private boolean isValidPosition(String position) {
         return position != null && 
-               (position.equals("직원") || position.equals("강사") || position.equals("수강생"));
+               (position.equals("운영팀") || position.equals("강사") || position.equals("수강생"));
     }
     
     private boolean isValidBranch(String branch) {

@@ -21,7 +21,7 @@ public class CommentResponse {
     private String avatarUrl;
     
     // 뱃지 정보
-    private String position;    // 직원, 강사, 수강생
+    private String position;    // 운영팀, 강사, 수강생
     private String branch;      // 종로, 강남
     private boolean isOwner;    // 포트폴리오 작성자 여부
     

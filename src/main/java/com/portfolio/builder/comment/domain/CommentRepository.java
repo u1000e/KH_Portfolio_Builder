@@ -20,6 +20,12 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c JOIN FETCH c.member JOIN FETCH c.portfolio ORDER BY c.createdAt DESC")
     List<Comment> findAllWithMemberAndPortfolio();
 
+    /**
+     * 특정 회원이 작성한 댓글 목록 (최신순)
+     */
+    @Query("SELECT c FROM Comment c JOIN FETCH c.portfolio WHERE c.member.id = :memberId ORDER BY c.createdAt DESC")
+    List<Comment> findByMemberIdWithPortfolio(@Param("memberId") Long memberId);
+
     long countByPortfolio(Portfolio portfolio);
 
     void deleteAllByPortfolio(Portfolio portfolio);

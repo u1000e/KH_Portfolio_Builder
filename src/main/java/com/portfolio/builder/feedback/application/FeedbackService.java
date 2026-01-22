@@ -27,16 +27,16 @@ public class FeedbackService {
     private final MemberRepository memberRepository;
 
     /**
-     * 피드백 작성 (직원/강사만 가능)
+     * 피드백 작성 (운영팀/강사만 가능)
      */
     @Transactional
     public FeedbackResponse createFeedback(Long portfolioId, Long memberId, FeedbackRequest request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다"));
 
-        // 권한 체크: 직원/강사만 작성 가능
+        // 권한 체크: 운영팀/강사만 작성 가능
         if (!isStaffOrInstructor(member)) {
-            throw new IllegalStateException("피드백은 강사 또는 직원만 작성할 수 있습니다");
+            throw new IllegalStateException("피드백은 강사 또는 운영팀만 작성할 수 있습니다");
         }
 
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
@@ -58,7 +58,7 @@ public class FeedbackService {
     /**
      * 피드백 목록 조회
      * - 포트폴리오 소유자: 자기 포트폴리오만 조회 가능
-     * - 직원/강사/관리자: 모든 포트폴리오 조회 가능
+     * - 운영팀/강사/관리자: 모든 포트폴리오 조회 가능
      */
     public List<FeedbackResponse> getFeedbacks(Long portfolioId, Long memberId) {
         Member member = memberRepository.findById(memberId)
@@ -67,7 +67,7 @@ public class FeedbackService {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
                 .orElseThrow(() -> new IllegalArgumentException("포트폴리오를 찾을 수 없습니다"));
 
-        // 권한 체크: 소유자 또는 직원/강사/관리자만 조회 가능
+        // 권한 체크: 소유자 또는 운영팀/강사/관리자만 조회 가능
         boolean isOwner = portfolio.getMember().getId().equals(memberId);
         boolean hasPrivilege = isStaffOrInstructor(member) || isAdmin(member);
 
@@ -130,7 +130,7 @@ public class FeedbackService {
 
     private boolean isStaffOrInstructor(Member member) {
         String position = member.getPosition();
-        return "직원".equals(position) || "강사".equals(position);
+        return "운영팀".equals(position) || "강사".equals(position);
     }
 
     private boolean isAdmin(Member member) {

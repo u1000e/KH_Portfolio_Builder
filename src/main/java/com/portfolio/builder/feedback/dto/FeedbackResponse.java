@@ -23,7 +23,7 @@ public class FeedbackResponse {
     // 작성자 정보
     private Long authorId;
     private String authorName;
-    private String authorPosition;  // 강사, 직원
+    private String authorPosition;  // 강사, 운영팀
 
     public static FeedbackResponse from(Feedback feedback) {
         return FeedbackResponse.builder()
