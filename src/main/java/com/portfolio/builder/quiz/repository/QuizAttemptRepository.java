@@ -10,18 +10,21 @@ import java.util.List;
 
 public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> {
 
-    // 특정 날짜에 사용자가 푼 문제 수
+    // 특정 날짜에 사용자가 푼 문제 수 (전체)
     Long countByMemberIdAndAttemptDate(Long memberId, LocalDate attemptDate);
+    
+    // 특정 날짜에 사용자가 푼 문제 수 (복습 모드 제외 - 일일 제한용)
+    Long countByMemberIdAndAttemptDateAndIsReviewModeFalse(Long memberId, LocalDate attemptDate);
 
     // 특정 날짜에 사용자가 푼 문제 목록
     List<QuizAttempt> findByMemberIdAndAttemptDate(Long memberId, LocalDate attemptDate);
 
-    // 사용자가 특정 카테고리에서 푼 문제 수
-    @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.quiz.category = :category")
+    // 사용자가 특정 카테고리에서 푼 고유 문제 수 (복습 모드 제외)
+    @Query("SELECT COUNT(DISTINCT qa.quiz.id) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.quiz.category = :category AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL)")
     Long countByMemberIdAndCategory(@Param("memberId") Long memberId, @Param("category") String category);
 
-    // 사용자가 특정 카테고리에서 맞은 문제 수
-    @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.quiz.category = :category AND qa.isCorrect = true")
+    // 사용자가 특정 카테고리에서 맞은 고유 문제 수 (복습 모드 제외)
+    @Query("SELECT COUNT(DISTINCT qa.quiz.id) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.quiz.category = :category AND qa.isCorrect = true AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL)")
     Long countCorrectByMemberIdAndCategory(@Param("memberId") Long memberId, @Param("category") String category);
 
     // 사용자가 틀린 문제 목록 (오답 노트용)

@@ -56,9 +56,9 @@ public class QuizService {
      * 오늘의 퀴즈 조회 (카테고리별)
      */
     public List<QuizResponse> getDailyQuiz(Long memberId, String category) {
-        // 오늘 이미 푼 문제 확인
+        // 오늘 이미 푼 문제 확인 (복습 모드 제외)
         LocalDate today = LocalDate.now();
-        Long solvedToday = quizAttemptRepository.countByMemberIdAndAttemptDate(memberId, today);
+        Long solvedToday = quizAttemptRepository.countByMemberIdAndAttemptDateAndIsReviewModeFalse(memberId, today);
         
         if (solvedToday >= DAILY_LIMIT) {
             return new ArrayList<>();  // 일일 제한 완료
@@ -119,7 +119,8 @@ public class QuizService {
      */
     public DailyProgress getDailyProgress(Long memberId) {
         LocalDate today = LocalDate.now();
-        Long solvedToday = quizAttemptRepository.countByMemberIdAndAttemptDate(memberId, today);
+        // 복습 모드 제외한 일반 풀이만 카운트
+        Long solvedToday = quizAttemptRepository.countByMemberIdAndAttemptDateAndIsReviewModeFalse(memberId, today);
 
         return DailyProgress.builder()
                 .solvedToday(solvedToday.intValue())
