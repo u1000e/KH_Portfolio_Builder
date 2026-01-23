@@ -64,7 +64,7 @@ public class BadgeService {
             
             // 입문 & 복습
             new BadgeDefinition("master_beginner", "입문 완료", "입문 40문제 모두 완료!", "🌱", 40),
-            new BadgeDefinition("review_master", "복습의 왕", "복습 모드로 20문제 이상 풀기!", "🔄", 20),
+            new BadgeDefinition("review_master", "복습의 왕", "복습 모드로 200문제 이상 풀기!", "🥇", 200),
             
             // 최종 완료
             new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 25)
@@ -232,7 +232,7 @@ public class BadgeService {
 
             // 복습 마스터
             case "review_master":
-                return quizAttemptRepository.countReviewModeByMemberId(memberId) >= 20;
+                return quizAttemptRepository.countReviewModeByMemberId(memberId) >= 200;
             
             // 완벽한 하루 (하루 10문제 모두 정답)
             case "perfect_day":
@@ -292,7 +292,7 @@ public class BadgeService {
                 return Math.min(100, (int)(devopsCount * 100 / 22));
             case "review_master":
                 Long reviewCount = quizAttemptRepository.countReviewModeByMemberId(memberId);
-                return Math.min(100, (int)(reviewCount * 100 / 20));
+                return Math.min(100, (int)(reviewCount * 100 / 200));
             case "complete_master":
                 long earned = badgeRepository.countByMemberId(memberId);
                 int totalMinusOne = BADGE_DEFINITIONS.size() - 1; // 자기 자신 제외 (24개)
@@ -324,7 +324,7 @@ public class BadgeService {
                 return beginnerCnt + "/40문제";
             case "review_master":
                 Long reviewCnt = quizAttemptRepository.countReviewModeByMemberId(memberId);
-                return reviewCnt + "/20문제";
+                return reviewCnt + "/200문제";
             case "complete_master":
                 long earnedCnt = badgeRepository.countByMemberId(memberId);
                 return earnedCnt + "/" + (BADGE_DEFINITIONS.size() - 1) + "개";
