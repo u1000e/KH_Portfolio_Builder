@@ -65,13 +65,19 @@ public class PortfolioService {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
                 .orElseThrow(() -> new RuntimeException("Portfolio not found"));
 
-        // 본인 포트폴리오이거나 공개된 포트폴리오만 조회 가능
-        if (!portfolio.getMember().getId().equals(memberId) && !portfolio.getIsPublic()) {
+        // 현재 사용자 조회
+        Member currentMember = memberRepository.findById(memberId).orElse(null);
+        
+        // 강사/운영팀은 모든 포트폴리오 조회 가능
+        boolean isStaff = currentMember != null && 
+                         ("강사".equals(currentMember.getPosition()) || "운영팀".equals(currentMember.getPosition()));
+        
+        // 본인 포트폴리오이거나 공개된 포트폴리오이거나 강사/운영팀만 조회 가능
+        if (!portfolio.getMember().getId().equals(memberId) && !portfolio.getIsPublic() && !isStaff) {
             throw new RuntimeException("Access denied");
         }
 
         int likeCount = portfolioLikeRepository.countByPortfolioId(portfolioId);
-        Member currentMember = memberRepository.findById(memberId).orElse(null);
         boolean isLiked = currentMember != null && 
                          portfolioLikeRepository.existsByPortfolioAndMember(portfolio, currentMember);
 
