@@ -94,4 +94,61 @@ public class FeedbackController {
         feedbackService.deleteFeedback(feedbackId, memberId);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * 피드백 읽음 처리 (포트폴리오 소유자)
+     * PUT /api/feedbacks/{feedbackId}/read
+     */
+    @PutMapping("/{feedbackId}/read")
+    public ResponseEntity<FeedbackResponse> markAsRead(
+            @PathVariable("feedbackId") Long feedbackId,
+            @AuthenticationPrincipal Long memberId) {
+        
+        return ResponseEntity.ok(feedbackService.markAsRead(feedbackId, memberId));
+    }
+
+    /**
+     * 피드백 반영 완료 처리 (포트폴리오 소유자)
+     * PUT /api/feedbacks/{feedbackId}/resolve
+     */
+    @PutMapping("/{feedbackId}/resolve")
+    public ResponseEntity<FeedbackResponse> markAsResolved(
+            @PathVariable("feedbackId") Long feedbackId,
+            @AuthenticationPrincipal Long memberId) {
+        
+        return ResponseEntity.ok(feedbackService.markAsResolved(feedbackId, memberId));
+    }
+
+    /**
+     * 미읽음 피드백 개수 (수강생 대시보드 알림용)
+     * GET /api/feedbacks/unread/count
+     */
+    @GetMapping("/unread/count")
+    public ResponseEntity<Long> getUnreadCount(
+            @AuthenticationPrincipal Long memberId) {
+        
+        return ResponseEntity.ok(feedbackService.getUnreadCount(memberId));
+    }
+
+    /**
+     * 수강생이 받은 피드백 목록
+     * GET /api/feedbacks/received
+     */
+    @GetMapping("/received")
+    public ResponseEntity<List<FeedbackResponse>> getReceivedFeedbacks(
+            @AuthenticationPrincipal Long memberId) {
+        
+        return ResponseEntity.ok(feedbackService.getReceivedFeedbacks(memberId));
+    }
+
+    /**
+     * 특정 포트폴리오의 미반영 피드백 개수
+     * GET /api/feedbacks/portfolio/{portfolioId}/unresolved/count
+     */
+    @GetMapping("/portfolio/{portfolioId}/unresolved/count")
+    public ResponseEntity<Long> getUnresolvedCount(
+            @PathVariable("portfolioId") Long portfolioId) {
+        
+        return ResponseEntity.ok(feedbackService.getUnresolvedCount(portfolioId));
+    }
 }

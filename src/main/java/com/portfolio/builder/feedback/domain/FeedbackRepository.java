@@ -45,4 +45,22 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
      * 특정 포트폴리오의 피드백 삭제 (포트폴리오 삭제용)
      */
     void deleteAllByPortfolioId(Long portfolioId);
+
+    /**
+     * 수강생이 받은 미읽음 피드백 개수
+     */
+    @Query("SELECT COUNT(f) FROM Feedback f WHERE f.portfolio.member.id = :memberId AND f.isRead = false")
+    long countUnreadByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 특정 포트폴리오의 미반영 피드백 개수
+     */
+    @Query("SELECT COUNT(f) FROM Feedback f WHERE f.portfolio.id = :portfolioId AND f.isResolved = false")
+    long countUnresolvedByPortfolioId(@Param("portfolioId") Long portfolioId);
+
+    /**
+     * 수강생이 받은 미반영 피드백 개수
+     */
+    @Query("SELECT COUNT(f) FROM Feedback f WHERE f.portfolio.member.id = :memberId AND f.isResolved = false")
+    long countUnresolvedByMemberId(@Param("memberId") Long memberId);
 }

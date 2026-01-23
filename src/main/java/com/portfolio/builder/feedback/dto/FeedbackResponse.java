@@ -16,7 +16,11 @@ public class FeedbackResponse {
 
     private Long id;
     private Long portfolioId;
+    private String portfolioTitle;
     private String content;
+    private Boolean isRead;
+    private Boolean isResolved;
+    private LocalDateTime resolvedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -29,7 +33,11 @@ public class FeedbackResponse {
         return FeedbackResponse.builder()
                 .id(feedback.getId())
                 .portfolioId(feedback.getPortfolio().getId())
+                .portfolioTitle(feedback.getPortfolio().getTitle())
                 .content(feedback.getContent())
+                .isRead(feedback.getIsRead())
+                .isResolved(feedback.getIsResolved())
+                .resolvedAt(feedback.getResolvedAt())
                 .createdAt(feedback.getCreatedAt())
                 .updatedAt(feedback.getUpdatedAt())
                 .authorId(feedback.getMember().getId())

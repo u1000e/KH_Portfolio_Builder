@@ -35,6 +35,14 @@ public class Feedback {
     private String content;
 
     @Builder.Default
+    private Boolean isRead = false;  // 수강생이 읽었는지
+
+    @Builder.Default
+    private Boolean isResolved = false;  // 수강생이 반영 완료했는지
+
+    private LocalDateTime resolvedAt;  // 반영 완료 시간
+
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt;
@@ -42,5 +50,20 @@ public class Feedback {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 읽음 처리
+     */
+    public void markAsRead() {
+        this.isRead = true;
+    }
+
+    /**
+     * 반영 완료 처리
+     */
+    public void markAsResolved() {
+        this.isResolved = true;
+        this.resolvedAt = LocalDateTime.now();
     }
 }

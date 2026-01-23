@@ -128,6 +128,75 @@ public class FeedbackService {
         log.info("Feedback deleted - feedbackId: {}, deletedBy: {}", feedbackId, memberId);
     }
 
+    /**
+     * 피드백 읽음 처리 (포트폴리오 소유자만)
+     */
+    @Transactional
+    public FeedbackResponse markAsRead(Long feedbackId, Long memberId) {
+        Feedback feedback = feedbackRepository.findById(feedbackId)
+                .orElseThrow(() -> new IllegalArgumentException("피드백을 찾을 수 없습니다"));
+
+        // 포트폴리오 소유자만 읽음 처리 가능
+        if (!feedback.getPortfolio().getMember().getId().equals(memberId)) {
+            throw new IllegalStateException("피드백 읽음 처리 권한이 없습니다");
+        }
+
+        feedback.markAsRead();
+        log.info("Feedback marked as read - feedbackId: {}, memberId: {}", feedbackId, memberId);
+
+        return FeedbackResponse.from(feedback);
+    }
+
+    /**
+     * 피드백 반영 완료 처리 (포트폴리오 소유자만)
+     */
+    @Transactional
+    public FeedbackResponse markAsResolved(Long feedbackId, Long memberId) {
+        Feedback feedback = feedbackRepository.findById(feedbackId)
+                .orElseThrow(() -> new IllegalArgumentException("피드백을 찾을 수 없습니다"));
+
+        // 포트폴리오 소유자만 반영 완료 처리 가능
+        if (!feedback.getPortfolio().getMember().getId().equals(memberId)) {
+            throw new IllegalStateException("피드백 반영 완료 처리 권한이 없습니다");
+        }
+
+        feedback.markAsResolved();
+        log.info("Feedback marked as resolved - feedbackId: {}, memberId: {}", feedbackId, memberId);
+
+        return FeedbackResponse.from(feedback);
+    }
+
+    /**
+     * 수강생이 받은 미읽음 피드백 개수
+     */
+    public long getUnreadCount(Long memberId) {
+        return feedbackRepository.countUnreadByMemberId(memberId);
+    }
+
+    /**
+     * 특정 포트폴리오의 미반영 피드백 개수
+     */
+    public long getUnresolvedCount(Long portfolioId) {
+        return feedbackRepository.countUnresolvedByPortfolioId(portfolioId);
+    }
+
+    /**
+     * 수강생이 받은 피드백 목록 (내 포트폴리오들에 달린 피드백)
+     */
+    public List<FeedbackResponse> getReceivedFeedbacks(Long memberId) {
+        return feedbackRepository.findReceivedFeedbacksByMemberId(memberId)
+                .stream()
+                .map(FeedbackResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 미반영 피드백이 있는지 확인 (추가 피드백 작성 가능 여부)
+     */
+    public boolean hasUnresolvedFeedback(Long portfolioId) {
+        return feedbackRepository.countUnresolvedByPortfolioId(portfolioId) > 0;
+    }
+
     private boolean isStaffOrInstructor(Member member) {
         String position = member.getPosition();
         return "운영팀".equals(position) || "강사".equals(position);
