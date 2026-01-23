@@ -52,6 +52,7 @@ public class BadgeService {
             new BadgeDefinition("master_js", "JavaScript 마스터", "JavaScript 20문제 모두 완료!", "⚡", 20),
             new BadgeDefinition("master_react", "React 마스터", "React 20문제 모두 완료!", "⚛️", 20),
             new BadgeDefinition("master_spring", "Spring 마스터", "Spring 20문제 모두 완료!", "🍃", 20),
+            new BadgeDefinition("master_spring_adv", "Spring의 왕", "Spring 심화 30문제 모두 완료!", "🌄", 30),
             new BadgeDefinition("master_db", "Database 마스터", "Database 20문제 모두 완료!", "🗄️", 20),
             new BadgeDefinition("master_network", "Network 마스터", "Network 20문제 모두 완료!", "🌐", 20),
             new BadgeDefinition("master_cs", "CS 기초 마스터", "CS 기초 20문제 모두 완료!", "💡", 20),
@@ -59,7 +60,7 @@ public class BadgeService {
             new BadgeDefinition("master_devops", "DevOps 마스터", "DevOps 22문제 모두 완료!", "🐳", 22),
             
             // 특별
-            new BadgeDefinition("all_categories", "전 분야 학습", "모든 카테고리에서 최소 5문제씩!", "🎓", 9),
+            new BadgeDefinition("all_categories", "전 분야 학습", "모든 카테고리에서 최소 5문제씩!", "🎓", 10),
             new BadgeDefinition("perfect_day", "완벽한 하루", "하루 10문제 모두 정답!", "💯", 10),
             
             // 입문 & 복습
@@ -215,6 +216,8 @@ public class BadgeService {
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "React") >= 20;
             case "master_spring":
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring") >= 20;
+            case "master_spring_adv":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring 심화") >= 30;
             case "master_db":
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Database") >= 20;
             case "master_network":
@@ -242,7 +245,7 @@ public class BadgeService {
             
             // 전 분야 학습 (모든 카테고리에서 최소 5문제씩)
             case "all_categories":
-                String[] categories = {"HTML/CSS", "JavaScript", "React", "Spring", "Database", "Network", "CS 기초", "Java", "DevOps"};
+                String[] categories = {"HTML/CSS", "JavaScript", "React", "Spring", "Spring 심화", "Database", "Network", "CS 기초", "Java", "DevOps"};
                 for (String category : categories) {
                     if (quizAttemptRepository.countByMemberIdAndCategory(memberId, category) < 5) {
                         return false;
