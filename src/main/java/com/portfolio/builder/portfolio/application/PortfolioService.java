@@ -1,5 +1,7 @@
 package com.portfolio.builder.portfolio.application;
 
+import com.portfolio.builder.comment.domain.CommentRepository;
+import com.portfolio.builder.feedback.domain.FeedbackRepository;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.portfolio.domain.Portfolio;
@@ -27,6 +29,8 @@ public class PortfolioService {
 
     private final PortfolioRepository portfolioRepository;
     private final PortfolioLikeRepository portfolioLikeRepository;
+    private final CommentRepository commentRepository;
+    private final FeedbackRepository feedbackRepository;
     private final MemberRepository memberRepository;
     private final BadgeRepository badgeRepository;
     private final BadgeService badgeService;
@@ -125,6 +129,12 @@ public class PortfolioService {
             throw new RuntimeException("Access denied");
         }
 
+        // 관련 피드백 삭제
+        feedbackRepository.deleteAllByPortfolioId(portfolioId);
+        
+        // 관련 댓글 삭제
+        commentRepository.deleteAllByPortfolio(portfolio);
+        
         // 관련 좋아요 삭제
         portfolioLikeRepository.deleteAllByPortfolio(portfolio);
         
