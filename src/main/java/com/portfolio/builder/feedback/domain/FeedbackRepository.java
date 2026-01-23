@@ -55,12 +55,12 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     /**
      * 특정 포트폴리오의 미반영 피드백 개수
      */
-    @Query("SELECT COUNT(f) FROM Feedback f WHERE f.portfolio.id = :portfolioId AND f.isResolved = false")
+    @Query("SELECT COUNT(f) FROM Feedback f WHERE f.portfolio.id = :portfolioId AND (f.isResolved = false OR f.isResolved IS NULL)")
     long countUnresolvedByPortfolioId(@Param("portfolioId") Long portfolioId);
 
     /**
      * 수강생이 받은 미반영 피드백 개수
      */
-    @Query("SELECT COUNT(f) FROM Feedback f WHERE f.portfolio.member.id = :memberId AND f.isResolved = false")
+    @Query("SELECT COUNT(f) FROM Feedback f WHERE f.portfolio.member.id = :memberId AND (f.isResolved = false OR f.isResolved IS NULL)")
     long countUnresolvedByMemberId(@Param("memberId") Long memberId);
 }
