@@ -334,6 +334,11 @@ public class QuizService {
      * 랭킹 조회
      */
     public RankingResponse getRanking(Long memberId, String type, int limit) {
+        // 복습 랜킹은 별도 처리 (QuizAttempt에서 집계)
+        if ("review".equals(type)) {
+            return getReviewRanking(memberId, limit);
+        }
+        
         List<QuizStreak> streaks;
         
         switch (type) {
@@ -409,6 +414,46 @@ public class QuizService {
                 .avatarUrl(streak.getMember().getAvatarUrl())
                 .value(value)
                 .displayValue(displayValue)
+                .build();
+    }
+
+    /**
+     * 복습 랭킹 조회 (QuizAttempt에서 집계)
+     */
+    private RankingResponse getReviewRanking(Long memberId, int limit) {
+        List<Object[]> results = quizAttemptRepository.findTopByReviewCount();
+        
+        List<RankingEntry> rankings = new ArrayList<>();
+        RankingEntry myRanking = null;
+        
+        for (int i = 0; i < results.size(); i++) {
+            Object[] row = results.get(i);
+            Long rowMemberId = (Long) row[0];
+            String name = (String) row[1];
+            String avatarUrl = (String) row[2];
+            Long reviewCount = (Long) row[3];
+            
+            RankingEntry entry = RankingEntry.builder()
+                    .rank(i + 1)
+                    .memberId(rowMemberId)
+                    .nickname(name)
+                    .avatarUrl(avatarUrl)
+                    .value(reviewCount.intValue())
+                    .displayValue(reviewCount + "문제")
+                    .build();
+            
+            if (i < limit) {
+                rankings.add(entry);
+            }
+            
+            if (rowMemberId.equals(memberId)) {
+                myRanking = entry;
+            }
+        }
+        
+        return RankingResponse.builder()
+                .rankings(rankings)
+                .myRanking(myRanking)
                 .build();
     }
 
