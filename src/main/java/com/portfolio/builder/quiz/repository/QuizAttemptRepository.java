@@ -67,4 +67,8 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     // 복습 모드로 푼 문제 수 (배지용)
     @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isReviewMode = true")
     Long countReviewModeByMemberId(@Param("memberId") Long memberId);
+
+    // 특정 날짜에 사용자가 맞은 문제 수 (복습 모드 제외 - 완벽한 하루 배지용)
+    @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.attemptDate = :date AND qa.isCorrect = true AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL)")
+    Long countTodayCorrectByMemberId(@Param("memberId") Long memberId, @Param("date") LocalDate date);
 }

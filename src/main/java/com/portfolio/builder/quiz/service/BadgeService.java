@@ -234,6 +234,22 @@ public class BadgeService {
             case "review_master":
                 return quizAttemptRepository.countReviewModeByMemberId(memberId) >= 20;
             
+            // 완벽한 하루 (하루 10문제 모두 정답)
+            case "perfect_day":
+                Long todayCorrect = quizAttemptRepository.countTodayCorrectByMemberId(memberId, java.time.LocalDate.now());
+                Long todayTotal = quizAttemptRepository.countByMemberIdAndAttemptDateAndIsReviewModeFalse(memberId, java.time.LocalDate.now());
+                return todayTotal != null && todayTotal >= 10 && todayCorrect != null && todayCorrect.equals(todayTotal);
+            
+            // 전 분야 학습 (모든 카테고리에서 최소 5문제씩)
+            case "all_categories":
+                String[] categories = {"HTML/CSS", "JavaScript", "React", "Spring", "Database", "Network", "CS 기초", "Java", "DevOps"};
+                for (String category : categories) {
+                    if (quizAttemptRepository.countByMemberIdAndCategory(memberId, category) < 5) {
+                        return false;
+                    }
+                }
+                return true;
+            
             // 컴플리트 마스터 (모든 배지 획득 - 자기 자신 제외)
             case "complete_master":
                 long earnedCount = badgeRepository.countByMemberId(memberId);
