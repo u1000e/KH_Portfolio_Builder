@@ -165,6 +165,7 @@ public class QuizDto {
         private Long memberId;
         private String nickname;
         private String avatarUrl;
+        private String position;  // 소속 정보 (예: "수강생 종로 501 1기")
         private int value;  // 랭킹 기준 값 (스트릭, 정확도 등)
         private String displayValue;  // 표시용 (예: "15일", "87%")
     }

@@ -68,12 +68,14 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isReviewMode = true")
     Long countReviewModeByMemberId(@Param("memberId") Long memberId);
 
-    // 복습 횟수 랜킹 (수강생만, 복습 횟수 내림차순)
+    // 복습 횟수 랜킹 (복습 횟수 내림차순)
     @Query("""
-        SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as reviewCount
+        SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as reviewCount,
+               qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
         FROM QuizAttempt qa
-        WHERE qa.isReviewMode = true AND qa.member.position = '수강생'
-        GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl
+        WHERE qa.isReviewMode = true
+        GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
+                 qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
         ORDER BY reviewCount DESC
         """)
     List<Object[]> findTopByReviewCount();
@@ -81,4 +83,54 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     // 특정 날짜에 사용자가 맞은 문제 수 (복습 모드 제외 - 완벽한 하루 배지용)
     @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.attemptDate = :date AND qa.isCorrect = true AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL)")
     Long countTodayCorrectByMemberId(@Param("memberId") Long memberId, @Param("date") LocalDate date);
+
+    // ===== 랭킹용 쿼리 =====
+
+    // 🌅 얼리버드 랭킹 (아침 6~9시 풀이 횟수)
+    @Query("""
+        SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as earlyCount,
+               qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
+        FROM QuizAttempt qa
+        WHERE EXTRACT(HOUR FROM qa.createdAt) >= 6 AND EXTRACT(HOUR FROM qa.createdAt) < 9
+        GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
+                 qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
+        ORDER BY earlyCount DESC
+        """)
+    List<Object[]> findTopByEarlyBird();
+
+    // 🦉 올빼미 랭킹 (밤 22시~새벽 2시 풀이 횟수)
+    @Query("""
+        SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as nightCount,
+               qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
+        FROM QuizAttempt qa
+        WHERE (EXTRACT(HOUR FROM qa.createdAt) >= 22 OR EXTRACT(HOUR FROM qa.createdAt) < 2)
+        GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
+                 qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
+        ORDER BY nightCount DESC
+        """)
+    List<Object[]> findTopByNightOwl();
+
+    // 🔥 오늘의 챔피언 (오늘 풀이 횟수 - 학습+복습)
+    @Query("""
+        SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as todayCount,
+               qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
+        FROM QuizAttempt qa
+        WHERE qa.attemptDate = :today
+        GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
+                 qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
+        ORDER BY todayCount DESC
+        """)
+    List<Object[]> findTopByToday(@Param("today") LocalDate today);
+
+    // 📅 이번 주 MVP (이번 주 풀이 횟수 - 학습+복습)
+    @Query("""
+        SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as weekCount,
+               qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
+        FROM QuizAttempt qa
+        WHERE qa.attemptDate >= :weekStart AND qa.attemptDate <= :weekEnd
+        GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
+                 qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
+        ORDER BY weekCount DESC
+        """)
+    List<Object[]> findTopByThisWeek(@Param("weekStart") LocalDate weekStart, @Param("weekEnd") LocalDate weekEnd);
 }

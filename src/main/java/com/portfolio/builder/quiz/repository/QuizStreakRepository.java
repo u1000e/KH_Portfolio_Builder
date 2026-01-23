@@ -12,18 +12,18 @@ public interface QuizStreakRepository extends JpaRepository<QuizStreak, Long> {
 
     Optional<QuizStreak> findByMemberId(Long memberId);
 
-    // 스트릭 랭킹 (연속 학습일 기준) - 수강생만
-    @Query("SELECT qs FROM QuizStreak qs JOIN FETCH qs.member m WHERE m.position = '수강생' ORDER BY qs.currentStreak DESC")
+    // 스트릭 랭킹 (연속 학습일 기준)
+    @Query("SELECT qs FROM QuizStreak qs JOIN FETCH qs.member m ORDER BY qs.currentStreak DESC")
     List<QuizStreak> findTopByCurrentStreak();
 
-    // 총 문제 수 랭킹 - 수강생만
-    @Query("SELECT qs FROM QuizStreak qs JOIN FETCH qs.member m WHERE m.position = '수강생' ORDER BY qs.totalQuizCount DESC")
+    // 총 문제 수 랭킹
+    @Query("SELECT qs FROM QuizStreak qs JOIN FETCH qs.member m ORDER BY qs.totalQuizCount DESC")
     List<QuizStreak> findTopByTotalQuizCount();
 
-    // 정답률 랭킹 (최소 10문제 이상 푼 사람) - 수강생만
+    // 정답률 랭킹 (최소 10문제 이상 푼 사람)
     @Query("""
         SELECT qs FROM QuizStreak qs JOIN FETCH qs.member m
-        WHERE qs.totalQuizCount >= :minQuizCount AND m.position = '수강생'
+        WHERE qs.totalQuizCount >= :minQuizCount
         ORDER BY (qs.correctCount * 1.0 / qs.totalQuizCount) DESC
         """)
     List<QuizStreak> findTopByAccuracy(@Param("minQuizCount") int minQuizCount);

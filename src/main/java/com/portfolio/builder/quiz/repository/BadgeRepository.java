@@ -27,4 +27,29 @@ public interface BadgeRepository extends JpaRepository<Badge, Long> {
 
     // 사용자의 배지 개수
     long countByMemberId(Long memberId);
+
+    // 👑 배지 컬렉터 랭킹 (배지 개수 내림차순)
+    @Query("""
+        SELECT b.member.id, b.member.name, b.member.avatarUrl, COUNT(b) as badgeCount,
+               b.member.position, b.member.branch, b.member.classroom, b.member.cohort
+        FROM Badge b
+        GROUP BY b.member.id, b.member.name, b.member.avatarUrl,
+                 b.member.position, b.member.branch, b.member.classroom, b.member.cohort
+        ORDER BY badgeCount DESC
+        """)
+    List<Object[]> findTopByBadgeCount();
+
+    // 배지별 획득자 수 (희귀 배지 계산용)
+    @Query("SELECT b.badgeId, COUNT(b) FROM Badge b GROUP BY b.badgeId")
+    List<Object[]> countByBadgeIdGrouped();
+
+    // 특정 배지 보유자 목록 (희귀 배지 랭킹용)
+    @Query("""
+        SELECT b.member.id, b.member.name, b.member.avatarUrl, b.badgeId,
+               b.member.position, b.member.branch, b.member.classroom, b.member.cohort
+        FROM Badge b
+        WHERE b.badgeId IN :rareBadgeIds
+        ORDER BY b.earnedAt ASC
+        """)
+    List<Object[]> findMembersWithRareBadges(@Param("rareBadgeIds") List<String> rareBadgeIds);
 }

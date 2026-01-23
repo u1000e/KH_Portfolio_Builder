@@ -38,4 +38,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // 기수 목록 조회 (특정 지점 + 강의실의 기수만)
     @Query("SELECT DISTINCT m.cohort FROM Member m WHERE m.branch = :branch AND m.classroom = :classroom AND m.cohort IS NOT NULL ORDER BY m.cohort DESC")
     List<String> findDistinctCohortsByBranchAndClassroom(@Param("branch") String branch, @Param("classroom") String classroom);
+    
+    // 특정 직급의 회원 수 (희귀 배지 랭킹용)
+    long countByPosition(String position);
 }

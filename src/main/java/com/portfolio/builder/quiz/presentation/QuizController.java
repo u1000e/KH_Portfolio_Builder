@@ -105,8 +105,9 @@ public class QuizController {
     public ResponseEntity<RankingResponse> getRanking(
             @RequestAttribute("memberId") Long memberId,
             @RequestParam(value = "type", defaultValue = "streak") String type,
-            @RequestParam(value = "limit", defaultValue = "10") int limit) {
-        return ResponseEntity.ok(quizService.getRanking(memberId, type, limit));
+            @RequestParam(value = "limit", defaultValue = "10") int limit,
+            @RequestParam(value = "classFilter", defaultValue = "false") boolean classFilter) {
+        return ResponseEntity.ok(quizService.getRanking(memberId, type, limit, classFilter));
     }
 
     // ===== Phase 2: 복습 모드 =====
