@@ -42,6 +42,8 @@ public class BadgeService {
             new BadgeDefinition("quiz_50", "50문제 달성", "총 50문제를 풀었습니다!", "📖", 50),
             new BadgeDefinition("quiz_100", "100문제 달성", "총 100문제를 풀었습니다!", "🏆", 100),
             new BadgeDefinition("quiz_200", "200문제 달성", "총 200문제를 풀었습니다!", "💎", 200),
+            new BadgeDefinition("quiz_300", "300문제 달성", "총 300문제를 풀었습니다!", "🎆", 300),
+            new BadgeDefinition("quiz_400", "400문제 달성", "총 400문제를 풀었습니다!", "💻", 400),
             
             // 정확도
             new BadgeDefinition("accuracy_80", "정확도 80%", "정확도 80% 이상 달성! (최소 20문제)", "✨", 80),
@@ -67,14 +69,24 @@ public class BadgeService {
             new BadgeDefinition("master_beginner", "입문 완료", "입문 40문제 모두 완료!", "🌱", 40),
             new BadgeDefinition("review_master", "복습의 왕", "복습 모드로 200문제 이상 풀기!", "🥇", 200),
             
-            // 수업 복습 배지
+            // 수업 복습 배지 - Java
             new BadgeDefinition("master_java_class", "Java 수업 정복", "Java 수업 30문제 모두 완료!", "📗", 30),
             new BadgeDefinition("master_java_class_adv", "Java 고급 정복", "Java 수업 고급 30문제 모두 완료!", "📘", 30),
             new BadgeDefinition("master_java_class_deep", "Java 심화 정복", "Java 수업 심화 18문제 모두 완료!", "📕", 18),
             new BadgeDefinition("master_java_class_all", "Java 수업 완전 정복", "Java 수업 배지 3개 모두 획득!", "🍾", 3),
             
+            // 수업 복습 배지 - JDBC
+            new BadgeDefinition("master_jdbc", "JDBC 정복", "JDBC 22문제 모두 완료!", "🔌", 22),
+            
+            // 수업 복습 배지 - 웹 개발
+            new BadgeDefinition("master_servlet_jsp", "Servlet/JSP 정복", "Servlet/JSP 25문제 모두 완료!", "🎢", 25),
+            new BadgeDefinition("master_spring_mvc", "Spring MVC 정복", "Spring MVC 20문제 모두 완료!", "🎇", 20),
+            new BadgeDefinition("master_spring_security", "Spring Security 정복", "Spring Security 20문제 모두 완료!", "🔐", 20),
+            new BadgeDefinition("master_spring_boot_adv", "Spring Boot 심화 정복", "Spring Boot 심화 18문제 모두 완료!", "🚀", 18),
+            new BadgeDefinition("master_web_class_all", "웹 개발 수업 완전 정복", "웹 개발 수업 배지 4개 모두 획득!", "🎊", 4),
+            
             // 최종 완료
-            new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 29)
+            new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 34)
     );
 
     /**
@@ -204,6 +216,10 @@ public class BadgeService {
                 return streak.getTotalQuizCount() >= 100;
             case "quiz_200":
                 return streak.getTotalQuizCount() >= 200;
+            case "quiz_300":
+                return streak.getTotalQuizCount() >= 300;
+            case "quiz_400":
+                return streak.getTotalQuizCount() >= 400;
             
             // 정확도
             case "accuracy_80":
@@ -243,7 +259,7 @@ public class BadgeService {
             case "review_master":
                 return quizAttemptRepository.countReviewModeByMemberId(memberId) >= 200;
             
-            // 수업 복습 배지
+            // 수업 복습 배지 - Java
             case "master_java_class":
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java 수업") >= 30;
             case "master_java_class_adv":
@@ -254,6 +270,25 @@ public class BadgeService {
                 return badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class") &&
                        badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_adv") &&
                        badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_deep");
+            
+            // 수업 복습 배지 - JDBC
+            case "master_jdbc":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "JDBC") >= 22;
+            
+            // 수업 복습 배지 - 웹 개발
+            case "master_servlet_jsp":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Servlet/JSP") >= 25;
+            case "master_spring_mvc":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring MVC") >= 20;
+            case "master_spring_security":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring Security") >= 20;
+            case "master_spring_boot_adv":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring Boot 심화") >= 18;
+            case "master_web_class_all":
+                return badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_servlet_jsp") &&
+                       badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_mvc") &&
+                       badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_security") &&
+                       badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_boot_adv");
             
             // 완벽한 하루 (하루 10문제 모두 정답)
             case "perfect_day":
@@ -305,6 +340,10 @@ public class BadgeService {
                 return Math.min(100, streak.getTotalQuizCount() * 100 / 100);
             case "quiz_200":
                 return Math.min(100, streak.getTotalQuizCount() * 100 / 200);
+            case "quiz_300":
+                return Math.min(100, streak.getTotalQuizCount() * 100 / 300);
+            case "quiz_400":
+                return Math.min(100, streak.getTotalQuizCount() * 100 / 400);
             case "master_beginner":
                 Long beginnerCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "입문");
                 return Math.min(100, (int)(beginnerCount * 100 / 40));
@@ -329,6 +368,28 @@ public class BadgeService {
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_adv")) classCount++;
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_deep")) classCount++;
                 return Math.min(100, classCount * 100 / 3);
+            case "master_jdbc":
+                Long jdbcCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JDBC");
+                return Math.min(100, (int)(jdbcCount * 100 / 22));
+            case "master_servlet_jsp":
+                Long servletJspCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Servlet/JSP");
+                return Math.min(100, (int)(servletJspCount * 100 / 25));
+            case "master_spring_mvc":
+                Long springMvcCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring MVC");
+                return Math.min(100, (int)(springMvcCount * 100 / 20));
+            case "master_spring_security":
+                Long springSecurityCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring Security");
+                return Math.min(100, (int)(springSecurityCount * 100 / 20));
+            case "master_spring_boot_adv":
+                Long springBootAdvCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring Boot 심화");
+                return Math.min(100, (int)(springBootAdvCount * 100 / 18));
+            case "master_web_class_all":
+                int webClassCount = 0;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_servlet_jsp")) webClassCount++;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_mvc")) webClassCount++;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_security")) webClassCount++;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_boot_adv")) webClassCount++;
+                return Math.min(100, webClassCount * 100 / 4);
             case "complete_master":
                 long earned = badgeRepository.countByMemberId(memberId);
                 int totalMinusOne = BADGE_DEFINITIONS.size() - 1; // 자기 자신 제외
@@ -354,6 +415,8 @@ public class BadgeService {
             case "quiz_50":
             case "quiz_100":
             case "quiz_200":
+            case "quiz_300":
+            case "quiz_400":
                 return streak.getTotalQuizCount() + "/" + def.threshold + "문제";
             case "master_beginner":
                 Long beginnerCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "입문");
@@ -376,6 +439,28 @@ public class BadgeService {
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_adv")) classBadgeCount++;
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_deep")) classBadgeCount++;
                 return classBadgeCount + "/3개 배지";
+            case "master_jdbc":
+                Long jdbcCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JDBC");
+                return jdbcCnt + "/22문제";
+            case "master_servlet_jsp":
+                Long servletJspCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Servlet/JSP");
+                return servletJspCnt + "/25문제";
+            case "master_spring_mvc":
+                Long springMvcCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring MVC");
+                return springMvcCnt + "/20문제";
+            case "master_spring_security":
+                Long springSecurityCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring Security");
+                return springSecurityCnt + "/20문제";
+            case "master_spring_boot_adv":
+                Long springBootAdvCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring Boot 심화");
+                return springBootAdvCnt + "/18문제";
+            case "master_web_class_all":
+                int webBadgeCount = 0;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_servlet_jsp")) webBadgeCount++;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_mvc")) webBadgeCount++;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_security")) webBadgeCount++;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_boot_adv")) webBadgeCount++;
+                return webBadgeCount + "/4개 배지";
             case "complete_master":
                 long earnedCnt = badgeRepository.countByMemberId(memberId);
                 return earnedCnt + "/" + (BADGE_DEFINITIONS.size() - 1) + "개";
