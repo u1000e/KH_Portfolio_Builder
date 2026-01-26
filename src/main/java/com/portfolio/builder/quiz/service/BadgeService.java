@@ -67,8 +67,14 @@ public class BadgeService {
             new BadgeDefinition("master_beginner", "입문 완료", "입문 40문제 모두 완료!", "🌱", 40),
             new BadgeDefinition("review_master", "복습의 왕", "복습 모드로 200문제 이상 풀기!", "🥇", 200),
             
+            // 수업 복습 배지
+            new BadgeDefinition("master_java_class", "Java 수업 정복", "Java 수업 30문제 모두 완료!", "📗", 30),
+            new BadgeDefinition("master_java_class_adv", "Java 고급 정복", "Java 수업 고급 30문제 모두 완료!", "📘", 30),
+            new BadgeDefinition("master_java_class_deep", "Java 심화 정복", "Java 수업 심화 18문제 모두 완료!", "📕", 18),
+            new BadgeDefinition("master_java_class_all", "Java 수업 완전 정복", "Java 수업 배지 3개 모두 획득!", "🍾", 3),
+            
             // 최종 완료
-            new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 25)
+            new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 29)
     );
 
     /**
@@ -237,6 +243,18 @@ public class BadgeService {
             case "review_master":
                 return quizAttemptRepository.countReviewModeByMemberId(memberId) >= 200;
             
+            // 수업 복습 배지
+            case "master_java_class":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java 수업") >= 30;
+            case "master_java_class_adv":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java 수업 고급") >= 30;
+            case "master_java_class_deep":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java 수업 심화") >= 18;
+            case "master_java_class_all":
+                return badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class") &&
+                       badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_adv") &&
+                       badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_deep");
+            
             // 완벽한 하루 (하루 10문제 모두 정답)
             case "perfect_day":
                 Long todayCorrect = quizAttemptRepository.countTodayCorrectByMemberId(memberId, java.time.LocalDate.now());
@@ -296,9 +314,24 @@ public class BadgeService {
             case "review_master":
                 Long reviewCount = quizAttemptRepository.countReviewModeByMemberId(memberId);
                 return Math.min(100, (int)(reviewCount * 100 / 200));
+            case "master_java_class":
+                Long javaClassCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java 수업");
+                return Math.min(100, (int)(javaClassCount * 100 / 30));
+            case "master_java_class_adv":
+                Long javaClassAdvCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java 수업 고급");
+                return Math.min(100, (int)(javaClassAdvCount * 100 / 30));
+            case "master_java_class_deep":
+                Long javaClassDeepCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java 수업 심화");
+                return Math.min(100, (int)(javaClassDeepCount * 100 / 18));
+            case "master_java_class_all":
+                int classCount = 0;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class")) classCount++;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_adv")) classCount++;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_deep")) classCount++;
+                return Math.min(100, classCount * 100 / 3);
             case "complete_master":
                 long earned = badgeRepository.countByMemberId(memberId);
-                int totalMinusOne = BADGE_DEFINITIONS.size() - 1; // 자기 자신 제외 (24개)
+                int totalMinusOne = BADGE_DEFINITIONS.size() - 1; // 자기 자신 제외
                 return Math.min(100, (int)(earned * 100 / totalMinusOne));
             default:
                 return 0;
@@ -328,6 +361,21 @@ public class BadgeService {
             case "review_master":
                 Long reviewCnt = quizAttemptRepository.countReviewModeByMemberId(memberId);
                 return reviewCnt + "/200문제";
+            case "master_java_class":
+                Long javaClassCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java 수업");
+                return javaClassCnt + "/30문제";
+            case "master_java_class_adv":
+                Long javaClassAdvCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java 수업 고급");
+                return javaClassAdvCnt + "/30문제";
+            case "master_java_class_deep":
+                Long javaClassDeepCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java 수업 심화");
+                return javaClassDeepCnt + "/18문제";
+            case "master_java_class_all":
+                int classBadgeCount = 0;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class")) classBadgeCount++;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_adv")) classBadgeCount++;
+                if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_deep")) classBadgeCount++;
+                return classBadgeCount + "/3개 배지";
             case "complete_master":
                 long earnedCnt = badgeRepository.countByMemberId(memberId);
                 return earnedCnt + "/" + (BADGE_DEFINITIONS.size() - 1) + "개";
@@ -349,6 +397,93 @@ public class BadgeService {
     public String getBadgeIcon(String badgeId) {
         BadgeDefinition def = findDefinition(badgeId);
         return def != null ? def.icon : "🏅";
+    }
+    
+    /**
+     * 배지 ID로 이름 조회
+     */
+    public String getBadgeName(String badgeId) {
+        BadgeDefinition def = findDefinition(badgeId);
+        return def != null ? def.name : "배지";
+    }
+    
+    /**
+     * 배지 ID로 설명 조회
+     */
+    public String getBadgeDescription(String badgeId) {
+        BadgeDefinition def = findDefinition(badgeId);
+        return def != null ? def.description : "";
+    }
+
+    /**
+     * 대표 배지 선택
+     */
+    @Transactional
+    public void selectBadge(Long memberId, String badgeId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+        
+        // badgeId가 null이면 선택 해제
+        if (badgeId == null || badgeId.isEmpty()) {
+            member.setSelectedBadgeId(null);
+            memberRepository.save(member);
+            return;
+        }
+        
+        // 해당 배지를 획득했는지 확인
+        if (!badgeRepository.existsByMemberIdAndBadgeId(memberId, badgeId)) {
+            throw new RuntimeException("획득하지 않은 배지입니다.");
+        }
+        
+        member.setSelectedBadgeId(badgeId);
+        memberRepository.save(member);
+    }
+
+    /**
+     * 선택된 대표 배지 조회
+     */
+    public BadgeResponse getSelectedBadge(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+        
+        String selectedBadgeId = member.getSelectedBadgeId();
+        
+        // 선택된 배지가 없으면 최신 획득 배지 반환
+        if (selectedBadgeId == null || selectedBadgeId.isEmpty()) {
+            List<Badge> recentBadges = badgeRepository.findTop5ByMemberIdOrderByEarnedAtDesc(memberId);
+            if (recentBadges.isEmpty()) {
+                return null;
+            }
+            Badge latestBadge = recentBadges.get(0);
+            BadgeDefinition def = findDefinition(latestBadge.getBadgeId());
+            if (def == null) return null;
+            
+            return BadgeResponse.builder()
+                    .badgeId(latestBadge.getBadgeId())
+                    .name(def.name)
+                    .description(def.description)
+                    .icon(def.icon)
+                    .earned(true)
+                    .earnedAt(latestBadge.getEarnedAt().toString())
+                    .progress(100)
+                    .build();
+        }
+        
+        // 선택된 배지 반환
+        BadgeDefinition def = findDefinition(selectedBadgeId);
+        if (def == null) return null;
+        
+        Badge badge = badgeRepository.findByMemberIdAndBadgeId(memberId, selectedBadgeId).orElse(null);
+        
+        return BadgeResponse.builder()
+                .badgeId(selectedBadgeId)
+                .name(def.name)
+                .description(def.description)
+                .icon(def.icon)
+                .earned(true)
+                .earnedAt(badge != null ? badge.getEarnedAt().toString() : null)
+                .progress(100)
+                .build();
     }
 
     // 배지 정의 내부 클래스

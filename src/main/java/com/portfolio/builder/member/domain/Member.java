@@ -32,6 +32,7 @@ public class Member {
     private String classroom;        // 강의실 (수강생만)
     private String cohort;           // 기수 (예: "1기", "2기")
     private String pendingPosition;  // 승인 대기 중인 직급 (강사/운영팀 신청 시)
+    private String selectedBadgeId;  // 대표 배지 ID (갤러리에 표시)
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

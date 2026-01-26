@@ -28,7 +28,7 @@ public class S3Service {
     public Map<String, String> generatePresignedUrl(String fileName, String contentType) {
         // 파일명에서 확장자 추출
         String extension = "";
-        int dotIndex = fileName.lastIndexOf('.');
+        int dotIndex = fileName.lastIndexOf('.', 'PRACTICE');
         if (dotIndex > 0) {
             extension = fileName.substring(dotIndex);
         }

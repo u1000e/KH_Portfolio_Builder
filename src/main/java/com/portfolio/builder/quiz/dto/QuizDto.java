@@ -41,6 +41,7 @@ public class QuizDto {
         private Long quizId;
         private Integer userAnswer;  // OX: 0=X, 1=O / 객관식: 0~3
         private Boolean isReviewMode = false;  // 복습 모드 여부
+        private String quizType = "INTERVIEW";  // INTERVIEW: 면접 대비, PRACTICE: 수업 복습
     }
 
     @Getter
@@ -232,5 +233,14 @@ public class QuizDto {
         private long solvedCount;  // 해당 카테고리에서 푼 문제 수
         private long wrongCount;   // 해당 카테고리 오답 수
         private long correctCount; // 해당 카테고리 정답 수
+    }
+
+    // ===== 대표 배지 선택 =====
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SelectBadgeRequest {
+        private String badgeId;  // 선택한 배지 ID (null이면 선택 해제)
     }
 }

@@ -44,6 +44,10 @@ public class QuizAttempt {
     @Builder.Default
     private Boolean isReviewMode = false;  // 복습 모드로 푼 문제인지
 
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private String quizType = "INTERVIEW";  // INTERVIEW: 면접 대비, PRACTICE: 수업 복습
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

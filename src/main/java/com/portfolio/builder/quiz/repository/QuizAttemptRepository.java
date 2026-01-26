@@ -16,6 +16,9 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     // 특정 날짜에 사용자가 푼 문제 수 (복습 모드 제외 - 일일 제한용)
     Long countByMemberIdAndAttemptDateAndIsReviewModeFalse(Long memberId, LocalDate attemptDate);
 
+    // 특정 날짜에 사용자가 푼 문제 수 (퀴즈타입별, 복습 모드 제외 - 수업 복습 일일 통계용)
+    Long countByMemberIdAndAttemptDateAndQuizTypeAndIsReviewModeFalse(Long memberId, LocalDate attemptDate, String quizType);
+
     // 특정 날짜에 사용자가 푼 문제 목록
     List<QuizAttempt> findByMemberIdAndAttemptDate(Long memberId, LocalDate attemptDate);
 
@@ -27,21 +30,33 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     @Query("SELECT COUNT(DISTINCT qa.quiz.id) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.quiz.category = :category AND qa.isCorrect = true AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL)")
     Long countCorrectByMemberIdAndCategory(@Param("memberId") Long memberId, @Param("category") String category);
 
-    // 사용자가 틀린 문제 목록 (오답 노트용 - 복습 모드 제외)
-    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) ORDER BY qa.createdAt DESC")
+    // 사용자가 틀린 문제 목록 (오답 노트용 - 복습 모드 제외, 면접 대비용 기본)
+    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = 'INTERVIEW' ORDER BY qa.createdAt DESC")
     List<QuizAttempt> findWrongAnswersByMemberId(@Param("memberId") Long memberId);
+
+    // 사용자가 틀린 문제 목록 (오답 노트용 - 퀴즈타입별)
+    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = :quizType ORDER BY qa.createdAt DESC")
+    List<QuizAttempt> findWrongAnswersByMemberIdAndQuizType(@Param("memberId") Long memberId, @Param("quizType") String quizType);
 
     // 특정 날짜에 사용자가 푼 문제 ID 목록
     @Query("SELECT qa.quiz.id FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.attemptDate = :date")
     List<Long> findQuizIdsByMemberIdAndDate(@Param("memberId") Long memberId, @Param("date") LocalDate date);
 
-    // 카테고리별 오답 수 조회 (복습 모드 제외)
-    @Query("SELECT qa.quiz.category, COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) GROUP BY qa.quiz.category")
+    // 카테고리별 오답 수 조회 (복습 모드 제외, 면접 대비용 기본)
+    @Query("SELECT qa.quiz.category, COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = 'INTERVIEW' GROUP BY qa.quiz.category")
     List<Object[]> countWrongByMemberIdGroupByCategory(@Param("memberId") Long memberId);
 
-    // 특정 카테고리의 오답 목록 (복습 모드 제외)
-    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND qa.quiz.category = :category AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) ORDER BY qa.createdAt DESC")
+    // 카테고리별 오답 수 조회 (퀴즈타입별)
+    @Query("SELECT qa.quiz.category, COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = :quizType GROUP BY qa.quiz.category")
+    List<Object[]> countWrongByMemberIdGroupByCategoryAndQuizType(@Param("memberId") Long memberId, @Param("quizType") String quizType);
+
+    // 특정 카테고리의 오답 목록 (복습 모드 제외, 면접 대비용 기본)
+    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND qa.quiz.category = :category AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = 'INTERVIEW' ORDER BY qa.createdAt DESC")
     List<QuizAttempt> findWrongAnswersByMemberIdAndCategory(@Param("memberId") Long memberId, @Param("category") String category);
+
+    // 특정 카테고리의 오답 목록 (퀴즈타입별)
+    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND qa.quiz.category = :category AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = :quizType ORDER BY qa.createdAt DESC")
+    List<QuizAttempt> findWrongAnswersByMemberIdAndCategoryAndQuizType(@Param("memberId") Long memberId, @Param("category") String category, @Param("quizType") String quizType);
 
     // 사용자가 특정 퀴즈를 풀었는지 확인
     boolean existsByMemberIdAndQuizId(Long memberId, Long quizId);

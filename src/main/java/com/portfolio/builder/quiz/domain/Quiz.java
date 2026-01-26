@@ -22,6 +22,10 @@ public class Quiz {
     @Column(nullable = false, length = 20)
     private String type;  // OX, MULTIPLE
 
+    @Builder.Default
+    @Column(nullable = false, length = 20)
+    private String quizType = "INTERVIEW";  // INTERVIEW: 면접 대비, PRACTICE: 수업 복습
+
     @Column(nullable = false, length = 1000)
     private String question;
 

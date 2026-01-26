@@ -37,15 +37,16 @@ public class QuizService {
     private final ObjectMapper objectMapper;
 
     private static final int DAILY_LIMIT = 10; 
+    private static final int PRACTICE_QUIZ_COUNT = 10;  // 수업 복습 기본 문제 수
 
     /**
      * 카테고리 목록 조회 (사용자별 진행도 포함)
      */
-    public List<CategoryInfo> getCategories(Long memberId) {
-        List<String> categories = quizRepository.findAllCategories();
+    public List<CategoryInfo> getCategories(Long memberId, String quizType) {
+        List<String> categories = quizRepository.findAllCategoriesByQuizType(quizType);
         
         return categories.stream().map(category -> {
-            long totalCount = quizRepository.countByCategory(category);
+            long totalCount = quizRepository.countByCategoryAndQuizType(category, quizType);
             long solvedCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, category);
             
             return CategoryInfo.builder()
@@ -56,24 +57,47 @@ public class QuizService {
         }).collect(Collectors.toList());
     }
 
+    // 기존 메서드 호환용 (기본값 INTERVIEW)
+    public List<CategoryInfo> getCategories(Long memberId) {
+        return getCategories(memberId, "INTERVIEW");
+    }
+
     /**
-     * 오늘의 퀴즈 조회 (카테고리별)
+     * 오늘의 퀴즈 조회 (카테고리별) - 면접 대비용
      */
     public List<QuizResponse> getDailyQuiz(Long memberId, String category) {
-        // 오늘 이미 푼 문제 확인 (복습 모드 제외)
+        // 오늘 이미 푼 문제 확인 (면접 대비 타입만, 복습 모드 제외)
         LocalDate today = LocalDate.now();
-        Long solvedToday = quizAttemptRepository.countByMemberIdAndAttemptDateAndIsReviewModeFalse(memberId, today);
+        Long solvedToday = quizAttemptRepository.countByMemberIdAndAttemptDateAndQuizTypeAndIsReviewModeFalse(memberId, today, "INTERVIEW");
         
-        if (solvedToday >= DAILY_LIMIT) {
+        if (solvedToday != null && solvedToday >= DAILY_LIMIT) {
             return new ArrayList<>();  // 일일 제한 완료
         }
 
-        int remaining = DAILY_LIMIT - solvedToday.intValue();
+        int remaining = DAILY_LIMIT - (solvedToday != null ? solvedToday.intValue() : 0);
         
         // 안 푼 문제 중 랜덤 조회 (이미 푼 문제는 제외)
         List<Quiz> quizzes = quizRepository.findUnsolvedRandomByCategory(category, memberId, remaining);
         
         // 안 푼 문제가 없으면 빈 배열 반환 (이미 다 푼 카테고리)
+        if (quizzes.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return quizzes.stream()
+                .map(this::toQuizResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 수업 복습 퀴즈 조회 (안 푼 문제만 출제)
+     */
+    public List<QuizResponse> getPracticeQuiz(Long memberId, String category, int count) {
+        // 안 푼 문제 중 랜덤 조회 (수업 복습 타입)
+        List<Quiz> quizzes = quizRepository.findUnsolvedRandomByCategoryAndQuizType(
+                category, "PRACTICE", memberId, count);
+        
+        // 안 푼 문제가 없으면 빈 배열 반환 (해당 카테고리 완료)
         if (quizzes.isEmpty()) {
             return new ArrayList<>();
         }
@@ -96,6 +120,9 @@ public class QuizService {
 
         boolean isCorrect = quiz.getAnswer().equals(request.getUserAnswer());
 
+        // 퀴즈 타입 결정 (요청에서 받거나 퀴즈 자체의 타입 사용)
+        String quizType = request.getQuizType() != null ? request.getQuizType() : quiz.getQuizType();
+
         // 시도 기록 저장
         QuizAttempt attempt = QuizAttempt.builder()
                 .member(member)
@@ -104,10 +131,11 @@ public class QuizService {
                 .isCorrect(isCorrect)
                 .attemptDate(LocalDate.now())
                 .isReviewMode(request.getIsReviewMode() != null && request.getIsReviewMode())
+                .quizType(quizType)
                 .build();
         quizAttemptRepository.save(attempt);
 
-        // 스트릭 업데이트
+        // 스트릭 업데이트 (면접 OR 수업복습 모두 스트릭 갱신)
         updateStreak(memberId, isCorrect);
 
         return SubmitResponse.builder()
@@ -119,24 +147,39 @@ public class QuizService {
     }
 
     /**
-     * 오늘의 진행 상황
+     * 오늘의 진행 상황 (퀴즈타입별)
      */
-    public DailyProgress getDailyProgress(Long memberId) {
+    public DailyProgress getDailyProgress(Long memberId, String quizType) {
         LocalDate today = LocalDate.now();
-        // 복습 모드 제외한 일반 풀이만 카운트
-        Long solvedToday = quizAttemptRepository.countByMemberIdAndAttemptDateAndIsReviewModeFalse(memberId, today);
-
+        
+        if ("PRACTICE".equals(quizType)) {
+            // 수업 복습은 무제한이므로 오늘 푼 문제 수만 반환
+            Long solvedToday = quizAttemptRepository.countByMemberIdAndAttemptDateAndQuizTypeAndIsReviewModeFalse(memberId, today, quizType);
+            return DailyProgress.builder()
+                    .solvedToday(solvedToday != null ? solvedToday.intValue() : 0)
+                    .dailyLimit(0)  // 0은 무제한 의미
+                    .completed(false)  // 수업 복습은 완료 개념 없음
+                    .build();
+        }
+        
+        // 면접 대비 - quizType으로 필터링해서 면접 문제만 카운트
+        Long solvedToday = quizAttemptRepository.countByMemberIdAndAttemptDateAndQuizTypeAndIsReviewModeFalse(memberId, today, "INTERVIEW");
         return DailyProgress.builder()
-                .solvedToday(solvedToday.intValue())
+                .solvedToday(solvedToday != null ? solvedToday.intValue() : 0)
                 .dailyLimit(DAILY_LIMIT)
-                .completed(solvedToday >= DAILY_LIMIT)
+                .completed(solvedToday != null && solvedToday >= DAILY_LIMIT)
                 .build();
     }
 
+    // 기존 호환용
+    public DailyProgress getDailyProgress(Long memberId) {
+        return getDailyProgress(memberId, "INTERVIEW");
+    }
+
     /**
-     * 사용자 통계 조회
+     * 사용자 통계 조회 (퀴즈타입별)
      */
-    public StatsResponse getStats(Long memberId) {
+    public StatsResponse getStats(Long memberId, String quizType) {
         QuizStreak streak = quizStreakRepository.findByMemberId(memberId)
                 .orElse(QuizStreak.builder()
                         .currentStreak(0)
@@ -145,9 +188,9 @@ public class QuizService {
                         .correctCount(0)
                         .build());
 
-        List<String> categories = quizRepository.findAllCategories();
+        List<String> categories = quizRepository.findAllCategoriesByQuizType(quizType);
         List<CategoryStats> categoryStats = categories.stream().map(category -> {
-            long totalCount = quizRepository.countByCategory(category);
+            long totalCount = quizRepository.countByCategoryAndQuizType(category, quizType);
             long solvedCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, category);
             long correctCount = quizAttemptRepository.countCorrectByMemberIdAndCategory(memberId, category);
             double accuracy = solvedCount > 0 ? (correctCount * 100.0 / solvedCount) : 0;
@@ -173,6 +216,11 @@ public class QuizService {
                 .accuracy(Math.round(totalAccuracy * 10) / 10.0)
                 .categoryStats(categoryStats)
                 .build();
+    }
+
+    // 기존 호환용
+    public StatsResponse getStats(Long memberId) {
+        return getStats(memberId, "INTERVIEW");
     }
 
     /**
@@ -243,15 +291,15 @@ public class QuizService {
     // ===== Phase 2: 오답 노트 =====
     
     /**
-     * 오답 목록 조회
+     * 오답 목록 조회 (퀴즈타입별)
      */
-    public List<WrongAnswerResponse> getWrongAnswers(Long memberId, String category) {
+    public List<WrongAnswerResponse> getWrongAnswers(Long memberId, String category, String quizType) {
         List<QuizAttempt> wrongAttempts;
         
         if (category != null && !category.isEmpty()) {
-            wrongAttempts = quizAttemptRepository.findWrongAnswersByMemberIdAndCategory(memberId, category);
+            wrongAttempts = quizAttemptRepository.findWrongAnswersByMemberIdAndCategoryAndQuizType(memberId, category, quizType);
         } else {
-            wrongAttempts = quizAttemptRepository.findWrongAnswersByMemberId(memberId);
+            wrongAttempts = quizAttemptRepository.findWrongAnswersByMemberIdAndQuizType(memberId, quizType);
         }
 
         return wrongAttempts.stream()
@@ -259,11 +307,16 @@ public class QuizService {
                 .collect(Collectors.toList());
     }
 
+    // 기존 호환용
+    public List<WrongAnswerResponse> getWrongAnswers(Long memberId, String category) {
+        return getWrongAnswers(memberId, category, "INTERVIEW");
+    }
+
     /**
-     * 오답 통계 조회
+     * 오답 통계 조회 (퀴즈타입별)
      */
-    public WrongAnswerStats getWrongAnswerStats(Long memberId) {
-        List<Object[]> categoryWrongCounts = quizAttemptRepository.countWrongByMemberIdGroupByCategory(memberId);
+    public WrongAnswerStats getWrongAnswerStats(Long memberId, String quizType) {
+        List<Object[]> categoryWrongCounts = quizAttemptRepository.countWrongByMemberIdGroupByCategoryAndQuizType(memberId, quizType);
         
         List<CategoryWrongCount> breakdown = categoryWrongCounts.stream()
                 .map(row -> CategoryWrongCount.builder()
@@ -280,16 +333,21 @@ public class QuizService {
                 .build();
     }
 
+    // 기존 호환용
+    public WrongAnswerStats getWrongAnswerStats(Long memberId) {
+        return getWrongAnswerStats(memberId, "INTERVIEW");
+    }
+
     /**
-     * 오답 다시 풀기 (5개 제한 없음 - 복습 모드)
+     * 오답 다시 풀기 (5개 제한 없음 - 복습 모드, 퀴즈타입별)
      */
-    public List<QuizResponse> getWrongQuizzes(Long memberId, String category, int count) {
+    public List<QuizResponse> getWrongQuizzes(Long memberId, String category, int count, String quizType) {
         List<QuizAttempt> wrongAttempts;
         
         if (category != null && !category.isEmpty()) {
-            wrongAttempts = quizAttemptRepository.findWrongAnswersByMemberIdAndCategory(memberId, category);
+            wrongAttempts = quizAttemptRepository.findWrongAnswersByMemberIdAndCategoryAndQuizType(memberId, category, quizType);
         } else {
-            wrongAttempts = quizAttemptRepository.findWrongAnswersByMemberId(memberId);
+            wrongAttempts = quizAttemptRepository.findWrongAnswersByMemberIdAndQuizType(memberId, quizType);
         }
 
         // 중복 제거 및 섞기
@@ -304,6 +362,11 @@ public class QuizService {
                 .limit(count)
                 .map(this::toQuizResponse)
                 .collect(Collectors.toList());
+    }
+
+    // 기존 호환용
+    public List<QuizResponse> getWrongQuizzes(Long memberId, String category, int count) {
+        return getWrongQuizzes(memberId, category, count, "INTERVIEW");
     }
 
     private WrongAnswerResponse toWrongAnswerResponse(QuizAttempt attempt) {
@@ -838,18 +901,18 @@ public class QuizService {
     // ===== Phase 2: 복습 모드 =====
     
     /**
-     * 복습 퀴즈 조회 (내가 푼 문제만, 5개 제한 없음)
+     * 복습 퀴즈 조회 (내가 푼 문제만, 5개 제한 없음, 퀴즈타입별)
      */
-    public List<QuizResponse> getReviewQuizzes(Long memberId, String category, int count, String mode) {
+    public List<QuizResponse> getReviewQuizzes(Long memberId, String category, int count, String mode, String quizType) {
         List<QuizAttempt> attempts;
         
         switch (mode) {
             case "wrong":
                 // 틀린 문제만
                 if (category != null && !category.isEmpty()) {
-                    attempts = quizAttemptRepository.findWrongAnswersByMemberIdAndCategory(memberId, category);
+                    attempts = quizAttemptRepository.findWrongAnswersByMemberIdAndCategoryAndQuizType(memberId, category, quizType);
                 } else {
-                    attempts = quizAttemptRepository.findWrongAnswersByMemberId(memberId);
+                    attempts = quizAttemptRepository.findWrongAnswersByMemberIdAndQuizType(memberId, quizType);
                 }
                 break;
             case "correct":
@@ -885,12 +948,17 @@ public class QuizService {
                 .collect(Collectors.toList());
     }
 
+    // 기존 호환용
+    public List<QuizResponse> getReviewQuizzes(Long memberId, String category, int count, String mode) {
+        return getReviewQuizzes(memberId, category, count, mode, "INTERVIEW");
+    }
+
     /**
-     * 복습 가능한 문제 통계 조회
+     * 복습 가능한 문제 통계 조회 (퀴즈타입별)
      */
-    public ReviewStatsResponse getReviewStats(Long memberId) {
+    public ReviewStatsResponse getReviewStats(Long memberId, String quizType) {
         List<Object[]> solvedByCategory = quizAttemptRepository.countSolvedByMemberIdGroupByCategory(memberId);
-        List<Object[]> wrongByCategory = quizAttemptRepository.countWrongByMemberIdGroupByCategory(memberId);
+        List<Object[]> wrongByCategory = quizAttemptRepository.countWrongByMemberIdGroupByCategoryAndQuizType(memberId, quizType);
 
         // 카테고리별 푼 문제 수
         java.util.Map<String, Long> solvedMap = solvedByCategory.stream()
@@ -906,7 +974,7 @@ public class QuizService {
                         row -> ((Number) row[1]).longValue()
                 ));
 
-        List<String> categories = quizRepository.findAllCategories();
+        List<String> categories = quizRepository.findAllCategoriesByQuizType(quizType);
         List<ReviewCategoryStats> categoryStats = categories.stream()
                 .map(cat -> ReviewCategoryStats.builder()
                         .category(cat)
@@ -928,6 +996,11 @@ public class QuizService {
                 .build();
     }
 
+    // 기존 호환용
+    public ReviewStatsResponse getReviewStats(Long memberId) {
+        return getReviewStats(memberId, "INTERVIEW");
+    }
+
     /**
      * 복습 정답 제출 (스트릭/일일 제한에 영향 없음, 복습 마스터 배지용 기록)
      */
@@ -941,6 +1014,9 @@ public class QuizService {
 
         boolean isCorrect = quiz.getAnswer().equals(request.getUserAnswer());
 
+        // 퀴즈 타입 결정
+        String quizType = request.getQuizType() != null ? request.getQuizType() : quiz.getQuizType();
+
         // 복습 모드 기록 저장 (복습 마스터 배지용)
         QuizAttempt attempt = QuizAttempt.builder()
                 .member(member)
@@ -949,6 +1025,7 @@ public class QuizService {
                 .isCorrect(isCorrect)
                 .attemptDate(LocalDate.now())
                 .isReviewMode(true)  // 복습 모드 플래그
+                .quizType(quizType)
                 .build();
         quizAttemptRepository.save(attempt);
         

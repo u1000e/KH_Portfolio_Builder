@@ -158,15 +158,29 @@ public class PortfolioService {
                     Long ownerId = portfolio.getMember() != null ? portfolio.getMember().getId() : null;
                     int badgeCount = 0;
                     List<String> recentBadges = List.of();
+                    PortfolioResponse.SelectedBadgeInfo selectedBadgeInfo = null;
+                    
                     if (ownerId != null) {
                         badgeCount = (int) badgeRepository.countByMemberId(ownerId);
                         recentBadges = badgeRepository.findTop4ByMemberIdOrderByEarnedAtDesc(ownerId)
                                 .stream()
                                 .map(badge -> badgeService.getBadgeIcon(badge.getBadgeId()))
                                 .collect(Collectors.toList());
+                        
+                        // 대표 배지 정보 조회
+                        Member owner = portfolio.getMember();
+                        if (owner.getSelectedBadgeId() != null) {
+                            String badgeId = owner.getSelectedBadgeId();
+                            selectedBadgeInfo = PortfolioResponse.SelectedBadgeInfo.builder()
+                                    .id(badgeId)
+                                    .icon(badgeService.getBadgeIcon(badgeId))
+                                    .name(badgeService.getBadgeName(badgeId))
+                                    .description(badgeService.getBadgeDescription(badgeId))
+                                    .build();
+                        }
                     }
                     
-                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges);
+                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadgeInfo);
                 })
                 .collect(Collectors.toList());
     }
@@ -188,15 +202,29 @@ public class PortfolioService {
                     Long ownerId = portfolio.getMember() != null ? portfolio.getMember().getId() : null;
                     int badgeCount = 0;
                     List<String> recentBadges = List.of();
+                    PortfolioResponse.SelectedBadgeInfo selectedBadgeInfo = null;
+                    
                     if (ownerId != null) {
                         badgeCount = (int) badgeRepository.countByMemberId(ownerId);
                         recentBadges = badgeRepository.findTop4ByMemberIdOrderByEarnedAtDesc(ownerId)
                                 .stream()
                                 .map(badge -> badgeService.getBadgeIcon(badge.getBadgeId()))
                                 .collect(Collectors.toList());
+                        
+                        // 대표 배지 정보 조회
+                        Member owner = portfolio.getMember();
+                        if (owner.getSelectedBadgeId() != null) {
+                            String badgeId = owner.getSelectedBadgeId();
+                            selectedBadgeInfo = PortfolioResponse.SelectedBadgeInfo.builder()
+                                    .id(badgeId)
+                                    .icon(badgeService.getBadgeIcon(badgeId))
+                                    .name(badgeService.getBadgeName(badgeId))
+                                    .description(badgeService.getBadgeDescription(badgeId))
+                                    .build();
+                        }
                     }
                     
-                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges);
+                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadgeInfo);
                 })
                 .collect(Collectors.toList());
     }

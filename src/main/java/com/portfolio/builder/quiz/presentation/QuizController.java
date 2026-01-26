@@ -22,12 +22,13 @@ public class QuizController {
      */
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryInfo>> getCategories(
-            @RequestAttribute("memberId") Long memberId) {
-        return ResponseEntity.ok(quizService.getCategories(memberId));
+            @RequestAttribute("memberId") Long memberId,
+            @RequestParam(value = "type", defaultValue = "INTERVIEW") String quizType) {
+        return ResponseEntity.ok(quizService.getCategories(memberId, quizType));
     }
 
     /**
-     * 오늘의 퀴즈 조회 (카테고리별 5문제)
+     * 오늘의 퀴즈 조회 (카테고리별 5문제) - 면접 대비용
      */
     @GetMapping("/daily")
     public ResponseEntity<List<QuizResponse>> getDailyQuiz(
@@ -37,12 +38,24 @@ public class QuizController {
     }
 
     /**
+     * 수업 복습 퀴즈 조회 (무제한)
+     */
+    @GetMapping("/practice")
+    public ResponseEntity<List<QuizResponse>> getPracticeQuiz(
+            @RequestAttribute("memberId") Long memberId,
+            @RequestParam("category") String category,
+            @RequestParam(value = "count", defaultValue = "10") int count) {
+        return ResponseEntity.ok(quizService.getPracticeQuiz(memberId, category, count));
+    }
+
+    /**
      * 오늘의 진행 상황 조회
      */
     @GetMapping("/progress")
     public ResponseEntity<DailyProgress> getDailyProgress(
-            @RequestAttribute("memberId") Long memberId) {
-        return ResponseEntity.ok(quizService.getDailyProgress(memberId));
+            @RequestAttribute("memberId") Long memberId,
+            @RequestParam(value = "type", defaultValue = "INTERVIEW") String quizType) {
+        return ResponseEntity.ok(quizService.getDailyProgress(memberId, quizType));
     }
 
     /**
@@ -60,8 +73,9 @@ public class QuizController {
      */
     @GetMapping("/stats")
     public ResponseEntity<StatsResponse> getStats(
-            @RequestAttribute("memberId") Long memberId) {
-        return ResponseEntity.ok(quizService.getStats(memberId));
+            @RequestAttribute("memberId") Long memberId,
+            @RequestParam(value = "type", defaultValue = "INTERVIEW") String quizType) {
+        return ResponseEntity.ok(quizService.getStats(memberId, quizType));
     }
 
     // ===== Phase 2: 오답 노트 =====
@@ -72,8 +86,9 @@ public class QuizController {
     @GetMapping("/wrong-answers")
     public ResponseEntity<List<WrongAnswerResponse>> getWrongAnswers(
             @RequestAttribute("memberId") Long memberId,
-            @RequestParam(value = "category", required = false) String category) {
-        return ResponseEntity.ok(quizService.getWrongAnswers(memberId, category));
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "type", defaultValue = "INTERVIEW") String quizType) {
+        return ResponseEntity.ok(quizService.getWrongAnswers(memberId, category, quizType));
     }
 
     /**
@@ -81,8 +96,9 @@ public class QuizController {
      */
     @GetMapping("/wrong-answers/stats")
     public ResponseEntity<WrongAnswerStats> getWrongAnswerStats(
-            @RequestAttribute("memberId") Long memberId) {
-        return ResponseEntity.ok(quizService.getWrongAnswerStats(memberId));
+            @RequestAttribute("memberId") Long memberId,
+            @RequestParam(value = "type", defaultValue = "INTERVIEW") String quizType) {
+        return ResponseEntity.ok(quizService.getWrongAnswerStats(memberId, quizType));
     }
 
     /**
@@ -92,8 +108,9 @@ public class QuizController {
     public ResponseEntity<List<QuizResponse>> getWrongQuizzes(
             @RequestAttribute("memberId") Long memberId,
             @RequestParam(value = "category", required = false) String category,
-            @RequestParam(value = "count", defaultValue = "5") int count) {
-        return ResponseEntity.ok(quizService.getWrongQuizzes(memberId, category, count));
+            @RequestParam(value = "count", defaultValue = "5") int count,
+            @RequestParam(value = "type", defaultValue = "INTERVIEW") String quizType) {
+        return ResponseEntity.ok(quizService.getWrongQuizzes(memberId, category, count, quizType));
     }
 
     // ===== Phase 2: 랭킹 시스템 =====
@@ -117,8 +134,9 @@ public class QuizController {
      */
     @GetMapping("/review/stats")
     public ResponseEntity<ReviewStatsResponse> getReviewStats(
-            @RequestAttribute("memberId") Long memberId) {
-        return ResponseEntity.ok(quizService.getReviewStats(memberId));
+            @RequestAttribute("memberId") Long memberId,
+            @RequestParam(value = "type", defaultValue = "INTERVIEW") String quizType) {
+        return ResponseEntity.ok(quizService.getReviewStats(memberId, quizType));
     }
 
     /**
@@ -129,8 +147,9 @@ public class QuizController {
             @RequestAttribute("memberId") Long memberId,
             @RequestParam(value = "category", required = false) String category,
             @RequestParam(value = "count", defaultValue = "10") int count,
-            @RequestParam(value = "mode", defaultValue = "all") String mode) {
-        return ResponseEntity.ok(quizService.getReviewQuizzes(memberId, category, count, mode));
+            @RequestParam(value = "mode", defaultValue = "all") String mode,
+            @RequestParam(value = "type", defaultValue = "INTERVIEW") String quizType) {
+        return ResponseEntity.ok(quizService.getReviewQuizzes(memberId, category, count, mode, quizType));
     }
 
     /**
@@ -170,5 +189,25 @@ public class QuizController {
     public ResponseEntity<List<BadgeResponse>> checkBadges(
             @RequestAttribute("memberId") Long memberId) {
         return ResponseEntity.ok(badgeService.checkAndAwardBadges(memberId));
+    }
+
+    /**
+     * 대표 배지 선택
+     */
+    @PostMapping("/badges/select")
+    public ResponseEntity<Void> selectBadge(
+            @RequestAttribute("memberId") Long memberId,
+            @RequestBody SelectBadgeRequest request) {
+        badgeService.selectBadge(memberId, request.getBadgeId());
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 선택된 대표 배지 조회
+     */
+    @GetMapping("/badges/selected")
+    public ResponseEntity<BadgeResponse> getSelectedBadge(
+            @RequestAttribute("memberId") Long memberId) {
+        return ResponseEntity.ok(badgeService.getSelectedBadge(memberId));
     }
 }

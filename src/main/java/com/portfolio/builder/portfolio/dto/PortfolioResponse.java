@@ -38,9 +38,24 @@ public class PortfolioResponse {
     private Integer aiScore;  // AI 평가 점수 (null = 미평가)
     private String aiGrade;   // AI 등급 (S, A, B, C, null)
     
-    // 퀸즈 배지 관련 필드
+    // 퀴즈 배지 관련 필드
     private Integer badgeCount;  // 총 배지 수
     private java.util.List<String> recentBadges;  // 최근 배지 아이콘 (4개)
+    
+    // 대표 배지 관련 필드
+    private SelectedBadgeInfo selectedBadge;  // 선택된 대표 배지 정보
+    
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SelectedBadgeInfo {
+        private String id;
+        private String icon;
+        private String name;
+        private String description;
+    }
 
     /**
      * Lazy 로딩된 Member 프록시를 안전하게 초기화합니다.
@@ -115,6 +130,10 @@ public class PortfolioResponse {
     }
 
     public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges) {
+        return from(portfolio, likeCount, isLiked, badgeCount, recentBadges, null);
+    }
+    
+    public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges, SelectedBadgeInfo selectedBadge) {
         Member member = safeGetMember(portfolio);
         return PortfolioResponse.builder()
                 .id(portfolio.getId())
@@ -137,6 +156,7 @@ public class PortfolioResponse {
                 .aiGrade(calculateGrade(portfolio.getAiScore()))
                 .badgeCount(badgeCount)
                 .recentBadges(recentBadges)
+                .selectedBadge(selectedBadge)
                 .build();
     }
     
