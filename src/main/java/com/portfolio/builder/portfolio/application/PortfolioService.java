@@ -391,13 +391,24 @@ public class PortfolioService {
         // 숫자만 추출
         String digits = phone.replaceAll("[^0-9]", "");
         if (digits.length() < 7) return phone;
-        // 가운데 4자리 마스킹
-        return phone.replaceFirst("\\d{3,4}(?=\\d{4}$)", "****");
+        
+        // 010-1234-5678 또는 01012345678 형식 모두 처리
+        if (digits.length() == 11) {
+            // 휴대폰 번호: 010-****-5678 형식으로 마스킹
+            return digits.substring(0, 3) + "-****-" + digits.substring(7);
+        } else if (digits.length() == 10) {
+            // 지역번호 포함: 02-****-5678 형식으로 마스킹
+            return digits.substring(0, 2) + "-****-" + digits.substring(6);
+        }
+        // 그 외의 경우
+        return phone.replaceAll("\\d(?=\\d{4})", "*");
     }
     
     private String maskSchool(String school) {
-        if (school == null || school.length() < 2) return school;
-        // 첫 글자와 마지막 글자만 보여주고 나머지 마스킹
-        return school.charAt(0) + "*".repeat(school.length() - 2) + school.charAt(school.length() - 1);
+        if (school == null || school.isEmpty()) return school;
+        
+        // 앞 두 글자만 OO으로 치환
+        if (school.length() <= 2) return "OO";
+        return "OO" + school.substring(2);
     }
 }
