@@ -75,8 +75,15 @@ public class BadgeService {
             new BadgeDefinition("master_java_class_deep", "Java 심화 정복", "Java 수업 심화 18문제 모두 완료!", "📕", 18),
             new BadgeDefinition("master_java_class_all", "Java 수업 완전 정복", "Java 수업 배지 3개 모두 획득!", "🍾", 3),
             
+            // 수업 복습 배지 - SQL
+            new BadgeDefinition("master_sql", "SQL 정복", "SQL 30문제 모두 완료!", "🗃️", 30),
+            
             // 수업 복습 배지 - JDBC
             new BadgeDefinition("master_jdbc", "JDBC 정복", "JDBC 22문제 모두 완료!", "🔌", 22),
+            
+            // 수업 복습 배지 - JavaScript/jQuery
+            new BadgeDefinition("master_javascript_class", "JavaScript 수업 정복", "JavaScript 25문제 모두 완료!", "🧩", 25),
+            new BadgeDefinition("master_jquery", "jQuery 정복", "jQuery 10문제 모두 완료!", "💠", 10),
             
             // 수업 복습 배지 - 웹 개발
             new BadgeDefinition("master_servlet_jsp", "Servlet/JSP 정복", "Servlet/JSP 25문제 모두 완료!", "🎢", 25),
@@ -271,9 +278,19 @@ public class BadgeService {
                        badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_adv") &&
                        badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_deep");
             
+            // 수업 복습 배지 - SQL
+            case "master_sql":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "SQL") >= 30;
+            
             // 수업 복습 배지 - JDBC
             case "master_jdbc":
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "JDBC") >= 22;
+            
+            // 수업 복습 배지 - JavaScript/jQuery
+            case "master_javascript_class":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript") >= 25;
+            case "master_jquery":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "jQuery") >= 10;
             
             // 수업 복습 배지 - 웹 개발
             case "master_servlet_jsp":
@@ -368,9 +385,18 @@ public class BadgeService {
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_adv")) classCount++;
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_deep")) classCount++;
                 return Math.min(100, classCount * 100 / 3);
+            case "master_sql":
+                Long sqlCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "SQL");
+                return Math.min(100, (int)(sqlCount * 100 / 30));
             case "master_jdbc":
                 Long jdbcCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JDBC");
                 return Math.min(100, (int)(jdbcCount * 100 / 22));
+            case "master_javascript_class":
+                Long jsClassCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript");
+                return Math.min(100, (int)(jsClassCount * 100 / 25));
+            case "master_jquery":
+                Long jqueryCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "jQuery");
+                return Math.min(100, (int)(jqueryCount * 100 / 10));
             case "master_servlet_jsp":
                 Long servletJspCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Servlet/JSP");
                 return Math.min(100, (int)(servletJspCount * 100 / 25));
@@ -439,9 +465,18 @@ public class BadgeService {
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_adv")) classBadgeCount++;
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_java_class_deep")) classBadgeCount++;
                 return classBadgeCount + "/3개 배지";
+            case "master_sql":
+                Long sqlCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "SQL");
+                return sqlCnt + "/30문제";
             case "master_jdbc":
                 Long jdbcCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JDBC");
                 return jdbcCnt + "/22문제";
+            case "master_javascript_class":
+                Long jsClassCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript");
+                return jsClassCnt + "/25문제";
+            case "master_jquery":
+                Long jqueryCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "jQuery");
+                return jqueryCnt + "/10문제";
             case "master_servlet_jsp":
                 Long servletJspCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Servlet/JSP");
                 return servletJspCnt + "/25문제";
