@@ -65,7 +65,11 @@ public class QuizController {
     public ResponseEntity<SubmitResponse> submitAnswer(
             @RequestAttribute("memberId") Long memberId,
             @RequestBody SubmitRequest request) {
-        return ResponseEntity.ok(quizService.submitAnswer(memberId, request));
+        SubmitResponse response = quizService.submitAnswer(memberId, request);
+        // 퀴즈 제출 후 배지 자동 체크 및 새 배지 정보 포함
+        var newBadges = badgeService.checkAndAwardBadges(memberId);
+        response.setNewBadges(newBadges);
+        return ResponseEntity.ok(response);
     }
 
     /**

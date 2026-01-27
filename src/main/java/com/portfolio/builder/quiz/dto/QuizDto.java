@@ -54,6 +54,7 @@ public class QuizDto {
         private Boolean isCorrect;
         private Integer correctAnswer;
         private String explanation;
+        private List<BadgeResponse> newBadges;  // 새로 획득한 배지
     }
 
     @Getter

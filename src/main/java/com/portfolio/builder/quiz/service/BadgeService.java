@@ -295,13 +295,13 @@ public class BadgeService {
             
             // 수업 복습 배지 - JavaScript/jQuery
             case "master_javascript_class":
-                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript") >= 25;
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript 수업") >= 25;
             case "master_jquery":
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "jQuery") >= 10;
             
             // 수업 복습 배지 - React/Infrastructure
             case "master_react_class":
-                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "React") >= 30;
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "React 수업") >= 30;
             case "master_infrastructure":
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Infrastructure") >= 30;
             
@@ -407,13 +407,13 @@ public class BadgeService {
                 Long jdbcCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JDBC");
                 return Math.min(100, (int)(jdbcCount * 100 / 22));
             case "master_javascript_class":
-                Long jsClassCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript");
+                Long jsClassCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript 수업");
                 return Math.min(100, (int)(jsClassCount * 100 / 25));
             case "master_jquery":
                 Long jqueryCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "jQuery");
                 return Math.min(100, (int)(jqueryCount * 100 / 10));
             case "master_react_class":
-                Long reactClassCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "React");
+                Long reactClassCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "React 수업");
                 return Math.min(100, (int)(reactClassCount * 100 / 30));
             case "master_infrastructure":
                 Long infraCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Infrastructure");
@@ -494,13 +494,13 @@ public class BadgeService {
                 Long jdbcCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JDBC");
                 return jdbcCnt + "/22문제";
             case "master_javascript_class":
-                Long jsClassCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript");
+                Long jsClassCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript 수업");
                 return jsClassCnt + "/25문제";
             case "master_jquery":
                 Long jqueryCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "jQuery");
                 return jqueryCnt + "/10문제";
             case "master_react_class":
-                Long reactClassCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "React");
+                Long reactClassCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "React 수업");
                 return reactClassCnt + "/30문제";
             case "master_infrastructure":
                 Long infraCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Infrastructure");
