@@ -44,6 +44,7 @@ public class BadgeService {
             new BadgeDefinition("quiz_200", "200문제 달성", "총 200문제를 풀었습니다!", "💎", 200),
             new BadgeDefinition("quiz_300", "300문제 달성", "총 300문제를 풀었습니다!", "🎆", 300),
             new BadgeDefinition("quiz_400", "400문제 달성", "총 400문제를 풀었습니다!", "💻", 400),
+            new BadgeDefinition("quiz_500", "500문제 달성", "총 500문제를 풀었습니다!", "🖥", 500),
             
             // 정확도
             new BadgeDefinition("accuracy_80", "정확도 80%", "정확도 80% 이상 달성! (최소 20문제)", "✨", 80),
@@ -85,6 +86,10 @@ public class BadgeService {
             new BadgeDefinition("master_javascript_class", "JavaScript 수업 정복", "JavaScript 25문제 모두 완료!", "🧩", 25),
             new BadgeDefinition("master_jquery", "jQuery 정복", "jQuery 10문제 모두 완료!", "💠", 10),
             
+            // 수업 복습 배지 - React/Infrastructure
+            new BadgeDefinition("master_react_class", "React 수업 정복", "React 30문제 모두 완료!", "🔮", 30),
+            new BadgeDefinition("master_infrastructure", "Infrastructure 정복", "Infrastructure 30문제 모두 완료!", "🏭", 30),
+            
             // 수업 복습 배지 - 웹 개발
             new BadgeDefinition("master_servlet_jsp", "Servlet/JSP 정복", "Servlet/JSP 25문제 모두 완료!", "🎢", 25),
             new BadgeDefinition("master_spring_mvc", "Spring MVC 정복", "Spring MVC 20문제 모두 완료!", "🎇", 20),
@@ -93,7 +98,7 @@ public class BadgeService {
             new BadgeDefinition("master_web_class_all", "웹 개발 수업 완전 정복", "웹 개발 수업 배지 4개 모두 획득!", "🎊", 4),
             
             // 최종 완료
-            new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 34)
+            new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 43)
     );
 
     /**
@@ -227,6 +232,8 @@ public class BadgeService {
                 return streak.getTotalQuizCount() >= 300;
             case "quiz_400":
                 return streak.getTotalQuizCount() >= 400;
+            case "quiz_500":
+                return streak.getTotalQuizCount() >= 500;
             
             // 정확도
             case "accuracy_80":
@@ -291,6 +298,12 @@ public class BadgeService {
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript") >= 25;
             case "master_jquery":
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "jQuery") >= 10;
+            
+            // 수업 복습 배지 - React/Infrastructure
+            case "master_react_class":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "React") >= 30;
+            case "master_infrastructure":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Infrastructure") >= 30;
             
             // 수업 복습 배지 - 웹 개발
             case "master_servlet_jsp":
@@ -361,6 +374,8 @@ public class BadgeService {
                 return Math.min(100, streak.getTotalQuizCount() * 100 / 300);
             case "quiz_400":
                 return Math.min(100, streak.getTotalQuizCount() * 100 / 400);
+            case "quiz_500":
+                return Math.min(100, streak.getTotalQuizCount() * 100 / 500);
             case "master_beginner":
                 Long beginnerCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "입문");
                 return Math.min(100, (int)(beginnerCount * 100 / 40));
@@ -397,6 +412,12 @@ public class BadgeService {
             case "master_jquery":
                 Long jqueryCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "jQuery");
                 return Math.min(100, (int)(jqueryCount * 100 / 10));
+            case "master_react_class":
+                Long reactClassCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "React");
+                return Math.min(100, (int)(reactClassCount * 100 / 30));
+            case "master_infrastructure":
+                Long infraCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Infrastructure");
+                return Math.min(100, (int)(infraCount * 100 / 30));
             case "master_servlet_jsp":
                 Long servletJspCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Servlet/JSP");
                 return Math.min(100, (int)(servletJspCount * 100 / 25));
@@ -443,6 +464,7 @@ public class BadgeService {
             case "quiz_200":
             case "quiz_300":
             case "quiz_400":
+            case "quiz_500":
                 return streak.getTotalQuizCount() + "/" + def.threshold + "문제";
             case "master_beginner":
                 Long beginnerCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "입문");
@@ -477,6 +499,12 @@ public class BadgeService {
             case "master_jquery":
                 Long jqueryCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "jQuery");
                 return jqueryCnt + "/10문제";
+            case "master_react_class":
+                Long reactClassCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "React");
+                return reactClassCnt + "/30문제";
+            case "master_infrastructure":
+                Long infraCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Infrastructure");
+                return infraCnt + "/30문제";
             case "master_servlet_jsp":
                 Long servletJspCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Servlet/JSP");
                 return servletJspCnt + "/25문제";
