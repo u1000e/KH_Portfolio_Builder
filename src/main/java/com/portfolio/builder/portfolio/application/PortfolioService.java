@@ -1,5 +1,7 @@
 package com.portfolio.builder.portfolio.application;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.builder.comment.domain.CommentRepository;
 import com.portfolio.builder.feedback.domain.FeedbackRepository;
 import com.portfolio.builder.member.domain.Member;
@@ -34,6 +36,7 @@ public class PortfolioService {
     private final MemberRepository memberRepository;
     private final BadgeRepository badgeRepository;
     private final BadgeService badgeService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public PortfolioResponse createPortfolio(Long memberId, PortfolioRequest request) {
         Member member = memberRepository.findById(memberId)
@@ -309,8 +312,13 @@ public class PortfolioService {
         boolean isStaff = currentMember != null && 
                 ("운영팀".equals(currentMember.getPosition()) || "강사".equals(currentMember.getPosition()));
         
-        // 비공개 포트폴리오는 운영팀/강사만 조회 가능
-        if (!portfolio.getIsPublic() && !isStaff) {
+        // 본인 여부 확인
+        boolean isOwner = currentMember != null && 
+                portfolio.getMember() != null && 
+                currentMember.getId().equals(portfolio.getMember().getId());
+        
+        // 비공개 포트폴리오는 운영팀/강사/본인만 조회 가능
+        if (!portfolio.getIsPublic() && !isStaff && !isOwner) {
             throw new RuntimeException("This portfolio is not public");
         }
 
@@ -318,6 +326,78 @@ public class PortfolioService {
         boolean isLiked = currentMember != null && 
                          portfolioLikeRepository.existsByPortfolioAndMember(portfolio, currentMember);
 
-        return PortfolioResponse.from(portfolio, likeCount, isLiked);
+        PortfolioResponse response = PortfolioResponse.from(portfolio, likeCount, isLiked);
+        
+        // 본인/강사/운영팀이 아니면 개인정보 마스킹
+        if (!isOwner && !isStaff) {
+            response.setData(maskPersonalInfo(portfolio.getData()));
+        }
+        
+        return response;
+    }
+    
+    /**
+     * 포트폴리오 데이터에서 개인정보 마스킹
+     */
+    private String maskPersonalInfo(String dataJson) {
+        if (dataJson == null || dataJson.isEmpty()) {
+            return dataJson;
+        }
+        
+        try {
+            Map<String, Object> data = objectMapper.readValue(dataJson, new TypeReference<Map<String, Object>>() {});
+            
+            // 이메일 마스킹
+            if (data.containsKey("email") && data.get("email") != null) {
+                data.put("email", maskEmail((String) data.get("email")));
+            }
+            
+            // 전화번호 마스킹
+            if (data.containsKey("phone") && data.get("phone") != null) {
+                data.put("phone", maskPhone((String) data.get("phone")));
+            }
+            
+            // 학력 마스킹
+            if (data.containsKey("educations") && data.get("educations") != null) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> educations = (List<Map<String, Object>>) data.get("educations");
+                for (Map<String, Object> edu : educations) {
+                    if (edu.containsKey("school") && edu.get("school") != null) {
+                        edu.put("school", maskSchool((String) edu.get("school")));
+                    }
+                }
+            }
+            
+            return objectMapper.writeValueAsString(data);
+        } catch (Exception e) {
+            log.error("Failed to mask personal info", e);
+            return dataJson;
+        }
+    }
+    
+    private String maskEmail(String email) {
+        if (email == null || !email.contains("@")) return email;
+        String[] parts = email.split("@");
+        String local = parts[0];
+        String domain = parts[1];
+        String maskedLocal = local.length() <= 2 
+                ? local.charAt(0) + "*".repeat(local.length() - 1)
+                : local.substring(0, 2) + "*".repeat(local.length() - 2);
+        return maskedLocal + "@" + domain;
+    }
+    
+    private String maskPhone(String phone) {
+        if (phone == null || phone.length() < 4) return phone;
+        // 숫자만 추출
+        String digits = phone.replaceAll("[^0-9]", "");
+        if (digits.length() < 7) return phone;
+        // 가운데 4자리 마스킹
+        return phone.replaceFirst("\\d{3,4}(?=\\d{4}$)", "****");
+    }
+    
+    private String maskSchool(String school) {
+        if (school == null || school.length() < 2) return school;
+        // 첫 글자와 마지막 글자만 보여주고 나머지 마스킹
+        return school.charAt(0) + "*".repeat(school.length() - 2) + school.charAt(school.length() - 1);
     }
 }
