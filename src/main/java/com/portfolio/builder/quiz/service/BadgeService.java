@@ -269,7 +269,7 @@ public class BadgeService {
             case "master_beginner":
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "입문") >= 40;
 
-            // 복습 마스터
+            // 복습 마스터 - 면접대비 복습모드 + 수업복습 복습모드 (isReviewMode=true) 합산 200문제 이상
             case "review_master":
                 return quizAttemptRepository.countReviewModeByMemberId(memberId) >= 200;
             

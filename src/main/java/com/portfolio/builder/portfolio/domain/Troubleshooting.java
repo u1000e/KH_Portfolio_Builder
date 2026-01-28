@@ -27,20 +27,20 @@ public class Troubleshooting {
     @Column(nullable = false)
     private Category category;
 
-    // 문제 상황 (필수)
-    @Column(nullable = false, length = 500)
+    // 문제 상황 (필수) - 한글 500자 지원 (CHAR 단위)
+    @Column(nullable = false, columnDefinition = "VARCHAR2(500 CHAR)")
     private String problem;
 
-    // 원인 분석 (필수)
-    @Column(nullable = false, length = 1000)
+    // 원인 분석 (필수) - 한글 1000자 지원 (CHAR 단위)
+    @Column(nullable = false, columnDefinition = "VARCHAR2(1000 CHAR)")
     private String cause;
 
-    // 해결 방법 (필수)
-    @Column(nullable = false, length = 1000)
+    // 해결 방법 (필수) - 한글 1000자 지원 (CHAR 단위)
+    @Column(nullable = false, columnDefinition = "VARCHAR2(1000 CHAR)")
     private String solution;
 
-    // 배운 점 (필수)
-    @Column(nullable = false, length = 500)
+    // 배운 점 (필수) - 한글 500자 지원 (CHAR 단위)
+    @Column(nullable = false, columnDefinition = "VARCHAR2(500 CHAR)")
     private String lesson;
 
     @Builder.Default

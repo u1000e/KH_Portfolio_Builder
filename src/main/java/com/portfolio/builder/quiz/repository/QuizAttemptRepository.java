@@ -79,9 +79,17 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     @Query("SELECT qa.quiz.category, COUNT(DISTINCT qa.quiz.id) FROM QuizAttempt qa WHERE qa.member.id = :memberId GROUP BY qa.quiz.category")
     List<Object[]> countSolvedByMemberIdGroupByCategory(@Param("memberId") Long memberId);
 
-    // 복습 모드로 푼 문제 수 (배지용)
+    // 복습 모드로 푼 문제 수 (배지용) - 오답노트 복습
     @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isReviewMode = true")
     Long countReviewModeByMemberId(@Param("memberId") Long memberId);
+    
+    // 수업 복습(PRACTICE) 모드로 푼 문제 수 (배지용)
+    @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.quizType = 'PRACTICE' AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL)")
+    Long countPracticeModeByMemberId(@Param("memberId") Long memberId);
+    
+    // 전체 복습 문제 수 (배지용) - 수업복습(PRACTICE) + 면접대비 복습모드(isReviewMode=true) 합산
+    @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND (qa.quizType = 'PRACTICE' OR qa.isReviewMode = true)")
+    Long countAllReviewByMemberId(@Param("memberId") Long memberId);
 
     // 복습 횟수 랜킹 (복습 횟수 내림차순)
     @Query("""
