@@ -48,8 +48,8 @@ public class BadgeService {
             new BadgeDefinition("quiz_600", "600문제 달성", "총 600문제를 풀었습니다!", "🌌", 600),
             
             // 정확도
-            new BadgeDefinition("accuracy_80", "정확도 80%", "정확도 80% 이상 달성! (최소 20문제)", "✨", 80),
-            new BadgeDefinition("accuracy_90", "정확도 90%", "정확도 90% 이상 달성! (최소 30문제)", "🎖️", 90),
+            new BadgeDefinition("accuracy_80", "정확도 80%", "정확도 80% 이상 달성! (최소 30문제)", "✨", 80),
+            new BadgeDefinition("accuracy_90", "정확도 90%", "정확도 90% 이상 달성! (최소 100문제)", "🎖️", 90),
             
             // 카테고리 마스터
             new BadgeDefinition("master_html", "HTML/CSS 마스터", "HTML/CSS 20문제 모두 완료!", "🎨", 20),
@@ -243,10 +243,10 @@ public class BadgeService {
             
             // 정확도
             case "accuracy_80":
-                return streak.getTotalQuizCount() >= 20 && 
+                return streak.getTotalQuizCount() >= 30 && 
                        (streak.getCorrectCount() * 100.0 / streak.getTotalQuizCount()) >= 80;
             case "accuracy_90":
-                return streak.getTotalQuizCount() >= 30 && 
+                return streak.getTotalQuizCount() >= 100 && 
                        (streak.getCorrectCount() * 100.0 / streak.getTotalQuizCount()) >= 90;
             
             // 카테고리 마스터
