@@ -64,6 +64,9 @@ public class TroubleshootingService {
                 .cause(request.getCause())
                 .solution(request.getSolution())
                 .lesson(request.getLesson())
+                .causeCode(request.getCauseCode())
+                .solutionCode(request.getSolutionCode())
+                .codeLanguage(request.getCodeLanguage())
                 .build();
 
         Troubleshooting saved = troubleshootingRepository.save(troubleshooting);
@@ -101,6 +104,10 @@ public class TroubleshootingService {
         if (request.getLesson() != null) {
             troubleshooting.setLesson(request.getLesson());
         }
+        // 코드 스니펫은 null도 허용 (삭제 가능)
+        troubleshooting.setCauseCode(request.getCauseCode());
+        troubleshooting.setSolutionCode(request.getSolutionCode());
+        troubleshooting.setCodeLanguage(request.getCodeLanguage());
 
         Troubleshooting updated = troubleshootingRepository.save(troubleshooting);
         log.info("Troubleshooting updated: id={}", troubleshootingId);

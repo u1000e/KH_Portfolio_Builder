@@ -20,6 +20,9 @@ public class TroubleshootingResponse {
     private String cause;
     private String solution;
     private String lesson;
+    private String causeCode;
+    private String solutionCode;
+    private String codeLanguage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -33,6 +36,9 @@ public class TroubleshootingResponse {
                 .cause(troubleshooting.getCause())
                 .solution(troubleshooting.getSolution())
                 .lesson(troubleshooting.getLesson())
+                .causeCode(troubleshooting.getCauseCode())
+                .solutionCode(troubleshooting.getSolutionCode())
+                .codeLanguage(troubleshooting.getCodeLanguage())
                 .createdAt(troubleshooting.getCreatedAt())
                 .updatedAt(troubleshooting.getUpdatedAt())
                 .build();

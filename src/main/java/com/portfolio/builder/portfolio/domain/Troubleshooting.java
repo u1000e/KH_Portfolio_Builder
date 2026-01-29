@@ -43,6 +43,18 @@ public class Troubleshooting {
     @Column(nullable = false, columnDefinition = "VARCHAR2(500 CHAR)")
     private String lesson;
 
+    // 원인 분석 코드 스니펫 (선택) - 코드 2000자 지원
+    @Column(columnDefinition = "VARCHAR2(2000 CHAR)")
+    private String causeCode;
+
+    // 해결 방법 코드 스니펫 (선택) - 코드 2000자 지원
+    @Column(columnDefinition = "VARCHAR2(2000 CHAR)")
+    private String solutionCode;
+
+    // 코드 언어 (선택) - Java, JavaScript, SQL 등
+    @Column(length = 30)
+    private String codeLanguage;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
