@@ -9,7 +9,7 @@ import java.util.List;
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
-     * 특정 포트폴리오의 피드백 목록 (최신순)
+     * 특정 포트폴리오의 피드백 목록 (최신순) 
      */
     @Query("SELECT f FROM Feedback f JOIN FETCH f.member WHERE f.portfolio.id = :portfolioId ORDER BY f.createdAt DESC")
     List<Feedback> findByPortfolioIdWithMember(@Param("portfolioId") Long portfolioId);

@@ -41,4 +41,15 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     
     // 특정 직급의 회원 수 (희귀 배지 랭킹용)
     long countByPosition(String position);
+
+    // 수강생 필터 조회 (강사/운영팀 반별 현황용)
+    @Query("SELECT m FROM Member m WHERE m.position = '수강생' " +
+           "AND (:branch IS NULL OR m.branch = :branch) " +
+           "AND (:classroom IS NULL OR m.classroom = :classroom) " +
+           "AND (:cohort IS NULL OR m.cohort = :cohort) " +
+           "ORDER BY m.name")
+    List<Member> findStudentsByFilters(
+            @Param("branch") String branch,
+            @Param("classroom") String classroom,
+            @Param("cohort") String cohort);
 }

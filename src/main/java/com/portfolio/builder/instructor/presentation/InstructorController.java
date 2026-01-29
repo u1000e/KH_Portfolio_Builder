@@ -1,0 +1,47 @@
+package com.portfolio.builder.instructor.presentation;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.portfolio.builder.instructor.application.InstructorService;
+import com.portfolio.builder.instructor.dto.ClassDashboardResponse;
+
+import lombok.RequiredArgsConstructor; 
+import lombok.extern.slf4j.Slf4j;
+
+/** 
+ * 강사/운영팀 전용 API
+ */
+@RestController
+@RequestMapping("/api/instructor")
+@RequiredArgsConstructor
+@Slf4j
+public class InstructorController {
+
+    private final InstructorService instructorService;
+
+    /**
+     * 반별 현황 대시보드 조회
+     * GET /api/instructor/class-dashboard
+     */ 
+    @GetMapping("/class-dashboard")
+    public ResponseEntity<ClassDashboardResponse> getClassDashboard(
+            @RequestParam(required = false, name="branch") String branch,
+            @RequestParam(required = false, name="classroom") String classroom,
+            @RequestParam(required = false, name="cohort") String cohort,
+            @AuthenticationPrincipal Long memberId) {
+
+        log.info("Class dashboard requested - branch: {}, classroom: {}, cohort: {}, memberId: {}",
+                branch, classroom, cohort, memberId);
+
+        // 강사/운영팀 권한 확인
+        instructorService.validateInstructor(memberId);
+
+        ClassDashboardResponse response = instructorService.getClassDashboard(branch, classroom, cohort);
+        return ResponseEntity.ok(response);
+    }
+}

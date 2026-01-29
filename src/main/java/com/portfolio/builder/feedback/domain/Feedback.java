@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * 강사/운영팀의 포트폴리오 피드백 엔티티
  * 수강생 포트폴리오에 대한 개선 피드백을 저장
- */
+ */ 
 @Entity
 @Table(name = "TB_FEEDBACK")
 @Getter
