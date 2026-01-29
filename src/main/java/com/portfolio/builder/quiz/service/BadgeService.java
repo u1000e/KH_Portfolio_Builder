@@ -45,6 +45,7 @@ public class BadgeService {
             new BadgeDefinition("quiz_300", "300문제 달성", "총 300문제를 풀었습니다!", "🎆", 300),
             new BadgeDefinition("quiz_400", "400문제 달성", "총 400문제를 풀었습니다!", "💻", 400),
             new BadgeDefinition("quiz_500", "500문제 달성", "총 500문제를 풀었습니다!", "🖥", 500),
+            new BadgeDefinition("quiz_600", "600문제 달성", "총 600문제를 풀었습니다!", "🌌", 600),
             
             // 정확도
             new BadgeDefinition("accuracy_80", "정확도 80%", "정확도 80% 이상 달성! (최소 20문제)", "✨", 80),
@@ -61,6 +62,9 @@ public class BadgeService {
             new BadgeDefinition("master_cs", "CS 기초 마스터", "CS 기초 20문제 모두 완료!", "💡", 20),
             new BadgeDefinition("master_java", "Java 마스터", "Java 20문제 모두 완료!", "☕", 20),
             new BadgeDefinition("master_devops", "DevOps 마스터", "DevOps 22문제 모두 완료!", "🐳", 22),
+            new BadgeDefinition("master_javacore", "JavaCore 마스터", "JavaCore 20문제 모두 완료!", "🌠", 20),
+            new BadgeDefinition("master_architecture", "Architecture 마스터", "Architecture 10문제 모두 완료!", "🏗", 10),
+            new BadgeDefinition("master_security", "Security 마스터", "Security 15문제 모두 완료!", "🔰", 15),
             
             // 특별
             new BadgeDefinition("all_categories", "전 분야 학습", "모든 카테고리에서 최소 5문제씩!", "🎓", 10),
@@ -98,7 +102,7 @@ public class BadgeService {
             new BadgeDefinition("master_web_class_all", "웹 개발 수업 완전 정복", "웹 개발 수업 배지 4개 모두 획득!", "🎊", 4),
             
             // 최종 완료
-            new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 43)
+            new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 47)
     );
 
     /**
@@ -234,6 +238,8 @@ public class BadgeService {
                 return streak.getTotalQuizCount() >= 400;
             case "quiz_500":
                 return streak.getTotalQuizCount() >= 500;
+            case "quiz_600":
+                return streak.getTotalQuizCount() >= 600;
             
             // 정확도
             case "accuracy_80":
@@ -264,6 +270,12 @@ public class BadgeService {
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java") >= 20;
             case "master_devops":
                 return quizAttemptRepository.countByMemberIdAndCategory(memberId, "DevOps") >= 22;
+            case "master_javacore":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaCore") >= 20;
+            case "master_architecture":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Architecture") >= 10;
+            case "master_security":
+                return quizAttemptRepository.countByMemberIdAndCategory(memberId, "Security") >= 15;
 
             // 입문 완료
             case "master_beginner":
@@ -326,9 +338,9 @@ public class BadgeService {
                 Long todayTotal = quizAttemptRepository.countByMemberIdAndAttemptDateAndIsReviewModeFalse(memberId, java.time.LocalDate.now());
                 return todayTotal != null && todayTotal >= 10 && todayCorrect != null && todayCorrect.equals(todayTotal);
             
-            // 전 분야 학습 (모든 카테고리에서 최소 5문제씩)
+            // 전 분야 학습 (모든 면접대비 카테고리에서 최소 5문제씩)
             case "all_categories":
-                String[] categories = {"HTML/CSS", "JavaScript", "React", "Spring", "Spring 심화", "Database", "Network", "CS 기초", "Java", "DevOps"};
+                String[] categories = {"HTML/CSS", "JavaScript", "React", "Spring", "Spring 심화", "Database", "Network", "CS 기초", "Java", "DevOps", "JavaCore", "Architecture", "Security"};
                 for (String category : categories) {
                     if (quizAttemptRepository.countByMemberIdAndCategory(memberId, category) < 5) {
                         return false;
@@ -339,7 +351,7 @@ public class BadgeService {
             // 컴플리트 마스터 (모든 배지 획득 - 자기 자신 제외)
             case "complete_master":
                 long earnedCount = badgeRepository.countByMemberId(memberId);
-                // complete_master를 제외한 모든 배지(23개)를 획득했는지 확인
+                // complete_master를 제외한 모든 배지를 획득했는지 확인
                 return earnedCount >= BADGE_DEFINITIONS.size() - 1;
 
             default:
@@ -376,12 +388,23 @@ public class BadgeService {
                 return Math.min(100, streak.getTotalQuizCount() * 100 / 400);
             case "quiz_500":
                 return Math.min(100, streak.getTotalQuizCount() * 100 / 500);
+            case "quiz_600":
+                return Math.min(100, streak.getTotalQuizCount() * 100 / 600);
             case "master_beginner":
                 Long beginnerCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "입문");
                 return Math.min(100, (int)(beginnerCount * 100 / 40));
             case "master_devops":
                 Long devopsCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "DevOps");
                 return Math.min(100, (int)(devopsCount * 100 / 22));
+            case "master_javacore":
+                Long javaCoreCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaCore");
+                return Math.min(100, (int)(javaCoreCount * 100 / 20));
+            case "master_architecture":
+                Long archCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Architecture");
+                return Math.min(100, (int)(archCount * 100 / 10));
+            case "master_security":
+                Long securityCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Security");
+                return Math.min(100, (int)(securityCount * 100 / 15));
             case "review_master":
                 Long reviewCount = quizAttemptRepository.countReviewModeByMemberId(memberId);
                 return Math.min(100, (int)(reviewCount * 100 / 200));
@@ -437,6 +460,54 @@ public class BadgeService {
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_security")) webClassCount++;
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_boot_adv")) webClassCount++;
                 return Math.min(100, webClassCount * 100 / 4);
+            // 면접대비 카테고리 마스터 배지 진행률
+            case "master_html":
+                Long htmlCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "HTML/CSS");
+                return Math.min(100, (int)(htmlCount * 100 / 20));
+            case "master_js":
+                Long jsCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript");
+                return Math.min(100, (int)(jsCount * 100 / 20));
+            case "master_react":
+                Long reactCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "React");
+                return Math.min(100, (int)(reactCount * 100 / 20));
+            case "master_spring":
+                Long springCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring");
+                return Math.min(100, (int)(springCount * 100 / 20));
+            case "master_spring_adv":
+                Long springAdvCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring 심화");
+                return Math.min(100, (int)(springAdvCount * 100 / 30));
+            case "master_db":
+                Long dbCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Database");
+                return Math.min(100, (int)(dbCount * 100 / 20));
+            case "master_network":
+                Long networkCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Network");
+                return Math.min(100, (int)(networkCount * 100 / 20));
+            case "master_cs":
+                Long csCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "CS 기초");
+                return Math.min(100, (int)(csCount * 100 / 20));
+            case "master_java":
+                Long javaCount = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java");
+                return Math.min(100, (int)(javaCount * 100 / 20));
+            // 정확도 배지 진행률
+            case "accuracy_80":
+                if (streak.getTotalQuizCount() < 20) return 0;
+                return Math.min(100, (int)(streak.getCorrectCount() * 100.0 / streak.getTotalQuizCount()));
+            case "accuracy_90":
+                if (streak.getTotalQuizCount() < 30) return 0;
+                return Math.min(100, (int)(streak.getCorrectCount() * 100.0 / streak.getTotalQuizCount()));
+            // 특별 배지 진행률
+            case "perfect_day":
+                Long todayCorrectP = quizAttemptRepository.countTodayCorrectByMemberId(memberId, java.time.LocalDate.now());
+                Long todayTotalP = quizAttemptRepository.countByMemberIdAndAttemptDateAndIsReviewModeFalse(memberId, java.time.LocalDate.now());
+                if (todayTotalP == null || todayTotalP < 10) return (int)(todayTotalP != null ? todayTotalP * 10 : 0);
+                return todayCorrectP != null && todayCorrectP.equals(todayTotalP) ? 100 : (int)(todayCorrectP * 100 / todayTotalP);
+            case "all_categories":
+                String[] allCats = {"HTML/CSS", "JavaScript", "React", "Spring", "Spring 심화", "Database", "Network", "CS 기초", "Java", "DevOps", "JavaCore", "Architecture", "Security"};
+                int completedCats = 0;
+                for (String cat : allCats) {
+                    if (quizAttemptRepository.countByMemberIdAndCategory(memberId, cat) >= 5) completedCats++;
+                }
+                return Math.min(100, completedCats * 100 / allCats.length);
             case "complete_master":
                 long earned = badgeRepository.countByMemberId(memberId);
                 int totalMinusOne = BADGE_DEFINITIONS.size() - 1; // 자기 자신 제외
@@ -465,10 +536,20 @@ public class BadgeService {
             case "quiz_300":
             case "quiz_400":
             case "quiz_500":
+            case "quiz_600":
                 return streak.getTotalQuizCount() + "/" + def.threshold + "문제";
             case "master_beginner":
                 Long beginnerCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "입문");
                 return beginnerCnt + "/40문제";
+            case "master_javacore":
+                Long javaCoreCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaCore");
+                return javaCoreCnt + "/20문제";
+            case "master_architecture":
+                Long archCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Architecture");
+                return archCnt + "/10문제";
+            case "master_security":
+                Long securityCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Security");
+                return securityCnt + "/15문제";
             case "review_master":
                 Long reviewCnt = quizAttemptRepository.countReviewModeByMemberId(memberId);
                 return reviewCnt + "/200문제";
@@ -524,6 +605,53 @@ public class BadgeService {
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_security")) webBadgeCount++;
                 if (badgeRepository.existsByMemberIdAndBadgeId(memberId, "master_spring_boot_adv")) webBadgeCount++;
                 return webBadgeCount + "/4개 배지";
+            // 면접대비 카테고리 마스터 배지 진행 텍스트
+            case "master_html":
+                Long htmlCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "HTML/CSS");
+                return htmlCnt + "/20문제";
+            case "master_js":
+                Long jsCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "JavaScript");
+                return jsCnt + "/20문제";
+            case "master_react":
+                Long reactCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "React");
+                return reactCnt + "/20문제";
+            case "master_spring":
+                Long springCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring");
+                return springCnt + "/20문제";
+            case "master_spring_adv":
+                Long springAdvCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Spring 심화");
+                return springAdvCnt + "/30문제";
+            case "master_db":
+                Long dbCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Database");
+                return dbCnt + "/20문제";
+            case "master_network":
+                Long networkCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Network");
+                return networkCnt + "/20문제";
+            case "master_cs":
+                Long csCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "CS 기초");
+                return csCnt + "/20문제";
+            case "master_java":
+                Long javaCnt = quizAttemptRepository.countByMemberIdAndCategory(memberId, "Java");
+                return javaCnt + "/20문제";
+            // 정확도 배지 진행 텍스트
+            case "accuracy_80":
+                if (streak.getTotalQuizCount() < 20) return streak.getTotalQuizCount() + "/20문제 (최소)";
+                return String.format("%.1f%%/80%%", streak.getCorrectCount() * 100.0 / streak.getTotalQuizCount());
+            case "accuracy_90":
+                if (streak.getTotalQuizCount() < 30) return streak.getTotalQuizCount() + "/30문제 (최소)";
+                return String.format("%.1f%%/90%%", streak.getCorrectCount() * 100.0 / streak.getTotalQuizCount());
+            // 특별 배지 진행 텍스트
+            case "perfect_day":
+                Long todayTotalT = quizAttemptRepository.countByMemberIdAndAttemptDateAndIsReviewModeFalse(memberId, java.time.LocalDate.now());
+                Long todayCorrectT = quizAttemptRepository.countTodayCorrectByMemberId(memberId, java.time.LocalDate.now());
+                return todayCorrectT + "/" + todayTotalT + " 정답";
+            case "all_categories":
+                String[] catList = {"HTML/CSS", "JavaScript", "React", "Spring", "Spring 심화", "Database", "Network", "CS 기초", "Java", "DevOps", "JavaCore", "Architecture", "Security"};
+                int doneCats = 0;
+                for (String c : catList) {
+                    if (quizAttemptRepository.countByMemberIdAndCategory(memberId, c) >= 5) doneCats++;
+                }
+                return doneCats + "/" + catList.length + "개 분야";
             case "complete_master":
                 long earnedCnt = badgeRepository.countByMemberId(memberId);
                 return earnedCnt + "/" + (BADGE_DEFINITIONS.size() - 1) + "개";
