@@ -1,12 +1,19 @@
 package com.portfolio.builder.portfolio.dto;
 
-import com.portfolio.builder.member.domain.Member;
-import com.portfolio.builder.portfolio.domain.Portfolio;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.*;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import org.hibernate.Hibernate;
 
-import java.time.LocalDateTime;
+import com.portfolio.builder.member.domain.Member;
+import com.portfolio.builder.portfolio.domain.Portfolio;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -62,19 +69,17 @@ public class PortfolioResponse {
      * Member가 없거나 DB에서 삭제된 경우 EntityNotFoundException을 방지합니다.
      */
     private static Member safeGetMember(Portfolio portfolio) {
-        if (portfolio.getMember() == null) {
-            return null;
-        }
-        try {
-            // 프록시 초기화 시도 - 실제 DB에 존재하는지 확인
-            Hibernate.initialize(portfolio.getMember());
-            // 실제 값 접근으로 EntityNotFoundException 유도
-            portfolio.getMember().getId();
-            return portfolio.getMember();
-        } catch (EntityNotFoundException e) {
-            // Member가 DB에서 삭제된 경우 (고아 Portfolio)
-            return null;
-        }
+        return Optional.ofNullable(portfolio.getMember())
+                .filter(member -> {
+                    try {
+                        Hibernate.initialize(member);
+                        member.getId(); // 프록시 초기화 확인
+                        return true;
+                    } catch (EntityNotFoundException e) {
+                        return false;
+                    }
+                })
+                .orElse(null);
     }
 
     public static PortfolioResponse from(Portfolio portfolio) {
