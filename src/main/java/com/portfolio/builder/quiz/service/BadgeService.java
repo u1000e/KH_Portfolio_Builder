@@ -345,16 +345,12 @@ public class BadgeService {
      * 귀환 배지 조건 상세 체크 (1주 이상 잠수 후 복귀)
      */
     private boolean checkComebackCondition(Long memberId, java.time.LocalDate today) {
-        // 오늘 이전 마지막 퀴즈 푼 날 찾기
-        List<java.time.LocalDate> recentDates = quizAttemptRepository
-                .findByMemberIdAndAttemptDate(memberId, today)
-                .stream()
-                .map(qa -> qa.getAttemptDate())
-                .distinct()
-                .collect(java.util.stream.Collectors.toList());
-
-        // 오늘 푼 게 첫 문제인지 확인 (오늘 외에 다른 기록이 없어야 함)
-        if (recentDates.size() != 1) return false;
+        // 이전에 활동 기록이 있는지 확인 (신규 유저 제외)
+        Long totalCount = quizAttemptRepository.countByMemberId(memberId);  
+        Long todayCount = quizAttemptRepository.countByMemberIdAndAttemptDate(memberId, today);
+        if (totalCount == null || todayCount == null || totalCount <= todayCount) {
+            return false; // 이전 활동 없음 = 복귀가 아님
+        }
 
         // 오늘 이전 7일간 기록이 없는지 확인
         for (int i = 1; i <= 7; i++) {

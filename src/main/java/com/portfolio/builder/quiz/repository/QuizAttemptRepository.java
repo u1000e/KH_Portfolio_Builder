@@ -10,6 +10,9 @@ import java.util.List;
 
 public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> {
 
+    // 사용자가 푼 전체 문제 수
+    Long countByMemberId(Long memberId);
+
     // 특정 날짜에 사용자가 푼 문제 수 (전체)
     Long countByMemberIdAndAttemptDate(Long memberId, LocalDate attemptDate);
     
@@ -109,7 +112,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
 
     // ===== 랭킹용 쿼리 =====
 
-    // 🌅 얼리버드 랭킹 (아침 6~9시 풀이 횟수)
+    // 얼리버드 랭킹 (아침 6~9시 풀이 횟수)
     @Query("""
         SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as earlyCount,
                qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
@@ -121,7 +124,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         """)
     List<Object[]> findTopByEarlyBird();
 
-    // 🦉 올빼미 랭킹 (밤 22시~새벽 2시 풀이 횟수)
+    // 올빼미 랭킹 (밤 22시~새벽 2시 풀이 횟수)
     @Query("""
         SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as nightCount,
                qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
@@ -133,7 +136,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         """)
     List<Object[]> findTopByNightOwl();
 
-    // 🔥 오늘의 챔피언 (오늘 풀이 횟수 - 학습+복습)
+    // 오늘의 챔피언 (오늘 풀이 횟수 - 학습+복습)
     @Query("""
         SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as todayCount,
                qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
@@ -145,7 +148,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         """)
     List<Object[]> findTopByToday(@Param("today") LocalDate today);
 
-    // 📅 이번 주 MVP (이번 주 풀이 횟수 - 학습+복습)
+    // 이번 주 MVP (이번 주 풀이 횟수 - 학습+복습)
     @Query("""
         SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as weekCount,
                qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
@@ -157,7 +160,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         """)
     List<Object[]> findTopByThisWeek(@Param("weekStart") LocalDate weekStart, @Param("weekEnd") LocalDate weekEnd);
 
-    // 📆 학습 캘린더 히트맵용 - 날짜별 퀴즈 풀이 횟수
+    // 학습 캘린더 히트맵용 - 날짜별 퀴즈 풀이 횟수
     @Query("""
         SELECT qa.attemptDate, COUNT(qa)
         FROM QuizAttempt qa
