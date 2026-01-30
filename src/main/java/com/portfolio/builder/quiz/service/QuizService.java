@@ -3,6 +3,7 @@ package com.portfolio.builder.quiz.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.portfolio.builder.activity.application.ActivityFeedService;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.quiz.domain.Quiz;
@@ -34,7 +35,13 @@ public class QuizService {
     private final QuizStreakRepository quizStreakRepository;
     private final MemberRepository memberRepository;
     private final BadgeRepository badgeRepository;
+    private final ActivityFeedService activityFeedService;
     private final ObjectMapper objectMapper;
+
+    // 스트릭 마일스톤 (7일, 14일, 30일)
+    private static final int[] STREAK_MILESTONES = {7, 14, 30};
+    // 퀴즈 풀이 마일스톤 (100, 200, 300, 400, 500, 600문제)
+    private static final int[] QUIZ_MILESTONES = {100, 200, 300, 400, 500, 600};
 
     private static final int DAILY_LIMIT = 10; 
     private static final int PRACTICE_QUIZ_COUNT = 10;  // 수업 복습 기본 문제 수
@@ -243,6 +250,9 @@ public class QuizService {
         LocalDate today = LocalDate.now();
         LocalDate lastStudy = streak.getLastStudyDate();
 
+        int previousStreak = streak.getCurrentStreak();
+        int previousTotal = streak.getTotalQuizCount();
+
         // 연속 학습일 계산
         if (lastStudy == null || lastStudy.isBefore(today.minusDays(1))) {
             // 하루 이상 공백 → 스트릭 리셋
@@ -264,6 +274,22 @@ public class QuizService {
         }
 
         quizStreakRepository.save(streak);
+
+        // 스트릭 마일스톤 체크 (7일, 14일, 30일)
+        int newStreak = streak.getCurrentStreak();
+        for (int milestone : STREAK_MILESTONES) {
+            if (previousStreak < milestone && newStreak >= milestone) {
+                activityFeedService.recordStreak(memberId, milestone);
+            }
+        }
+
+        // 퀴즈 풀이 마일스톤 체크 (100, 200, 300, 400, 500, 600문제)
+        int newTotal = streak.getTotalQuizCount();
+        for (int milestone : QUIZ_MILESTONES) {
+            if (previousTotal < milestone && newTotal >= milestone) {
+                activityFeedService.recordQuizMilestone(memberId, milestone);
+            }
+        }
     }
 
     /**
@@ -1035,5 +1061,24 @@ public class QuizService {
                 .correctAnswer(quiz.getAnswer())
                 .explanation(quiz.getExplanation())
                 .build();
+    }
+
+    /**
+     * 학습 캘린더 히트맵 데이터 조회
+     * 최근 6개월간의 날짜별 퀴즈 풀이 횟수
+     */
+    public List<HeatmapData> getHeatmapData(Long memberId) {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusMonths(6);
+
+        List<Object[]> rawData = quizAttemptRepository.findDailyCountsByMemberIdBetween(
+                memberId, startDate, endDate);
+
+        return rawData.stream()
+                .map(row -> HeatmapData.builder()
+                        .date(((LocalDate) row[0]).toString())
+                        .count(((Long) row[1]).intValue())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

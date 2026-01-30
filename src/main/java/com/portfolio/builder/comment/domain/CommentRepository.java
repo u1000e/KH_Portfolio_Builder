@@ -31,4 +31,16 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     void deleteAllByPortfolio(Portfolio portfolio);
 
     void deleteAllByMember(Member member);
+
+    /**
+     * 특정 회원이 받은 총 댓글 수 (모든 포트폴리오 합산, 본인 댓글 제외)
+     */
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.portfolio.member.id = :memberId AND c.member.id != :memberId")
+    int countCommentsReceivedByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 특정 회원이 작성한 총 댓글 수 (본인 포트폴리오 제외)
+     */
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.member.id = :memberId AND c.portfolio.member.id != :memberId")
+    int countCommentsGivenByMemberId(@Param("memberId") Long memberId);
 }

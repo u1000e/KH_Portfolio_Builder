@@ -14,6 +14,7 @@ import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.portfolio.domain.Portfolio;
 import com.portfolio.builder.portfolio.domain.PortfolioRepository;
+import com.portfolio.builder.quiz.service.BadgeService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,13 +22,14 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional 
+@Transactional
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PortfolioRepository portfolioRepository;
     private final MemberRepository memberRepository;
     private final ProfanityFilterService profanityFilterService;
+    private final BadgeService badgeService;
 
     public CommentResponse createComment(Long portfolioId, Long memberId, CommentRequest request) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
@@ -53,9 +55,28 @@ public class CommentService {
                 .build();
 
         Comment saved = commentRepository.save(comment);
-        log.info("Comment created: {} by member {} on portfolio {}", 
+        log.info("Comment created: {} by member {} on portfolio {}",
                  saved.getId(), memberId, portfolioId);
-        
+
+        // 히든 배지 체크
+        Long ownerId = portfolio.getMember().getId();
+
+        // 1. 포트폴리오 주인이 총 5개 이상 댓글 받으면 "소통왕" 배지 (본인 댓글 제외)
+        if (!ownerId.equals(memberId)) {
+            int totalCommentsReceived = commentRepository.countCommentsReceivedByMemberId(ownerId);
+            if (totalCommentsReceived >= 5) {
+                badgeService.awardHiddenBadge(ownerId, "hidden_social");
+            }
+        }
+
+        // 2. 댓글 작성자가 남의 포폴에 총 5개 이상 댓글 달았으면 "응원단" 배지
+        if (!ownerId.equals(memberId)) {
+            int totalCommentsGiven = commentRepository.countCommentsGivenByMemberId(memberId);
+            if (totalCommentsGiven >= 5) {
+                badgeService.awardHiddenBadge(memberId, "hidden_cheerleader");
+            }
+        }
+
         return CommentResponse.from(saved, portfolio.getMember().getId());
     }
 

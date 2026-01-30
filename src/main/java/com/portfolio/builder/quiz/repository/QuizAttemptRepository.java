@@ -156,4 +156,19 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         ORDER BY weekCount DESC
         """)
     List<Object[]> findTopByThisWeek(@Param("weekStart") LocalDate weekStart, @Param("weekEnd") LocalDate weekEnd);
+
+    // 📆 학습 캘린더 히트맵용 - 날짜별 퀴즈 풀이 횟수
+    @Query("""
+        SELECT qa.attemptDate, COUNT(qa)
+        FROM QuizAttempt qa
+        WHERE qa.member.id = :memberId
+        AND qa.attemptDate >= :startDate
+        AND qa.attemptDate <= :endDate
+        GROUP BY qa.attemptDate
+        ORDER BY qa.attemptDate
+        """)
+    List<Object[]> findDailyCountsByMemberIdBetween(
+            @Param("memberId") Long memberId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }

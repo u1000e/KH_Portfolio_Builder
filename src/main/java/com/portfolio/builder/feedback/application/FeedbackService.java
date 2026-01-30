@@ -8,6 +8,7 @@ import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.portfolio.domain.Portfolio;
 import com.portfolio.builder.portfolio.domain.PortfolioRepository;
+import com.portfolio.builder.quiz.service.BadgeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final PortfolioRepository portfolioRepository;
     private final MemberRepository memberRepository;
+    private final BadgeService badgeService;
 
     /**
      * 피드백 작성 (운영팀/강사만 가능)
@@ -162,6 +164,12 @@ public class FeedbackService {
 
         feedback.markAsResolved();
         log.info("Feedback marked as resolved - feedbackId: {}, memberId: {}", feedbackId, memberId);
+
+        // 히든 배지 체크: 피드백 5회 이상 반영 완료하면 "성실왕" 배지
+        int totalResolved = feedbackRepository.countResolvedByMemberId(memberId);
+        if (totalResolved >= 5) {
+            badgeService.awardHiddenBadge(memberId, "hidden_diligent");
+        }
 
         return FeedbackResponse.from(feedback);
     }

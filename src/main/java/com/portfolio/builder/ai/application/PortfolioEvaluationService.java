@@ -1,6 +1,7 @@
 package com.portfolio.builder.ai.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.portfolio.builder.activity.application.ActivityFeedService;
 import com.portfolio.builder.ai.dto.*;
 import com.portfolio.builder.portfolio.domain.Portfolio;
 import com.portfolio.builder.portfolio.domain.PortfolioRepository;
@@ -29,7 +30,10 @@ public class PortfolioEvaluationService {
     private final AiFeedbackGenerator aiFeedbackGenerator;
     private final PortfolioRepository portfolioRepository;
     private final TroubleshootingRepository troubleshootingRepository;
+    private final ActivityFeedService activityFeedService;
     private final ObjectMapper objectMapper;
+
+    private static final int S_GRADE_THRESHOLD = 117; // 130점 만점의 90%
     
     /**
      * 포트폴리오 평가 실행
@@ -108,8 +112,13 @@ public class PortfolioEvaluationService {
         portfolio.setAiScore(totalScore);
         portfolioRepository.save(portfolio);
         log.info("Portfolio {} AI score saved: {}", portfolioId, totalScore);
+
+        // 6. S등급 달성 시 활동 피드 기록
+        if (totalScore >= S_GRADE_THRESHOLD) {
+            activityFeedService.recordSGradeAchievement(memberId, portfolioId);
+        }
         
-        // 6. 최종 응답 조합
+        // 7. 최종 응답 조합
         return EvaluationResponse.builder()
             .totalScore(totalScore)
             .breakdown(ScoreBreakdown.builder()

@@ -1,5 +1,6 @@
 package com.portfolio.builder.quiz.service;
 
+import com.portfolio.builder.activity.application.ActivityFeedService;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.quiz.domain.Badge;
@@ -25,6 +26,7 @@ public class BadgeService {
     private final QuizStreakRepository quizStreakRepository;
     private final QuizAttemptRepository quizAttemptRepository;
     private final MemberRepository memberRepository;
+    private final ActivityFeedService activityFeedService;
 
     // 배지 정의
     private static final List<BadgeDefinition> BADGE_DEFINITIONS = List.of(
@@ -105,6 +107,17 @@ public class BadgeService {
             new BadgeDefinition("complete_master", "컴플리트", "모든 배지 획득!", "👑", 47)
     );
 
+    // 숨겨진 배지 정의 (뱃지 탭에 안 보이고, 컴플리트 계산에서 제외)
+    private static final List<BadgeDefinition> HIDDEN_BADGE_DEFINITIONS = List.of(
+            new BadgeDefinition("hidden_owl", "올빼미", "새벽 2~6시에 퀴즈를 풀기", "🦉", 1),
+            new BadgeDefinition("hidden_comeback", "귀환", "1주일 이상 잠수 후 복귀", "👻", 7),
+            new BadgeDefinition("hidden_popular", "인기스타", "내 포트폴리오에 좋아요 5개 받기", "❤️", 5),
+            new BadgeDefinition("hidden_supporter", "서포터", "다른 사람 포트폴리오에 좋아요 10개 누르기", "👍", 10),
+            new BadgeDefinition("hidden_social", "소통왕", "내 포트폴리오에 댓글 5개 받기", "💬", 5),
+            new BadgeDefinition("hidden_cheerleader", "응원단", "다른 사람 포트폴리오에 댓글 5개 달기", "📣", 5),
+            new BadgeDefinition("hidden_diligent", "성실왕", "피드백 5회 반영 하기", "✅", 5)
+    );
+
     /**
      * 사용자의 모든 배지 조회 (미획득 포함)
      */
@@ -118,24 +131,46 @@ public class BadgeService {
                 .stream()
                 .collect(Collectors.toMap(Badge::getBadgeId, b -> b));
 
-        return BADGE_DEFINITIONS.stream()
-                .map(def -> {
-                    boolean earned = earnedBadgeIds.contains(def.id);
-                    Badge badge = earnedBadges.get(def.id);
-                    int progress = calculateProgress(memberId, def);
-                    
-                    return BadgeResponse.builder()
-                            .badgeId(def.id)
-                            .name(def.name)
-                            .description(def.description)
-                            .icon(def.icon)
-                            .earned(earned)
-                            .earnedAt(badge != null ? badge.getEarnedAt().toString() : null)
-                            .progress(earned ? 100 : progress)
-                            .progressText(getProgressText(memberId, def, earned))
-                            .build();
-                })
-                .collect(Collectors.toList());
+        List<BadgeResponse> result = new ArrayList<>();
+
+        // 일반 배지 (모두 표시)
+        for (BadgeDefinition def : BADGE_DEFINITIONS) {
+            boolean earned = earnedBadgeIds.contains(def.id);
+            Badge badge = earnedBadges.get(def.id);
+            int progress = calculateProgress(memberId, def);
+
+            result.add(BadgeResponse.builder()
+                    .badgeId(def.id)
+                    .name(def.name)
+                    .description(def.description)
+                    .icon(def.icon)
+                    .earned(earned)
+                    .earnedAt(badge != null ? badge.getEarnedAt().toString() : null)
+                    .progress(earned ? 100 : progress)
+                    .progressText(getProgressText(memberId, def, earned))
+                    .isHidden(false)
+                    .build());
+        }
+
+        // 숨겨진 배지 (획득한 것만 표시)
+        for (BadgeDefinition def : HIDDEN_BADGE_DEFINITIONS) {
+            if (earnedBadgeIds.contains(def.id)) {
+                Badge badge = earnedBadges.get(def.id);
+                result.add(BadgeResponse.builder()
+                        .badgeId(def.id)
+                        .name(def.name)
+                        .description(def.description)
+                        .icon(def.icon)
+                        .earned(true)
+                        .earnedAt(badge != null ? badge.getEarnedAt().toString() : null)
+                        .progress(100)
+                        .progressText("완료!")
+                        .isHidden(true)
+                        .build());
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -174,12 +209,12 @@ public class BadgeService {
     public List<BadgeResponse> checkAndAwardBadges(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
-        
+
         QuizStreak streak = quizStreakRepository.findByMemberId(memberId).orElse(null);
         List<BadgeResponse> newBadges = new ArrayList<>();
 
+        // 일반 배지 체크
         for (BadgeDefinition def : BADGE_DEFINITIONS) {
-            // 이미 보유 중이면 스킵
             if (badgeRepository.existsByMemberIdAndBadgeId(memberId, def.id)) {
                 continue;
             }
@@ -202,7 +237,134 @@ public class BadgeService {
             }
         }
 
+        // 숨겨진 배지 체크
+        for (BadgeDefinition def : HIDDEN_BADGE_DEFINITIONS) {
+            if (badgeRepository.existsByMemberIdAndBadgeId(memberId, def.id)) {
+                continue;
+            }
+
+            if (checkHiddenBadgeCondition(memberId, def, streak)) {
+                Badge badge = Badge.builder()
+                        .member(member)
+                        .badgeId(def.id)
+                        .build();
+                badgeRepository.save(badge);
+
+                // 숨겨진 배지 획득 시 활동 피드 기록
+                activityFeedService.recordHiddenBadge(memberId, def.id);
+
+                newBadges.add(BadgeResponse.builder()
+                        .badgeId(def.id)
+                        .name(def.name)
+                        .description(def.description)
+                        .icon(def.icon)
+                        .earned(true)
+                        .progress(100)
+                        .isHidden(true)
+                        .build());
+            }
+        }
+
         return newBadges;
+    }
+
+    /**
+     * 특정 숨겨진 배지 부여 (외부 서비스에서 호출)
+     * @param memberId 회원 ID
+     * @param badgeId 배지 ID (hidden_popular, hidden_supporter 등)
+     * @return 배지가 새로 부여되었으면 true
+     */
+    @Transactional
+    public boolean awardHiddenBadge(Long memberId, String badgeId) {
+        // 이미 획득한 배지인지 확인
+        if (badgeRepository.existsByMemberIdAndBadgeId(memberId, badgeId)) {
+            return false;
+        }
+
+        // 배지 정의 찾기
+        BadgeDefinition def = HIDDEN_BADGE_DEFINITIONS.stream()
+                .filter(d -> d.id.equals(badgeId))
+                .findFirst()
+                .orElse(null);
+
+        if (def == null) {
+            return false;
+        }
+
+        // 배지 부여
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if (member == null) {
+            return false;
+        }
+
+        Badge badge = Badge.builder()
+                .member(member)
+                .badgeId(badgeId)
+                .build();
+        badgeRepository.save(badge);
+
+        // 활동 피드 기록
+        activityFeedService.recordHiddenBadge(memberId, badgeId);
+
+        return true;
+    }
+
+    /**
+     * 숨겨진 배지 조건 체크
+     */
+    private boolean checkHiddenBadgeCondition(Long memberId, BadgeDefinition def, QuizStreak streak) {
+        if (streak == null) return false;
+
+        switch (def.id) {
+            // 올빼미: 새벽 2~6시에 퀴즈 풀기
+            case "hidden_owl":
+                int hour = java.time.LocalTime.now().getHour();
+                return hour >= 2 && hour < 6;
+
+            // 귀환: 1주 이상 잠수 후 복귀
+            case "hidden_comeback":
+                if (streak.getLastStudyDate() == null) return false;
+                java.time.LocalDate today = java.time.LocalDate.now();
+                java.time.LocalDate lastStudy = streak.getLastStudyDate();
+                // 마지막 학습일이 오늘이고, 그 전에 7일 이상 쉬었으면
+                // 이건 퀴즈 제출 시점에 체크되므로, 오늘 첫 퀴즈인 경우 확인 필요
+                // 간단히: 현재 스트릭이 1이고, 이전 학습일과 오늘의 차이가 7일 이상
+                if (streak.getCurrentStreak() == 1 && lastStudy.equals(today)) {
+                    // 이전 학습 기록을 확인해야 하는데, QuizStreak에는 이전 날짜가 없음
+                    // 대안: QuizAttempt에서 이전 마지막 학습일 조회
+                    return checkComebackCondition(memberId, today);
+                }
+                return false;
+
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * 귀환 배지 조건 상세 체크 (1주 이상 잠수 후 복귀)
+     */
+    private boolean checkComebackCondition(Long memberId, java.time.LocalDate today) {
+        // 오늘 이전 마지막 퀴즈 푼 날 찾기
+        List<java.time.LocalDate> recentDates = quizAttemptRepository
+                .findByMemberIdAndAttemptDate(memberId, today)
+                .stream()
+                .map(qa -> qa.getAttemptDate())
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+
+        // 오늘 푼 게 첫 문제인지 확인 (오늘 외에 다른 기록이 없어야 함)
+        if (recentDates.size() != 1) return false;
+
+        // 오늘 이전 7일간 기록이 없는지 확인
+        for (int i = 1; i <= 7; i++) {
+            java.time.LocalDate checkDate = today.minusDays(i);
+            Long count = quizAttemptRepository.countByMemberIdAndAttemptDate(memberId, checkDate);
+            if (count != null && count > 0) {
+                return false; // 7일 내에 푼 기록 있음
+            }
+        }
+        return true; // 7일 이상 쉬다가 복귀
     }
 
     private boolean checkBadgeCondition(Long memberId, BadgeDefinition def, QuizStreak streak) {
@@ -661,10 +823,21 @@ public class BadgeService {
     }
 
     private BadgeDefinition findDefinition(String badgeId) {
-        return BADGE_DEFINITIONS.stream()
+        // 일반 배지에서 먼저 찾기
+        BadgeDefinition found = BADGE_DEFINITIONS.stream()
                 .filter(d -> d.id.equals(badgeId))
                 .findFirst()
                 .orElse(null);
+
+        // 없으면 숨겨진 배지에서 찾기
+        if (found == null) {
+            found = HIDDEN_BADGE_DEFINITIONS.stream()
+                    .filter(d -> d.id.equals(badgeId))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        return found;
     }
 
     /**

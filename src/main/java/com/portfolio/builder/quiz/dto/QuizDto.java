@@ -187,6 +187,7 @@ public class QuizDto {
         private String earnedAt;
         private int progress;  // 진행률 (0-100)
         private String progressText;  // "5/10 문제"
+        private boolean isHidden;  // 숨겨진 배지 여부
     }
 
     @Getter
@@ -243,5 +244,16 @@ public class QuizDto {
     @AllArgsConstructor
     public static class SelectBadgeRequest {
         private String badgeId;  // 선택한 배지 ID (null이면 선택 해제)
+    }
+
+    // ===== 학습 캘린더 히트맵 =====
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class HeatmapData {
+        private String date;  // yyyy-MM-dd 형식
+        private int count;    // 해당 날짜의 퀴즈 풀이 횟수
     }
 }

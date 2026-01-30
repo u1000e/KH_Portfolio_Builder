@@ -2,6 +2,7 @@ package com.portfolio.builder.portfolio.application;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.portfolio.builder.activity.application.ActivityFeedService;
 import com.portfolio.builder.comment.domain.CommentRepository;
 import com.portfolio.builder.feedback.domain.FeedbackRepository;
 import com.portfolio.builder.member.domain.Member;
@@ -36,6 +37,7 @@ public class PortfolioService {
     private final MemberRepository memberRepository;
     private final BadgeRepository badgeRepository;
     private final BadgeService badgeService;
+    private final ActivityFeedService activityFeedService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public PortfolioResponse createPortfolio(Long memberId, PortfolioRequest request) {
@@ -110,6 +112,10 @@ public class PortfolioService {
             portfolio.setData(request.getData());
         }
         if (request.getIsPublic() != null) {
+            // 비공개 -> 공개로 변경 시 활동 피드 기록
+            if (request.getIsPublic() && !portfolio.getIsPublic()) {
+                activityFeedService.recordPortfolioPublic(memberId, portfolioId, portfolio.getTitle());
+            }
             portfolio.setIsPublic(request.getIsPublic());
         }
         if (request.getShowContributionGraph() != null) {

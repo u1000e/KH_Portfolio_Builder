@@ -6,6 +6,7 @@ import com.portfolio.builder.portfolio.domain.Portfolio;
 import com.portfolio.builder.portfolio.domain.PortfolioLike;
 import com.portfolio.builder.portfolio.domain.PortfolioLikeRepository;
 import com.portfolio.builder.portfolio.domain.PortfolioRepository;
+import com.portfolio.builder.quiz.service.BadgeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class PortfolioLikeService {
     private final PortfolioRepository portfolioRepository;
     private final PortfolioLikeRepository portfolioLikeRepository;
     private final MemberRepository memberRepository;
+    private final BadgeService badgeService;
 
     public Map<String, Object> toggleLike(Long portfolioId, Long memberId) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
@@ -51,6 +53,20 @@ public class PortfolioLikeService {
             portfolioLikeRepository.save(like);
             isLiked = true;
             log.info("Member {} liked portfolio {}", memberId, portfolioId);
+
+            // 히든 배지 체크
+            // 1. 포트폴리오 주인이 총 5개 이상 좋아요 받으면 "인기스타" 배지
+            Long ownerId = portfolio.getMember().getId();
+            int totalLikesReceived = portfolioLikeRepository.countLikesReceivedByMemberId(ownerId);
+            if (totalLikesReceived >= 5) {
+                badgeService.awardHiddenBadge(ownerId, "hidden_popular");
+            }
+
+            // 2. 좋아요 누른 사람이 총 10개 이상 눌렀으면 "서포터" 배지
+            int totalLikesGiven = portfolioLikeRepository.countLikesGivenByMemberId(memberId);
+            if (totalLikesGiven >= 10) {
+                badgeService.awardHiddenBadge(memberId, "hidden_supporter");
+            }
         }
 
         int likeCount = portfolioLikeRepository.countByPortfolioId(portfolioId);

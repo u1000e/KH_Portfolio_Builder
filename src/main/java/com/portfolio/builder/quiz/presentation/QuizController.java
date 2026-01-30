@@ -214,4 +214,14 @@ public class QuizController {
             @RequestAttribute("memberId") Long memberId) {
         return ResponseEntity.ok(badgeService.getSelectedBadge(memberId));
     }
+
+    /**
+     * 학습 캘린더 히트맵 데이터 조회
+     * 최근 6개월간의 날짜별 퀴즈 풀이 횟수
+     */
+    @GetMapping("/heatmap")
+    public ResponseEntity<List<HeatmapData>> getHeatmapData(
+            @RequestAttribute("memberId") Long memberId) {
+        return ResponseEntity.ok(quizService.getHeatmapData(memberId));
+    }
 }
