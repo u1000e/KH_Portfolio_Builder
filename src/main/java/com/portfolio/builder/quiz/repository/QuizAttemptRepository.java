@@ -174,4 +174,33 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
             @Param("memberId") Long memberId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    // 아침 시간대 (6~10시) 퀴즈 풀이 횟수
+    @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND EXTRACT(HOUR FROM qa.createdAt) >= 6 AND EXTRACT(HOUR FROM qa.createdAt) < 10")
+    Long countMorningQuizzesByMemberId(@Param("memberId") Long memberId);
+
+    // 밤 시간대 (22~02시) 퀴즈 풀이 횟수
+    @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND (EXTRACT(HOUR FROM qa.createdAt) >= 22 OR EXTRACT(HOUR FROM qa.createdAt) < 2)")
+    Long countNightQuizzesByMemberId(@Param("memberId") Long memberId);
+
+    // 카테고리별 정답률 조회 (정답 수, 총 풀이 수)
+    @Query("""
+        SELECT qa.quiz.category,
+               SUM(CASE WHEN qa.isCorrect = true THEN 1 ELSE 0 END),
+               COUNT(qa)
+        FROM QuizAttempt qa
+        WHERE qa.member.id = :memberId
+        AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL)
+        GROUP BY qa.quiz.category
+        """)
+    List<Object[]> findCategoryAccuracyByMemberId(@Param("memberId") Long memberId);
+
+    // 날짜별 풀이 수 조회 (스프린터/주말전사 성향용 - 서비스에서 계산)
+    @Query("""
+        SELECT qa.attemptDate, COUNT(qa)
+        FROM QuizAttempt qa
+        WHERE qa.member.id = :memberId
+        GROUP BY qa.attemptDate
+        """)
+    List<Object[]> findDailyCountsByMemberId(@Param("memberId") Long memberId);
 }

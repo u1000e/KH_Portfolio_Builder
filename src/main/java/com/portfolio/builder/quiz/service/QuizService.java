@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.builder.activity.application.ActivityFeedService;
+import com.portfolio.builder.comment.domain.CommentRepository;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.quiz.domain.Quiz;
@@ -36,6 +37,7 @@ public class QuizService {
     private final MemberRepository memberRepository;
     private final BadgeRepository badgeRepository;
     private final ActivityFeedService activityFeedService;
+    private final CommentRepository commentRepository;
     private final ObjectMapper objectMapper;
 
     // 스트릭 마일스톤 (7일, 14일, 30일)
@@ -1080,5 +1082,188 @@ public class QuizService {
                         .count(((Long) row[1]).intValue())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 나의 학습 통계 조회
+     */
+    public com.portfolio.builder.quiz.dto.LearningStatsDto getLearningStats(Long memberId) {
+        // 1. 기본 통계 조회
+        QuizStreak streak = quizStreakRepository.findByMemberId(memberId).orElse(null);
+        int totalQuizCount = streak != null ? streak.getTotalQuizCount() : 0;
+        int maxStreak = streak != null ? streak.getMaxStreak() : 0;
+        double accuracyRate = 0.0;
+        if (streak != null && streak.getTotalQuizCount() > 0) {
+            accuracyRate = Math.round(streak.getCorrectCount() * 1000.0 / streak.getTotalQuizCount()) / 10.0;
+        }
+
+        // 2. 배지 수
+        int earnedBadgeCount = (int) badgeRepository.countByMemberId(memberId);
+
+        // 3. 강점 분야 TOP 3 (입문 제외, 최소 10문제 이상 푼 카테고리만)
+        List<Object[]> categoryAccuracy = quizAttemptRepository.findCategoryAccuracyByMemberId(memberId);
+        List<com.portfolio.builder.quiz.dto.LearningStatsDto.StrengthCategory> topStrengths = categoryAccuracy.stream()
+                .filter(row -> !"입문".equals(row[0]))  // 입문 제외
+                .filter(row -> ((Long) row[2]) >= 10)   // 최소 10문제 이상
+                .map(row -> {
+                    String category = (String) row[0];
+                    long correct = (Long) row[1];
+                    long total = (Long) row[2];
+                    double rate = Math.round(correct * 1000.0 / total) / 10.0;
+                    return com.portfolio.builder.quiz.dto.LearningStatsDto.StrengthCategory.builder()
+                            .category(category)
+                            .icon(getCategoryIcon(category))
+                            .accuracyRate(rate)
+                            .build();
+                })
+                .sorted((a, b) -> Double.compare(b.getAccuracyRate(), a.getAccuracyRate()))
+                .limit(3)
+                .collect(Collectors.toList());
+
+        // 4. 개발자 성향 태그
+        List<String> personalityTags = new ArrayList<>();
+
+        // 시간대별 성향
+        Long morningCount = quizAttemptRepository.countMorningQuizzesByMemberId(memberId);
+        Long nightCount = quizAttemptRepository.countNightQuizzesByMemberId(memberId);
+        if (morningCount != null && nightCount != null && totalQuizCount > 0) {
+            double morningRate = morningCount * 100.0 / totalQuizCount;
+            double nightRate = nightCount * 100.0 / totalQuizCount;
+            if (morningRate >= 30) {
+                personalityTags.add("☀️ 아침형");
+            } else if (nightRate >= 30) {
+                personalityTags.add("🦉 올빼미");
+            }
+        }
+
+        // 꾸준함 (최고 스트릭 14일 이상)
+        if (maxStreak >= 14) {
+            personalityTags.add("🔥 꾸준함");
+        }
+
+        // 신중함 (정답률 85% 이상, 최소 30문제)
+        if (totalQuizCount >= 30 && accuracyRate >= 85) {
+            personalityTags.add("🎯 신중함");
+        }
+
+        // 전문 분야 태그 (해당 카테고리에서 20문제 이상 + 80% 이상 정답률)
+        Map<String, double[]> categoryStats = new java.util.HashMap<>();
+        for (Object[] row : categoryAccuracy) {
+            String category = (String) row[0];
+            long correct = (Long) row[1];
+            long total = (Long) row[2];
+            categoryStats.put(category, new double[]{correct, total});
+        }
+
+        // 백엔드 전문가 (Spring + Java)
+        double[] springStats = categoryStats.getOrDefault("Spring", new double[]{0, 0});
+        double[] javaStats = categoryStats.getOrDefault("Java", new double[]{0, 0});
+        double backendTotal = springStats[1] + javaStats[1];
+        double backendCorrect = springStats[0] + javaStats[0];
+        if (backendTotal >= 20 && backendCorrect / backendTotal >= 0.8) {
+            personalityTags.add("🍃 백엔드 전문가");
+        }
+
+        // 프론트 전문가 (React + JavaScript)
+        double[] reactStats = categoryStats.getOrDefault("React", new double[]{0, 0});
+        double[] jsStats = categoryStats.getOrDefault("JavaScript", new double[]{0, 0});
+        double frontendTotal = reactStats[1] + jsStats[1];
+        double frontendCorrect = reactStats[0] + jsStats[0];
+        if (frontendTotal >= 20 && frontendCorrect / frontendTotal >= 0.8) {
+            personalityTags.add("⚛️ 프론트 전문가");
+        }
+
+        // SQL 전문가 (Database + SQL)
+        double[] dbStats = categoryStats.getOrDefault("Database", new double[]{0, 0});
+        double[] sqlStats = categoryStats.getOrDefault("SQL", new double[]{0, 0});
+        double sqlTotal = dbStats[1] + sqlStats[1];
+        double sqlCorrect = dbStats[0] + sqlStats[0];
+        if (sqlTotal >= 20 && sqlCorrect / sqlTotal >= 0.8) {
+            personalityTags.add("🗄️ SQL 전문가");
+        }
+
+        // Infra 전문가 (DevOps + Infrastructure)
+        double[] devopsStats = categoryStats.getOrDefault("DevOps", new double[]{0, 0});
+        double[] infraStats = categoryStats.getOrDefault("Infrastructure", new double[]{0, 0});
+        double infraTotal = devopsStats[1] + infraStats[1];
+        double infraCorrect = devopsStats[0] + infraStats[0];
+        if (infraTotal >= 20 && infraCorrect / infraTotal >= 0.8) {
+            personalityTags.add("🐳 Infra 전문가");
+        }
+
+        // 복습왕 (복습 횟수가 전체의 50% 이상)
+        Long reviewCount = quizAttemptRepository.countReviewModeByMemberId(memberId);
+        if (reviewCount != null && totalQuizCount > 0 && reviewCount >= totalQuizCount * 0.5) {
+            personalityTags.add("📚 복습왕");
+        }
+
+        // 풀스택 (백엔드 + 프론트 둘 다 조건 충족)
+        if (backendTotal >= 15 && frontendTotal >= 15 &&
+            backendCorrect / backendTotal >= 0.75 && frontendCorrect / frontendTotal >= 0.75) {
+            personalityTags.add("🌐 풀스택");
+        }
+
+        // 피어리뷰어 (다른 사람 포트폴리오에 댓글 10개 이상)
+        int commentsGiven = commentRepository.countCommentsGivenByMemberId(memberId);
+        if (commentsGiven >= 10) {
+            personalityTags.add("💬 피어리뷰어");
+        }
+
+        // 스프린터 & 주말 전사 - 날짜별 데이터로 계산
+        List<Object[]> dailyCounts = quizAttemptRepository.findDailyCountsByMemberId(memberId);
+        long maxDailyCount = 0;
+        long weekendQuizCount = 0;
+        for (Object[] row : dailyCounts) {
+            LocalDate date = (LocalDate) row[0];
+            long count = (Long) row[1];
+            // 스프린터: 하루 최대 풀이 수
+            if (count > maxDailyCount) {
+                maxDailyCount = count;
+            }
+            // 주말 전사: 토(6), 일(7) 풀이 합산
+            java.time.DayOfWeek dayOfWeek = date.getDayOfWeek();
+            if (dayOfWeek == java.time.DayOfWeek.SATURDAY || dayOfWeek == java.time.DayOfWeek.SUNDAY) {
+                weekendQuizCount += count;
+            }
+        }
+
+        // 스프린터 (하루 최대 풀이 20문제 이상)
+        if (maxDailyCount >= 20) {
+            personalityTags.add("⚡ 스프린터");
+        }
+
+        // 주말 전사 (주말 학습 비율 50% 이상, 최소 20문제)
+        if (totalQuizCount >= 20 && weekendQuizCount * 100.0 / totalQuizCount >= 50) {
+            personalityTags.add("📅 주말 전사");
+        }
+
+        return com.portfolio.builder.quiz.dto.LearningStatsDto.builder()
+                .totalQuizCount(totalQuizCount)
+                .maxStreak(maxStreak)
+                .accuracyRate(accuracyRate)
+                .earnedBadgeCount(earnedBadgeCount)
+                .topStrengths(topStrengths)
+                .personalityTags(personalityTags)
+                .build();
+    }
+
+    /**
+     * 카테고리별 아이콘
+     */
+    private String getCategoryIcon(String category) {
+        switch (category) {
+            case "Spring": case "Spring 심화": return "🍃";
+            case "Java": case "JavaCore": return "☕";
+            case "React": case "React 수업": return "⚛️";
+            case "JavaScript": case "JavaScript 수업": return "⚡";
+            case "Database": case "SQL": return "🗄️";
+            case "Network": return "🌐";
+            case "CS 기초": return "💡";
+            case "DevOps": case "Infrastructure": return "🐳";
+            case "HTML/CSS": return "🎨";
+            case "Architecture": return "🏗️";
+            case "Security": case "Spring Security": return "🔐";
+            default: return "📚";
+        }
     }
 }

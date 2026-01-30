@@ -224,4 +224,13 @@ public class QuizController {
             @RequestAttribute("memberId") Long memberId) {
         return ResponseEntity.ok(quizService.getHeatmapData(memberId));
     }
+
+    /**
+     * 나의 학습 통계 조회
+     */
+    @GetMapping("/stats/learning")
+    public ResponseEntity<com.portfolio.builder.quiz.dto.LearningStatsDto> getLearningStats(
+            @RequestAttribute("memberId") Long memberId) {
+        return ResponseEntity.ok(quizService.getLearningStats(memberId));
+    }
 }
