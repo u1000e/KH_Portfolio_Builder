@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.portfolio.builder.instructor.application.InstructorService;
 import com.portfolio.builder.instructor.dto.ClassDashboardResponse;
+import com.portfolio.builder.instructor.dto.QuizDashboardResponse;
 
-import lombok.RequiredArgsConstructor; 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /** 
@@ -42,6 +43,26 @@ public class InstructorController {
         instructorService.validateInstructor(memberId);
 
         ClassDashboardResponse response = instructorService.getClassDashboard(branch, classroom, cohort);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 반별 퀴즈 현황 대시보드 조회
+     * GET /api/instructor/quiz-dashboard
+     */
+    @GetMapping("/quiz-dashboard")
+    public ResponseEntity<QuizDashboardResponse> getQuizDashboard(
+            @RequestParam(required = false, name = "branch") String branch,
+            @RequestParam(required = false, name = "classroom") String classroom,
+            @RequestParam(required = false, name = "cohort") String cohort,
+            @AuthenticationPrincipal Long memberId) {
+
+        log.info("Quiz dashboard requested - branch: {}, classroom: {}, cohort: {}, memberId: {}",
+                branch, classroom, cohort, memberId);
+
+        instructorService.validateInstructor(memberId);
+
+        QuizDashboardResponse response = instructorService.getQuizDashboard(branch, classroom, cohort);
         return ResponseEntity.ok(response);
     }
 }

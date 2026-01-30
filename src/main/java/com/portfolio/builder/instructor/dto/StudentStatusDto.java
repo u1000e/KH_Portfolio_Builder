@@ -21,5 +21,6 @@ public class StudentStatusDto {
     private String portfolioTitle;      // 포트폴리오 제목
     private Integer aiScore;            // AI 점수 (null이면 미평가)
     private long feedbackCount;         // 피드백 횟수
+    private long unresolvedFeedbackCount; // 미반영 피드백 수
     private LocalDateTime lastUpdated;  // 최근 수정일
 }
