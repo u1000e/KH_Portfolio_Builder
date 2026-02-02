@@ -13,6 +13,9 @@ import java.util.List;
 @AllArgsConstructor
 public class LearningStatsDto {
 
+    private int level;                 // 현재 레벨
+    private String tierName;           // 티어 이름 (입문자, 견습생, 도내남바완 등)
+    private String tierEmoji;          // 티어 이모지
     private int totalQuizCount;        // 총 문제 수
     private int maxStreak;             // 최고 연속 일수
     private double accuracyRate;       // 정답률 (%)

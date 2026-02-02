@@ -79,11 +79,11 @@ public class BorderService {
         HEADER_DEFINITIONS.put("header_30", new HeaderDefinition("라벤더", 30, "bg-violet-100", "#ede9fe", null, null));
         HEADER_DEFINITIONS.put("header_40", new HeaderDefinition("피치", 40, "bg-orange-100", "#ffedd5", null, null));
         HEADER_DEFINITIONS.put("header_50", new HeaderDefinition("로즈", 50, "bg-rose-100", "#ffe4e6", null, null));
-        HEADER_DEFINITIONS.put("header_60", new HeaderDefinition("썬셋 그라데이션", 60, null, null, "from-orange-200", "to-pink-200"));
-        HEADER_DEFINITIONS.put("header_70", new HeaderDefinition("오션 그라데이션", 70, null, null, "from-cyan-200", "to-blue-200"));
-        HEADER_DEFINITIONS.put("header_80", new HeaderDefinition("오로라 그라데이션", 80, null, null, "from-purple-200", "to-pink-200"));
-        HEADER_DEFINITIONS.put("header_90", new HeaderDefinition("골드 그라데이션", 90, null, null, "from-amber-200", "to-yellow-200"));
-        HEADER_DEFINITIONS.put("header_100", new HeaderDefinition("레전더리 그라데이션", 100, null, null, "from-amber-300", "to-rose-300"));
+        HEADER_DEFINITIONS.put("header_60", new HeaderDefinition("오션 그라데이션", 60, null, null, "from-cyan-200", "to-blue-300"));
+        HEADER_DEFINITIONS.put("header_70", new HeaderDefinition("크림슨 그라데이션", 70, null, null, "from-rose-300", "to-red-400"));
+        HEADER_DEFINITIONS.put("header_80", new HeaderDefinition("오로라 그라데이션", 80, null, null, "from-purple-200", "to-pink-300"));
+        HEADER_DEFINITIONS.put("header_90", new HeaderDefinition("골드 그라데이션", 90, null, null, "from-amber-200", "to-yellow-300"));
+        HEADER_DEFINITIONS.put("header_100", new HeaderDefinition("레전더리 그라데이션", 100, null, null, "from-fuchsia-400", "to-amber-400"));
 
         // 레벨 기반 칭호 (titleId, name, emoji, colorClass, colorHex, requiredLevel, condition)
         TITLE_DEFINITIONS.put("title_0", new TitleDefinition("코딩 새싹", "🌱", "text-green-500", "#22c55e", 0, "레벨 0 달성", false));

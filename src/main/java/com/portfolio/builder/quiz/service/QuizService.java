@@ -1361,7 +1361,8 @@ public class QuizService {
 
         // 복습왕 (복습 횟수가 전체의 50% 이상)
         Long reviewCount = quizAttemptRepository.countReviewModeByMemberId(memberId);
-        if (reviewCount != null && totalQuizCount > 0 && reviewCount >= totalQuizCount * 0.5) {
+        if (reviewCount == null) reviewCount = 0L;
+        if (totalQuizCount > 0 && reviewCount >= totalQuizCount * 0.5) {
             personalityTags.add("📚 복습왕");
         }
 
@@ -1405,7 +1406,43 @@ public class QuizService {
             personalityTags.add("📅 주말 전사");
         }
 
+        // 5. 레벨 및 티어 계산
+        int likesGiven = portfolioLikeRepository.countLikesGivenByMemberId(memberId);
+
+        double rawScore = (totalQuizCount * (accuracyRate / 100.0))
+                + (reviewCount / 2.0)
+                + (maxStreak * 5)
+                + (likesGiven * 2)
+                + (commentsGiven * 2);
+        int level = Math.min(100, (int) Math.floor(rawScore / 10.0));
+
+        // 티어 결정
+        String tierName;
+        String tierEmoji;
+        if (level >= 100) {
+            tierName = "개발왕";
+            tierEmoji = "👑";
+        } else if (level >= 80) {
+            tierName = "전국재패";
+            tierEmoji = "🏴‍☠️";
+        } else if (level >= 60) {
+            tierName = "도내남바완";
+            tierEmoji = "🏆";
+        } else if (level >= 40) {
+            tierName = "숙련자";
+            tierEmoji = "💪";
+        } else if (level >= 20) {
+            tierName = "견습생";
+            tierEmoji = "📚";
+        } else {
+            tierName = "입문자";
+            tierEmoji = "🌱";
+        }
+
         return com.portfolio.builder.quiz.dto.LearningStatsDto.builder()
+                .level(level)
+                .tierName(tierName)
+                .tierEmoji(tierEmoji)
                 .totalQuizCount(totalQuizCount)
                 .maxStreak(maxStreak)
                 .accuracyRate(accuracyRate)
