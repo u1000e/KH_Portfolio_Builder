@@ -51,7 +51,16 @@ public class PortfolioResponse {
     
     // 대표 배지 관련 필드
     private SelectedBadgeInfo selectedBadge;  // 선택된 대표 배지 정보
-    
+
+    // 레벨 테두리 관련 필드
+    private SelectedBorderInfo selectedBorder;  // 선택된 테두리 정보
+
+    // 배경색 관련 필드
+    private SelectedBackgroundInfo selectedBackground;  // 선택된 배경색 정보
+
+    // 칭호 관련 필드
+    private SelectedTitleInfo selectedTitle;  // 선택된 칭호 정보
+
     @Getter
     @Setter
     @NoArgsConstructor
@@ -62,6 +71,44 @@ public class PortfolioResponse {
         private String icon;
         private String name;
         private String description;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SelectedBorderInfo {
+        private String id;
+        private String name;
+        private int requiredLevel;
+        private String gradientFrom;
+        private String gradientTo;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SelectedBackgroundInfo {
+        private String id;
+        private String name;
+        private String colorClass;
+        private String colorHex;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SelectedTitleInfo {
+        private String id;
+        private String name;
+        private String emoji;
+        private String colorClass;
+        private String colorHex;
     }
 
     /**
@@ -135,10 +182,22 @@ public class PortfolioResponse {
     }
 
     public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges) {
-        return from(portfolio, likeCount, isLiked, badgeCount, recentBadges, null);
+        return from(portfolio, likeCount, isLiked, badgeCount, recentBadges, null, null, null, null);
     }
-    
+
     public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges, SelectedBadgeInfo selectedBadge) {
+        return from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadge, null, null, null);
+    }
+
+    public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges, SelectedBadgeInfo selectedBadge, SelectedBorderInfo selectedBorder) {
+        return from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadge, selectedBorder, null, null);
+    }
+
+    public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges, SelectedBadgeInfo selectedBadge, SelectedBorderInfo selectedBorder, SelectedBackgroundInfo selectedBackground) {
+        return from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadge, selectedBorder, selectedBackground, null);
+    }
+
+    public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges, SelectedBadgeInfo selectedBadge, SelectedBorderInfo selectedBorder, SelectedBackgroundInfo selectedBackground, SelectedTitleInfo selectedTitle) {
         Member member = safeGetMember(portfolio);
         return PortfolioResponse.builder()
                 .id(portfolio.getId())
@@ -162,6 +221,9 @@ public class PortfolioResponse {
                 .badgeCount(badgeCount)
                 .recentBadges(recentBadges)
                 .selectedBadge(selectedBadge)
+                .selectedBorder(selectedBorder)
+                .selectedBackground(selectedBackground)
+                .selectedTitle(selectedTitle)
                 .build();
     }
     

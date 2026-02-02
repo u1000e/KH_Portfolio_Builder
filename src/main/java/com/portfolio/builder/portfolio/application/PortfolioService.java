@@ -1,5 +1,12 @@
 package com.portfolio.builder.portfolio.application;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.builder.activity.application.ActivityFeedService;
@@ -12,17 +19,15 @@ import com.portfolio.builder.portfolio.domain.PortfolioLikeRepository;
 import com.portfolio.builder.portfolio.domain.PortfolioRepository;
 import com.portfolio.builder.portfolio.dto.PortfolioRequest;
 import com.portfolio.builder.portfolio.dto.PortfolioResponse;
-import com.portfolio.builder.quiz.domain.Badge;
+import com.portfolio.builder.quiz.dto.QuizDto.BackgroundResponse;
+import com.portfolio.builder.quiz.dto.QuizDto.BorderResponse;
+import com.portfolio.builder.quiz.dto.QuizDto.TitleResponse;
 import com.portfolio.builder.quiz.repository.BadgeRepository;
 import com.portfolio.builder.quiz.service.BadgeService;
+import com.portfolio.builder.quiz.service.BorderService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +42,7 @@ public class PortfolioService {
     private final MemberRepository memberRepository;
     private final BadgeRepository badgeRepository;
     private final BadgeService badgeService;
+    private final BorderService borderService;
     private final ActivityFeedService activityFeedService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -169,13 +175,17 @@ public class PortfolioService {
                     List<String> recentBadges = List.of();
                     PortfolioResponse.SelectedBadgeInfo selectedBadgeInfo = null;
                     
+                    PortfolioResponse.SelectedBorderInfo selectedBorderInfo = null;
+                    PortfolioResponse.SelectedBackgroundInfo selectedBackgroundInfo = null;
+                    PortfolioResponse.SelectedTitleInfo selectedTitleInfo = null;
+
                     if (ownerId != null) {
                         badgeCount = (int) badgeRepository.countByMemberId(ownerId);
                         recentBadges = badgeRepository.findTop4ByMemberIdOrderByEarnedAtDesc(ownerId)
                                 .stream()
                                 .map(badge -> badgeService.getBadgeIcon(badge.getBadgeId()))
                                 .collect(Collectors.toList());
-                        
+
                         // 대표 배지 정보 조회
                         Member owner = portfolio.getMember();
                         if (owner.getSelectedBadgeId() != null) {
@@ -187,9 +197,50 @@ public class PortfolioService {
                                     .description(badgeService.getBadgeDescription(badgeId))
                                     .build();
                         }
+
+                        // 테두리 정보 조회
+                        if (owner.getSelectedBorderId() != null) {
+                            BorderResponse borderInfo = borderService.getBorderInfo(owner.getSelectedBorderId());
+                            if (borderInfo != null) {
+                                selectedBorderInfo = PortfolioResponse.SelectedBorderInfo.builder()
+                                        .id(borderInfo.getBorderId())
+                                        .name(borderInfo.getName())
+                                        .requiredLevel(borderInfo.getRequiredLevel())
+                                        .gradientFrom(borderInfo.getGradientFrom())
+                                        .gradientTo(borderInfo.getGradientTo())
+                                        .build();
+                            }
+                        }
+
+                        // 배경색 정보 조회
+                        if (owner.getSelectedBackgroundId() != null) {
+                            BackgroundResponse bgInfo = borderService.getBackgroundInfo(owner.getSelectedBackgroundId());
+                            if (bgInfo != null) {
+                                selectedBackgroundInfo = PortfolioResponse.SelectedBackgroundInfo.builder()
+                                        .id(bgInfo.getBackgroundId())
+                                        .name(bgInfo.getName())
+                                        .colorClass(bgInfo.getColorClass())
+                                        .colorHex(bgInfo.getColorHex())
+                                        .build();
+                            }
+                        }
+
+                        // 칭호 정보 조회
+                        if (owner.getSelectedTitleId() != null) {
+                            TitleResponse titleInfo = borderService.getTitleInfo(owner.getSelectedTitleId());
+                            if (titleInfo != null) {
+                                selectedTitleInfo = PortfolioResponse.SelectedTitleInfo.builder()
+                                        .id(titleInfo.getTitleId())
+                                        .name(titleInfo.getName())
+                                        .emoji(titleInfo.getEmoji())
+                                        .colorClass(titleInfo.getColorClass())
+                                        .colorHex(titleInfo.getColorHex())
+                                        .build();
+                            }
+                        }
                     }
-                    
-                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadgeInfo);
+
+                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadgeInfo, selectedBorderInfo, selectedBackgroundInfo, selectedTitleInfo);
                 })
                 .collect(Collectors.toList());
     }
@@ -212,14 +263,17 @@ public class PortfolioService {
                     int badgeCount = 0;
                     List<String> recentBadges = List.of();
                     PortfolioResponse.SelectedBadgeInfo selectedBadgeInfo = null;
-                    
+                    PortfolioResponse.SelectedBorderInfo selectedBorderInfo = null;
+                    PortfolioResponse.SelectedBackgroundInfo selectedBackgroundInfo = null;
+                    PortfolioResponse.SelectedTitleInfo selectedTitleInfo = null;
+
                     if (ownerId != null) {
                         badgeCount = (int) badgeRepository.countByMemberId(ownerId);
                         recentBadges = badgeRepository.findTop4ByMemberIdOrderByEarnedAtDesc(ownerId)
                                 .stream()
                                 .map(badge -> badgeService.getBadgeIcon(badge.getBadgeId()))
                                 .collect(Collectors.toList());
-                        
+
                         // 대표 배지 정보 조회
                         Member owner = portfolio.getMember();
                         if (owner.getSelectedBadgeId() != null) {
@@ -231,9 +285,50 @@ public class PortfolioService {
                                     .description(badgeService.getBadgeDescription(badgeId))
                                     .build();
                         }
+
+                        // 테두리 정보 조회
+                        if (owner.getSelectedBorderId() != null) {
+                            BorderResponse borderInfo = borderService.getBorderInfo(owner.getSelectedBorderId());
+                            if (borderInfo != null) {
+                                selectedBorderInfo = PortfolioResponse.SelectedBorderInfo.builder()
+                                        .id(borderInfo.getBorderId())
+                                        .name(borderInfo.getName())
+                                        .requiredLevel(borderInfo.getRequiredLevel())
+                                        .gradientFrom(borderInfo.getGradientFrom())
+                                        .gradientTo(borderInfo.getGradientTo())
+                                        .build();
+                            }
+                        }
+
+                        // 배경색 정보 조회
+                        if (owner.getSelectedBackgroundId() != null) {
+                            BackgroundResponse bgInfo = borderService.getBackgroundInfo(owner.getSelectedBackgroundId());
+                            if (bgInfo != null) {
+                                selectedBackgroundInfo = PortfolioResponse.SelectedBackgroundInfo.builder()
+                                        .id(bgInfo.getBackgroundId())
+                                        .name(bgInfo.getName())
+                                        .colorClass(bgInfo.getColorClass())
+                                        .colorHex(bgInfo.getColorHex())
+                                        .build();
+                            }
+                        }
+
+                        // 칭호 정보 조회
+                        if (owner.getSelectedTitleId() != null) {
+                            TitleResponse titleInfo = borderService.getTitleInfo(owner.getSelectedTitleId());
+                            if (titleInfo != null) {
+                                selectedTitleInfo = PortfolioResponse.SelectedTitleInfo.builder()
+                                        .id(titleInfo.getTitleId())
+                                        .name(titleInfo.getName())
+                                        .emoji(titleInfo.getEmoji())
+                                        .colorClass(titleInfo.getColorClass())
+                                        .colorHex(titleInfo.getColorHex())
+                                        .build();
+                            }
+                        }
                     }
-                    
-                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadgeInfo);
+
+                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadgeInfo, selectedBorderInfo, selectedBackgroundInfo, selectedTitleInfo);
                 })
                 .collect(Collectors.toList());
     }

@@ -183,6 +183,14 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND (EXTRACT(HOUR FROM qa.createdAt) >= 22 OR EXTRACT(HOUR FROM qa.createdAt) < 2)")
     Long countNightQuizzesByMemberId(@Param("memberId") Long memberId);
 
+    // 점심 시간대 (13~14시) 퀴즈 풀이 횟수
+    @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND EXTRACT(HOUR FROM qa.createdAt) >= 13 AND EXTRACT(HOUR FROM qa.createdAt) < 14")
+    Long countLunchTimeQuizzesByMemberId(@Param("memberId") Long memberId);
+
+    // 오답 횟수 (특별 칭호용)
+    @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isCorrect = false")
+    Long countWrongAnswersByMemberId(@Param("memberId") Long memberId);
+
     // 카테고리별 정답률 조회 (정답 수, 총 풀이 수)
     @Query("""
         SELECT qa.quiz.category,

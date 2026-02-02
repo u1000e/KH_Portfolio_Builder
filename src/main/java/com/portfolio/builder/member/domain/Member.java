@@ -33,6 +33,9 @@ public class Member {
     private String cohort;           // 기수 (예: "1기", "2기")
     private String pendingPosition;  // 승인 대기 중인 직급 (강사/운영팀 신청 시)
     private String selectedBadgeId;  // 대표 배지 ID (갤러리에 표시)
+    private String selectedBorderId; // 선택한 테두리 ID (갤러리 카드에 표시)
+    private String selectedBackgroundId; // 선택한 배경색 ID (갤러리 카드 배경)
+    private String selectedTitleId; // 선택한 칭호 ID (갤러리 카드 상단)
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

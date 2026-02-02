@@ -2,6 +2,7 @@ package com.portfolio.builder.quiz.presentation;
 
 import com.portfolio.builder.quiz.dto.QuizDto.*;
 import com.portfolio.builder.quiz.service.BadgeService;
+import com.portfolio.builder.quiz.service.BorderService;
 import com.portfolio.builder.quiz.service.QuizService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ public class QuizController {
 
     private final QuizService quizService;
     private final BadgeService badgeService;
+    private final BorderService borderService;
 
     /**
      * 카테고리 목록 조회
@@ -232,5 +234,49 @@ public class QuizController {
     public ResponseEntity<com.portfolio.builder.quiz.dto.LearningStatsDto> getLearningStats(
             @RequestAttribute("memberId") Long memberId) {
         return ResponseEntity.ok(quizService.getLearningStats(memberId));
+    }
+
+    // ===== 레벨 테두리 시스템 =====
+
+    /**
+     * 테두리 목록 조회 (해금 여부 포함)
+     */
+    @GetMapping("/borders")
+    public ResponseEntity<BorderListResponse> getBorders(
+            @RequestAttribute("memberId") Long memberId) {
+        return ResponseEntity.ok(borderService.getBorders(memberId));
+    }
+
+    /**
+     * 테두리 선택
+     */
+    @PostMapping("/borders/select")
+    public ResponseEntity<Void> selectBorder(
+            @RequestAttribute("memberId") Long memberId,
+            @RequestBody SelectBorderRequest request) {
+        borderService.selectBorder(memberId, request.getBorderId());
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 배경색 선택
+     */
+    @PostMapping("/backgrounds/select")
+    public ResponseEntity<Void> selectBackground(
+            @RequestAttribute("memberId") Long memberId,
+            @RequestBody SelectBackgroundRequest request) {
+        borderService.selectBackground(memberId, request.getBackgroundId());
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 칭호 선택
+     */
+    @PostMapping("/titles/select")
+    public ResponseEntity<Void> selectTitle(
+            @RequestAttribute("memberId") Long memberId,
+            @RequestBody SelectTitleRequest request) {
+        borderService.selectTitle(memberId, request.getTitleId());
+        return ResponseEntity.ok().build();
     }
 }

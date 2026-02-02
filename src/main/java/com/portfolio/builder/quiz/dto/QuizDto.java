@@ -262,4 +262,91 @@ public class QuizDto {
         private String date;  // yyyy-MM-dd 형식
         private int count;    // 해당 날짜의 퀴즈 풀이 횟수
     }
+
+    // ===== 레벨 테두리 시스템 =====
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class BorderResponse {
+        private String borderId;      // 테두리 ID (border_0, border_10, ...)
+        private String name;          // 테두리 이름
+        private int requiredLevel;    // 필요 레벨
+        private String borderStyle;   // CSS 스타일 (dark mode)
+        private String borderStyleLight; // CSS 스타일 (light mode)
+        private String gradientFrom;  // 그라데이션 시작 색상
+        private String gradientTo;    // 그라데이션 끝 색상
+        private boolean unlocked;     // 해금 여부
+        private boolean selected;     // 현재 선택 여부
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SelectBorderRequest {
+        private String borderId;  // 선택한 테두리 ID (null이면 선택 해제)
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class BorderListResponse {
+        private List<BorderResponse> borders;
+        private List<BackgroundResponse> backgrounds;
+        private List<TitleResponse> titles;
+        private String selectedBorderId;
+        private String selectedBackgroundId;
+        private String selectedTitleId;
+        private int currentLevel;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class BackgroundResponse {
+        private String backgroundId;  // 배경 ID
+        private String name;          // 배경 이름
+        private String colorClass;    // Tailwind 색상 클래스
+        private String colorHex;      // HEX 색상 코드
+        private boolean selected;     // 현재 선택 여부
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SelectBackgroundRequest {
+        private String backgroundId;  // 선택한 배경 ID (null이면 기본)
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class TitleResponse {
+        private String titleId;       // 칭호 ID
+        private String name;          // 칭호 이름
+        private String emoji;         // 이모지
+        private String colorClass;    // 색상 클래스
+        private String colorHex;      // HEX 색상
+        private int requiredLevel;    // 필요 레벨 (0이면 특별 칭호)
+        private String condition;     // 해금 조건 설명
+        private boolean unlocked;     // 해금 여부
+        private boolean selected;     // 현재 선택 여부
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SelectTitleRequest {
+        private String titleId;  // 선택한 칭호 ID (null이면 해제)
+    }
 }
