@@ -213,9 +213,14 @@ public class QuizService {
                     .build();
         }).collect(Collectors.toList());
 
-        double totalAccuracy = streak.getTotalQuizCount() > 0 
-                ? (streak.getCorrectCount() * 100.0 / streak.getTotalQuizCount()) 
+        double totalAccuracy = streak.getTotalQuizCount() > 0
+                ? (streak.getCorrectCount() * 100.0 / streak.getTotalQuizCount())
                 : 0;
+
+        // 레벨 계산 (복습모드 횟수만 - isReviewMode=true)
+        Long reviewCount = quizAttemptRepository.countReviewModeByMemberId(memberId);
+        if (reviewCount == null) reviewCount = 0L;
+        double[] levelData = calculateLevel(streak.getTotalQuizCount(), Math.round(totalAccuracy * 10) / 10.0, reviewCount, streak.getMaxStreak());
 
         return StatsResponse.builder()
                 .currentStreak(streak.getCurrentStreak())
@@ -224,7 +229,26 @@ public class QuizService {
                 .correctCount(streak.getCorrectCount())
                 .accuracy(Math.round(totalAccuracy * 10) / 10.0)
                 .categoryStats(categoryStats)
+                .level((int) levelData[0])
+                .currentXp(levelData[1])
+                .nextLevelXp(levelData[2])
+                .xpProgress(levelData[3])
+                .reviewCount(reviewCount)
                 .build();
+    }
+
+    /**
+     * 레벨 계산
+     * rawScore = (푼 문제 수 × 정답률/100) + (복습 횟수 / 10) + (최대 스트릭 × 5)
+     * Level = rawScore / 10
+     * 최대 레벨: 100
+     */
+    private double[] calculateLevel(int totalQuizCount, double accuracy, long reviewCount, int maxStreak) {
+        double rawScore = (totalQuizCount * (accuracy / 100.0)) + (reviewCount / 10.0) + (maxStreak * 5);
+        int level = Math.min(100, (int) Math.floor(rawScore / 10.0));
+        double currentXp = (level >= 100) ? 10.0 : rawScore % 10.0;
+        double xpProgress = (level >= 100) ? 100.0 : (currentXp / 10.0) * 100.0;
+        return new double[]{level, Math.round(currentXp * 10) / 10.0, 10.0, Math.round(xpProgress * 10) / 10.0};
     }
 
     // 기존 호환용

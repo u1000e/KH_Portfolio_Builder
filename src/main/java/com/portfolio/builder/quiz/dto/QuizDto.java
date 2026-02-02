@@ -81,6 +81,12 @@ public class QuizDto {
         private int correctCount;
         private double accuracy;
         private List<CategoryStats> categoryStats;
+        // 레벨 시스템
+        private int level;           // 현재 레벨 (0-100)
+        private double currentXp;    // 현재 XP (0-9.99)
+        private double nextLevelXp;  // 다음 레벨 XP (항상 10)
+        private double xpProgress;   // 진행률 % (0-100)
+        private long reviewCount;    // 복습 횟수
     }
 
     @Getter
