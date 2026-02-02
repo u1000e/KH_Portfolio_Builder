@@ -355,7 +355,7 @@ public class BorderService {
         int commentsGiven = commentRepository.countCommentsGivenByMemberId(memberId);
 
         double rawScore = (streak.getTotalQuizCount() * (accuracy / 100.0))
-                + (reviewCount / 10.0)
+                + (reviewCount / 2.0)
                 + (streak.getMaxStreak() * 5)
                 + (likesGiven * 2)
                 + (commentsGiven * 2);

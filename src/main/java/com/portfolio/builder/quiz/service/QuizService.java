@@ -252,7 +252,7 @@ public class QuizService {
      */
     private double[] calculateLevel(int totalQuizCount, double accuracy, long reviewCount, int maxStreak, int likesGiven, int commentsGiven) {
         double rawScore = (totalQuizCount * (accuracy / 100.0))
-                + (reviewCount / 10.0)
+                + (reviewCount / 2.0)
                 + (maxStreak * 5)
                 + (likesGiven * 2)
                 + (commentsGiven * 2);
@@ -1001,7 +1001,7 @@ public class QuizService {
         int commentsGiven = commentRepository.countCommentsGivenByMemberId(memberId);
 
         double rawScore = (streak.getTotalQuizCount() * (accuracy / 100.0))
-                + (reviewCount / 10.0)
+                + (reviewCount / 2.0)
                 + (streak.getMaxStreak() * 5)
                 + (likesGiven * 2)
                 + (commentsGiven * 2);
