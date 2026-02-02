@@ -18,6 +18,8 @@ public class LearningStatsDto {
     private double accuracyRate;       // 정답률 (%)
     private int earnedBadgeCount;      // 획득 배지 수
     private List<StrengthCategory> topStrengths;  // 강점 분야 TOP 3
+    private List<StrengthCategory> perfectCategories;  // 100% 정답률 카테고리
+    private List<StrengthCategory> weakCategories;     // 60% 이하 정답률 카테고리
     private List<String> personalityTags;         // 개발자 성향 태그들
 
     @Getter

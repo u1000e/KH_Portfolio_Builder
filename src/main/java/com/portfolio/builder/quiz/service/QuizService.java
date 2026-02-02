@@ -1102,7 +1102,9 @@ public class QuizService {
 
         // 3. 강점 분야 TOP 3 (입문 제외, 최소 10문제 이상 푼 카테고리만)
         List<Object[]> categoryAccuracy = quizAttemptRepository.findCategoryAccuracyByMemberId(memberId);
-        List<com.portfolio.builder.quiz.dto.LearningStatsDto.StrengthCategory> topStrengths = categoryAccuracy.stream()
+
+        // 전체 카테고리별 정답률 계산
+        List<com.portfolio.builder.quiz.dto.LearningStatsDto.StrengthCategory> allCategories = categoryAccuracy.stream()
                 .filter(row -> !"입문".equals(row[0]))  // 입문 제외
                 .filter(row -> ((Long) row[2]) >= 10)   // 최소 10문제 이상
                 .map(row -> {
@@ -1117,7 +1119,22 @@ public class QuizService {
                             .build();
                 })
                 .sorted((a, b) -> Double.compare(b.getAccuracyRate(), a.getAccuracyRate()))
+                .collect(Collectors.toList());
+
+        // TOP 3 강점 분야
+        List<com.portfolio.builder.quiz.dto.LearningStatsDto.StrengthCategory> topStrengths = allCategories.stream()
                 .limit(3)
+                .collect(Collectors.toList());
+
+        // 100% 정답률 카테고리 (완벽한 분야)
+        List<com.portfolio.builder.quiz.dto.LearningStatsDto.StrengthCategory> perfectCategories = allCategories.stream()
+                .filter(c -> c.getAccuracyRate() == 100.0)
+                .collect(Collectors.toList());
+
+        // 60% 이하 정답률 카테고리 (취약 분야)
+        List<com.portfolio.builder.quiz.dto.LearningStatsDto.StrengthCategory> weakCategories = allCategories.stream()
+                .filter(c -> c.getAccuracyRate() <= 60.0)
+                .sorted((a, b) -> Double.compare(a.getAccuracyRate(), b.getAccuracyRate()))  // 낮은 순
                 .collect(Collectors.toList());
 
         // 4. 개발자 성향 태그
@@ -1243,6 +1260,8 @@ public class QuizService {
                 .accuracyRate(accuracyRate)
                 .earnedBadgeCount(earnedBadgeCount)
                 .topStrengths(topStrengths)
+                .perfectCategories(perfectCategories)
+                .weakCategories(weakCategories)
                 .personalityTags(personalityTags)
                 .build();
     }
