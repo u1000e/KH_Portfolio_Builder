@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.builder.activity.application.ActivityFeedService;
 import com.portfolio.builder.comment.domain.CommentRepository;
 import com.portfolio.builder.member.domain.Member;
+import com.portfolio.builder.portfolio.domain.PortfolioLikeRepository;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.quiz.domain.Quiz;
 import com.portfolio.builder.quiz.domain.QuizAttempt;
@@ -38,6 +39,7 @@ public class QuizService {
     private final BadgeRepository badgeRepository;
     private final ActivityFeedService activityFeedService;
     private final CommentRepository commentRepository;
+    private final PortfolioLikeRepository portfolioLikeRepository;
     private final ObjectMapper objectMapper;
 
     // 스트릭 마일스톤 (7일, 14일, 30일)
@@ -220,7 +222,12 @@ public class QuizService {
         // 레벨 계산 (복습모드 횟수만 - isReviewMode=true)
         Long reviewCount = quizAttemptRepository.countReviewModeByMemberId(memberId);
         if (reviewCount == null) reviewCount = 0L;
-        double[] levelData = calculateLevel(streak.getTotalQuizCount(), Math.round(totalAccuracy * 10) / 10.0, reviewCount, streak.getMaxStreak());
+
+        // 커뮤니티 활동 보너스 (좋아요 + 댓글)
+        int likesGiven = portfolioLikeRepository.countLikesGivenByMemberId(memberId);
+        int commentsGiven = commentRepository.countCommentsGivenByMemberId(memberId);
+
+        double[] levelData = calculateLevel(streak.getTotalQuizCount(), Math.round(totalAccuracy * 10) / 10.0, reviewCount, streak.getMaxStreak(), likesGiven, commentsGiven);
 
         return StatsResponse.builder()
                 .currentStreak(streak.getCurrentStreak())
@@ -239,12 +246,16 @@ public class QuizService {
 
     /**
      * 레벨 계산
-     * rawScore = (푼 문제 수 × 정답률/100) + (복습 횟수 / 10) + (최대 스트릭 × 5)
+     * rawScore = (푼 문제 수 × 정답률/100) + (복습 횟수 / 10) + (최대 스트릭 × 5) + (좋아요 × 2) + (댓글 × 2)
      * Level = rawScore / 10
      * 최대 레벨: 100
      */
-    private double[] calculateLevel(int totalQuizCount, double accuracy, long reviewCount, int maxStreak) {
-        double rawScore = (totalQuizCount * (accuracy / 100.0)) + (reviewCount / 10.0) + (maxStreak * 5);
+    private double[] calculateLevel(int totalQuizCount, double accuracy, long reviewCount, int maxStreak, int likesGiven, int commentsGiven) {
+        double rawScore = (totalQuizCount * (accuracy / 100.0))
+                + (reviewCount / 10.0)
+                + (maxStreak * 5)
+                + (likesGiven * 2)
+                + (commentsGiven * 2);
         int level = Math.min(100, (int) Math.floor(rawScore / 10.0));
         double currentXp = (level >= 100) ? 10.0 : rawScore % 10.0;
         double xpProgress = (level >= 100) ? 100.0 : (currentXp / 10.0) * 100.0;
@@ -254,6 +265,14 @@ public class QuizService {
     // 기존 호환용
     public StatsResponse getStats(Long memberId) {
         return getStats(memberId, "INTERVIEW");
+    }
+
+    /**
+     * 레벨 마일스톤 기록 (10레벨 단위 달성 시 활동 피드에 기록)
+     */
+    @Transactional
+    public void recordLevelMilestone(Long memberId, int level) {
+        activityFeedService.recordLevelMilestone(memberId, level);
     }
 
     /**
@@ -472,6 +491,8 @@ public class QuizService {
                 return getBadgeRanking(memberId, limit, currentMember);
             case "rare":
                 return getRareBadgeRanking(memberId, limit, currentMember);
+            case "level":
+                return getLevelRanking(memberId, limit, currentMember);
         }
         
         List<QuizStreak> streaks;
@@ -893,6 +914,112 @@ public class QuizService {
                 .rankings(rankings)
                 .myRanking(myRanking)
                 .build();
+    }
+
+    /**
+     * 🏆 레벨 랭킹
+     */
+    private RankingResponse getLevelRanking(Long memberId, int limit, Member currentMember) {
+        // 모든 QuizStreak을 가져와서 레벨 계산
+        List<QuizStreak> allStreaks = quizStreakRepository.findAll();
+
+        // classFilter 적용
+        if (currentMember != null) {
+            allStreaks = allStreaks.stream()
+                    .filter(s -> isSameClass(s.getMember(), currentMember))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        // 레벨 계산 및 정렬을 위한 리스트
+        List<Map.Entry<QuizStreak, Integer>> levelList = new ArrayList<>();
+        for (QuizStreak streak : allStreaks) {
+            int level = calculateLevelForStreak(streak);
+            levelList.add(Map.entry(streak, level));
+        }
+
+        // 레벨 내림차순 정렬
+        levelList.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+
+        List<RankingEntry> rankings = new ArrayList<>();
+        RankingEntry myRanking = null;
+
+        int currentRank = 1;
+        Integer prevLevel = null;
+
+        for (int i = 0; i < levelList.size(); i++) {
+            Map.Entry<QuizStreak, Integer> entry = levelList.get(i);
+            QuizStreak streak = entry.getKey();
+            int level = entry.getValue();
+            Member member = streak.getMember();
+
+            // 동점자 처리
+            if (prevLevel == null || !prevLevel.equals(level)) {
+                currentRank = i + 1;
+            }
+            prevLevel = level;
+
+            String positionStr = buildPositionStringFromMember(member);
+
+            RankingEntry rankEntry = RankingEntry.builder()
+                    .rank(currentRank)
+                    .memberId(member.getId())
+                    .nickname(member.getName())
+                    .avatarUrl(member.getAvatarUrl())
+                    .position(positionStr)
+                    .value(level)
+                    .displayValue("Lv." + level)
+                    .build();
+
+            if (i < limit) {
+                rankings.add(rankEntry);
+            }
+            if (member.getId().equals(memberId)) {
+                myRanking = rankEntry;
+            }
+        }
+
+        return RankingResponse.builder()
+                .rankings(rankings)
+                .myRanking(myRanking)
+                .build();
+    }
+
+    /**
+     * QuizStreak에서 레벨 계산 (커뮤니티 활동 포함)
+     */
+    private int calculateLevelForStreak(QuizStreak streak) {
+        Long memberId = streak.getMember().getId();
+
+        double accuracy = streak.getTotalQuizCount() > 0
+                ? (streak.getCorrectCount() * 100.0 / streak.getTotalQuizCount())
+                : 0;
+
+        Long reviewCount = quizAttemptRepository.countReviewModeByMemberId(memberId);
+        if (reviewCount == null) reviewCount = 0L;
+
+        int likesGiven = portfolioLikeRepository.countLikesGivenByMemberId(memberId);
+        int commentsGiven = commentRepository.countCommentsGivenByMemberId(memberId);
+
+        double rawScore = (streak.getTotalQuizCount() * (accuracy / 100.0))
+                + (reviewCount / 10.0)
+                + (streak.getMaxStreak() * 5)
+                + (likesGiven * 2)
+                + (commentsGiven * 2);
+
+        return Math.min(100, (int) Math.floor(rawScore / 10.0));
+    }
+
+    /**
+     * Member에서 소속 정보 문자열 생성
+     */
+    private String buildPositionStringFromMember(Member member) {
+        if (member == null) return null;
+        StringBuilder sb = new StringBuilder();
+        if (member.getPosition() != null) sb.append(member.getPosition());
+        if (member.getBranch() != null) sb.append(" ").append(member.getBranch());
+        if (member.getClassroom() != null) sb.append(" ").append(member.getClassroom());
+        if (member.getCohort() != null) sb.append(" ").append(member.getCohort());
+        return sb.length() > 0 ? sb.toString().trim() : null;
     }
 
     /**

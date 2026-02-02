@@ -36,6 +36,7 @@ public class Member {
     private String selectedBorderId; // 선택한 테두리 ID (갤러리 카드에 표시)
     private String selectedBackgroundId; // 선택한 배경색 ID (갤러리 카드 배경)
     private String selectedTitleId; // 선택한 칭호 ID (갤러리 카드 상단)
+    private String selectedHeaderId; // 선택한 헤더색 ID (갤러리 카드 헤더)
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

@@ -61,6 +61,9 @@ public class PortfolioResponse {
     // 칭호 관련 필드
     private SelectedTitleInfo selectedTitle;  // 선택된 칭호 정보
 
+    // 헤더 색상 관련 필드
+    private SelectedHeaderInfo selectedHeader;  // 선택된 헤더 색상 정보
+
     @Getter
     @Setter
     @NoArgsConstructor
@@ -109,6 +112,21 @@ public class PortfolioResponse {
         private String emoji;
         private String colorClass;
         private String colorHex;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class SelectedHeaderInfo {
+        private String id;
+        private String name;
+        private int requiredLevel;
+        private String colorClass;
+        private String colorHex;
+        private String gradientFrom;
+        private String gradientTo;
     }
 
     /**
@@ -194,10 +212,14 @@ public class PortfolioResponse {
     }
 
     public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges, SelectedBadgeInfo selectedBadge, SelectedBorderInfo selectedBorder, SelectedBackgroundInfo selectedBackground) {
-        return from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadge, selectedBorder, selectedBackground, null);
+        return from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadge, selectedBorder, selectedBackground, null, null);
     }
 
     public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges, SelectedBadgeInfo selectedBadge, SelectedBorderInfo selectedBorder, SelectedBackgroundInfo selectedBackground, SelectedTitleInfo selectedTitle) {
+        return from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadge, selectedBorder, selectedBackground, selectedTitle, null);
+    }
+
+    public static PortfolioResponse from(Portfolio portfolio, int likeCount, boolean isLiked, int badgeCount, java.util.List<String> recentBadges, SelectedBadgeInfo selectedBadge, SelectedBorderInfo selectedBorder, SelectedBackgroundInfo selectedBackground, SelectedTitleInfo selectedTitle, SelectedHeaderInfo selectedHeader) {
         Member member = safeGetMember(portfolio);
         return PortfolioResponse.builder()
                 .id(portfolio.getId())
@@ -224,6 +246,7 @@ public class PortfolioResponse {
                 .selectedBorder(selectedBorder)
                 .selectedBackground(selectedBackground)
                 .selectedTitle(selectedTitle)
+                .selectedHeader(selectedHeader)
                 .build();
     }
     

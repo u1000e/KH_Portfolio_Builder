@@ -298,9 +298,11 @@ public class QuizDto {
         private List<BorderResponse> borders;
         private List<BackgroundResponse> backgrounds;
         private List<TitleResponse> titles;
+        private List<HeaderResponse> headers;
         private String selectedBorderId;
         private String selectedBackgroundId;
         private String selectedTitleId;
+        private String selectedHeaderId;
         private int currentLevel;
     }
 
@@ -348,5 +350,31 @@ public class QuizDto {
     @AllArgsConstructor
     public static class SelectTitleRequest {
         private String titleId;  // 선택한 칭호 ID (null이면 해제)
+    }
+
+    // ===== 헤더 색상 시스템 =====
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class HeaderResponse {
+        private String headerId;      // 헤더 ID (header_0, header_10, ...)
+        private String name;          // 헤더 이름
+        private int requiredLevel;    // 필요 레벨
+        private String colorClass;    // Tailwind 색상 클래스
+        private String colorHex;      // HEX 색상 코드
+        private String gradientFrom;  // 그라데이션 시작 (옵션)
+        private String gradientTo;    // 그라데이션 끝 (옵션)
+        private boolean unlocked;     // 해금 여부
+        private boolean selected;     // 현재 선택 여부
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SelectHeaderRequest {
+        private String headerId;  // 선택한 헤더 ID (null이면 기본)
     }
 }

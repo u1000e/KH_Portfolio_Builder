@@ -21,6 +21,7 @@ import com.portfolio.builder.portfolio.dto.PortfolioRequest;
 import com.portfolio.builder.portfolio.dto.PortfolioResponse;
 import com.portfolio.builder.quiz.dto.QuizDto.BackgroundResponse;
 import com.portfolio.builder.quiz.dto.QuizDto.BorderResponse;
+import com.portfolio.builder.quiz.dto.QuizDto.HeaderResponse;
 import com.portfolio.builder.quiz.dto.QuizDto.TitleResponse;
 import com.portfolio.builder.quiz.repository.BadgeRepository;
 import com.portfolio.builder.quiz.service.BadgeService;
@@ -178,6 +179,7 @@ public class PortfolioService {
                     PortfolioResponse.SelectedBorderInfo selectedBorderInfo = null;
                     PortfolioResponse.SelectedBackgroundInfo selectedBackgroundInfo = null;
                     PortfolioResponse.SelectedTitleInfo selectedTitleInfo = null;
+                    PortfolioResponse.SelectedHeaderInfo selectedHeaderInfo = null;
 
                     if (ownerId != null) {
                         badgeCount = (int) badgeRepository.countByMemberId(ownerId);
@@ -238,9 +240,25 @@ public class PortfolioService {
                                         .build();
                             }
                         }
+
+                        // 헤더 색상 정보 조회
+                        if (owner.getSelectedHeaderId() != null) {
+                            HeaderResponse headerInfo = borderService.getHeaderInfo(owner.getSelectedHeaderId());
+                            if (headerInfo != null) {
+                                selectedHeaderInfo = PortfolioResponse.SelectedHeaderInfo.builder()
+                                        .id(headerInfo.getHeaderId())
+                                        .name(headerInfo.getName())
+                                        .requiredLevel(headerInfo.getRequiredLevel())
+                                        .colorClass(headerInfo.getColorClass())
+                                        .colorHex(headerInfo.getColorHex())
+                                        .gradientFrom(headerInfo.getGradientFrom())
+                                        .gradientTo(headerInfo.getGradientTo())
+                                        .build();
+                            }
+                        }
                     }
 
-                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadgeInfo, selectedBorderInfo, selectedBackgroundInfo, selectedTitleInfo);
+                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadgeInfo, selectedBorderInfo, selectedBackgroundInfo, selectedTitleInfo, selectedHeaderInfo);
                 })
                 .collect(Collectors.toList());
     }
@@ -266,6 +284,7 @@ public class PortfolioService {
                     PortfolioResponse.SelectedBorderInfo selectedBorderInfo = null;
                     PortfolioResponse.SelectedBackgroundInfo selectedBackgroundInfo = null;
                     PortfolioResponse.SelectedTitleInfo selectedTitleInfo = null;
+                    PortfolioResponse.SelectedHeaderInfo selectedHeaderInfo = null;
 
                     if (ownerId != null) {
                         badgeCount = (int) badgeRepository.countByMemberId(ownerId);
@@ -326,9 +345,25 @@ public class PortfolioService {
                                         .build();
                             }
                         }
+
+                        // 헤더 색상 정보 조회
+                        if (owner.getSelectedHeaderId() != null) {
+                            HeaderResponse headerInfo = borderService.getHeaderInfo(owner.getSelectedHeaderId());
+                            if (headerInfo != null) {
+                                selectedHeaderInfo = PortfolioResponse.SelectedHeaderInfo.builder()
+                                        .id(headerInfo.getHeaderId())
+                                        .name(headerInfo.getName())
+                                        .requiredLevel(headerInfo.getRequiredLevel())
+                                        .colorClass(headerInfo.getColorClass())
+                                        .colorHex(headerInfo.getColorHex())
+                                        .gradientFrom(headerInfo.getGradientFrom())
+                                        .gradientTo(headerInfo.getGradientTo())
+                                        .build();
+                            }
+                        }
                     }
 
-                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadgeInfo, selectedBorderInfo, selectedBackgroundInfo, selectedTitleInfo);
+                    return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges, selectedBadgeInfo, selectedBorderInfo, selectedBackgroundInfo, selectedTitleInfo, selectedHeaderInfo);
                 })
                 .collect(Collectors.toList());
     }

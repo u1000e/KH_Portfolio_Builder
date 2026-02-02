@@ -279,4 +279,29 @@ public class QuizController {
         borderService.selectTitle(memberId, request.getTitleId());
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 헤더 색상 선택
+     */
+    @PostMapping("/headers/select")
+    public ResponseEntity<Void> selectHeader(
+            @RequestAttribute("memberId") Long memberId,
+            @RequestBody SelectHeaderRequest request) {
+        borderService.selectHeader(memberId, request.getHeaderId());
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 레벨 마일스톤 기록 (10레벨 단위)
+     */
+    @PostMapping("/level-milestone")
+    public ResponseEntity<Void> recordLevelMilestone(
+            @RequestAttribute("memberId") Long memberId,
+            @RequestBody java.util.Map<String, Integer> request) {
+        Integer level = request.get("level");
+        if (level != null && level > 0 && level % 10 == 0) {
+            quizService.recordLevelMilestone(memberId, level);
+        }
+        return ResponseEntity.ok().build();
+    }
 }

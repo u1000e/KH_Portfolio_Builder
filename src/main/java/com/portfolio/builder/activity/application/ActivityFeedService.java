@@ -123,6 +123,56 @@ public class ActivityFeedService {
     }
 
     /**
+     * 레벨 마일스톤 달성 활동 기록 (10, 20, 30... 100레벨)
+     */
+    @Transactional
+    public void recordLevelMilestone(Long memberId, int level) {
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if (member == null) return;
+
+        String displayName = member.getName() != null ? member.getName() : member.getGithubUsername();
+        String activityType = "LEVEL_" + level;
+
+        // 레벨별 이모지와 등급명
+        String emoji;
+        String tierName;
+        if (level >= 100) {
+            emoji = "🏅";
+            tierName = "개발왕";
+        } else if (level >= 80) {
+            emoji = "🏴‍☠️";
+            tierName = "전국재패";
+        } else if (level >= 60) {
+            emoji = "🏆";
+            tierName = "도내남바완";
+        } else if (level >= 40) {
+            emoji = "💎";
+            tierName = "숙련자";
+        } else if (level >= 20) {
+            emoji = "🌟";
+            tierName = "견습생";
+        } else {
+            emoji = "⭐";
+            tierName = "입문자";
+        }
+
+        String message = displayName + "님이 Lv." + level + " 달성! " + emoji + " [" + tierName + "]";
+
+        ActivityFeed feed = ActivityFeed.builder()
+                .member(member)
+                .activityType(activityType)
+                .message(message)
+                .extraData(String.valueOf(level))
+                .branch(member.getBranch())
+                .classroom(member.getClassroom())
+                .cohort(member.getCohort())
+                .build();
+
+        activityFeedRepository.save(feed);
+        log.info("Activity recorded: {} for member {}", activityType, memberId);
+    }
+
+    /**
      * 숨겨진 배지 획득 활동 기록
      */
     @Transactional
@@ -192,6 +242,17 @@ public class ActivityFeedService {
             case "QUIZ_400": return "🌟";
             case "QUIZ_500": return "💎";
             case "QUIZ_600": return "🏅";
+            // 레벨 마일스톤
+            case "LEVEL_10": return "⭐";
+            case "LEVEL_20": return "🌟";
+            case "LEVEL_30": return "🌟";
+            case "LEVEL_40": return "💎";
+            case "LEVEL_50": return "💎";
+            case "LEVEL_60": return "🏆";
+            case "LEVEL_70": return "🏆";
+            case "LEVEL_80": return "🏴‍☠️";
+            case "LEVEL_90": return "🏴‍☠️";
+            case "LEVEL_100": return "🏅";
             default: return "✨";
         }
     }
