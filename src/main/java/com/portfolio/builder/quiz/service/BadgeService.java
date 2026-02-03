@@ -115,7 +115,11 @@ public class BadgeService {
             new BadgeDefinition("hidden_supporter", "서포터", "다른 사람 포트폴리오에 좋아요 10개 누르기", "👍", 10),
             new BadgeDefinition("hidden_social", "소통왕", "내 포트폴리오에 댓글 5개 받기", "💬", 5),
             new BadgeDefinition("hidden_cheerleader", "응원단", "다른 사람 포트폴리오에 댓글 5개 달기", "📣", 5),
-            new BadgeDefinition("hidden_diligent", "성실왕", "피드백 5회 반영 하기", "✅", 5)
+            new BadgeDefinition("hidden_diligent", "성실왕", "피드백 5회 반영 하기", "✅", 5),
+            // 주간 베스트 리뷰어 배지
+            new BadgeDefinition("hidden_weekly_reviewer_1st", "주간 리뷰왕", "주간 베스트 리뷰어 1등 달성!", "💖", 1),
+            new BadgeDefinition("hidden_weekly_reviewer_2nd", "주간 리뷰메이트", "주간 베스트 리뷰어 2등 달성!", "💞", 1),
+            new BadgeDefinition("hidden_weekly_reviewer_3rd", "주간 리뷰버디", "주간 베스트 리뷰어 3등 달성!", "💌", 1)
     );
 
     /**

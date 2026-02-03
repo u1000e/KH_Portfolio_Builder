@@ -197,6 +197,54 @@ public class ActivityFeedService {
     }
 
     /**
+     * 주간 베스트 리뷰어 수상 활동 기록
+     */
+    @Transactional
+    public void recordWeeklyReviewerAward(Long memberId, int rank) {
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if (member == null) return;
+
+        String displayName = member.getName() != null ? member.getName() : member.getGithubUsername();
+        String activityType = "WEEKLY_REVIEWER_" + rank;
+
+        // 순위별 이모지와 칭호
+        String emoji;
+        String titleName;
+        switch (rank) {
+            case 1:
+                emoji = "💖";
+                titleName = "주간 리뷰왕";
+                break;
+            case 2:
+                emoji = "💞";
+                titleName = "주간 리뷰메이트";
+                break;
+            case 3:
+                emoji = "💌";
+                titleName = "주간 리뷰버디";
+                break;
+            default:
+                emoji = "🏅";
+                titleName = "주간 리뷰어";
+        }
+
+        String message = displayName + "님이 주간 베스트 리뷰어 " + rank + "등에 선정되었습니다! " + emoji + " [" + titleName + "]";
+
+        ActivityFeed feed = ActivityFeed.builder()
+                .member(member)
+                .activityType(activityType)
+                .message(message)
+                .extraData(String.valueOf(rank))
+                .branch(member.getBranch())
+                .classroom(member.getClassroom())
+                .cohort(member.getCohort())
+                .build();
+
+        activityFeedRepository.save(feed);
+        log.info("Activity recorded: {} for member {}", activityType, memberId);
+    }
+
+    /**
      * 활동 피드 조회 (같은 반+기수/전체)
      */
     public List<ActivityFeedDto> getRecentActivities(String branch, String classroom, String cohort, int limit) {
@@ -253,6 +301,10 @@ public class ActivityFeedService {
             case "LEVEL_80": return "🏴‍☠️";
             case "LEVEL_90": return "🏴‍☠️";
             case "LEVEL_100": return "🏅";
+            // 주간 베스트 리뷰어
+            case "WEEKLY_REVIEWER_1": return "💖";
+            case "WEEKLY_REVIEWER_2": return "💞";
+            case "WEEKLY_REVIEWER_3": return "💌";
             default: return "✨";
         }
     }

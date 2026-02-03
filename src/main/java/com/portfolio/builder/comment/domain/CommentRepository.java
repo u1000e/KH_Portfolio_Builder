@@ -43,4 +43,21 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
      */
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.member.id = :memberId AND c.portfolio.member.id != :memberId")
     int countCommentsGivenByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 주간 베스트 리뷰어 후보 조회 (본인 포트폴리오 제외, 최소 3개 이상)
+     * 반환: [memberId, commentCount]
+     */
+    @Query("""
+        SELECT c.member.id, COUNT(c) as cnt
+        FROM Comment c
+        WHERE c.createdAt >= :startTime AND c.createdAt < :endTime
+        AND c.member.id != c.portfolio.member.id
+        GROUP BY c.member.id
+        HAVING COUNT(c) >= 3
+        ORDER BY cnt DESC
+        """)
+    List<Object[]> findWeeklyReviewerCandidates(
+        @Param("startTime") java.time.LocalDateTime startTime,
+        @Param("endTime") java.time.LocalDateTime endTime);
 }

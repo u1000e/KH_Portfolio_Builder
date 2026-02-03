@@ -6,6 +6,7 @@ import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.portfolio.domain.PortfolioLikeRepository;
 import com.portfolio.builder.quiz.domain.QuizStreak;
 import com.portfolio.builder.quiz.dto.QuizDto.*;
+import com.portfolio.builder.quiz.repository.BadgeRepository;
 import com.portfolio.builder.quiz.repository.QuizAttemptRepository;
 import com.portfolio.builder.quiz.repository.QuizStreakRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class BorderService {
     private final QuizAttemptRepository quizAttemptRepository;
     private final PortfolioLikeRepository portfolioLikeRepository;
     private final CommentRepository commentRepository;
+    private final BadgeRepository badgeRepository;
 
     // 테두리 정의 (10레벨 단위)
     private static final Map<String, BorderDefinition> BORDER_DEFINITIONS = new LinkedHashMap<>();
@@ -110,6 +112,11 @@ public class BorderService {
         TITLE_DEFINITIONS.put("title_500warrior", new TitleDefinition("오백전사", "⚔️", "text-violet-500", "#8b5cf6", 0, "총 500문제 풀기", true));
         TITLE_DEFINITIONS.put("title_lunchtime", new TitleDefinition("밥 좀 드세요", "🍱", "text-amber-500", "#f59e0b", 0, "점심시간(13-14시) 30문제 풀기", true));
         TITLE_DEFINITIONS.put("title_7days", new TitleDefinition("7일 챌린저", "🗓️", "text-cyan-500", "#06b6d4", 0, "7일 연속 학습 달성", true));
+
+        // 주간 베스트 리뷰어 칭호
+        TITLE_DEFINITIONS.put("title_weekly_reviewer_1st", new TitleDefinition("주간 리뷰왕", "💖", "text-pink-500", "#ec4899", 0, "주간 베스트 리뷰어 1등 달성", true));
+        TITLE_DEFINITIONS.put("title_weekly_reviewer_2nd", new TitleDefinition("주간 리뷰메이트", "💞", "text-rose-400", "#fb7185", 0, "주간 베스트 리뷰어 2등 달성", true));
+        TITLE_DEFINITIONS.put("title_weekly_reviewer_3rd", new TitleDefinition("주간 리뷰버디", "💌", "text-pink-300", "#f9a8d4", 0, "주간 베스트 리뷰어 3등 달성", true));
     }
 
     /**
@@ -267,6 +274,11 @@ public class BorderService {
         // 밥 좀 드세요: 점심시간(13-14시) 30문제
         Long lunchCount = quizAttemptRepository.countLunchTimeQuizzesByMemberId(memberId);
         result.put("title_lunchtime", lunchCount != null && lunchCount >= 30);
+
+        // 주간 리뷰어 칭호 해금 (배지 보유 여부로 판단)
+        result.put("title_weekly_reviewer_1st", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_weekly_reviewer_1st"));
+        result.put("title_weekly_reviewer_2nd", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_weekly_reviewer_2nd"));
+        result.put("title_weekly_reviewer_3rd", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_weekly_reviewer_3rd"));
 
         return result;
     }
