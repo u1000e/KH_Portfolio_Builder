@@ -1207,7 +1207,10 @@ public class QuizService {
                 .quizType(quizType)
                 .build();
         quizAttemptRepository.save(attempt);
-        
+
+        // 복습 모드에서도 스트릭 업데이트
+        updateStreak(memberId, isCorrect);
+
         return SubmitResponse.builder()
                 .quizId(quiz.getId())
                 .isCorrect(isCorrect)
