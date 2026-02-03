@@ -1,0 +1,301 @@
+package com.portfolio.builder.interview.application;
+
+import com.portfolio.builder.interview.domain.*;
+import com.portfolio.builder.interview.dto.InterviewAnswerRequest;
+import com.portfolio.builder.interview.dto.InterviewAnswerResponse;
+import com.portfolio.builder.member.domain.Member;
+import com.portfolio.builder.member.domain.MemberRepository;
+import com.portfolio.builder.quiz.service.BadgeService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional(readOnly = true)
+public class InterviewAnswerService {
+
+    private final InterviewAnswerRepository answerRepository;
+    private final InterviewAnswerLikeRepository likeRepository;
+    private final InterviewQuestionRepository questionRepository;
+    private final MemberRepository memberRepository;
+    private final BadgeService badgeService;
+
+    // 배지 ID
+    private static final String BADGE_BEST_ANSWER_1ST = "hidden_best_answer_1st";
+    private static final String BADGE_BEST_ANSWER_2ND = "hidden_best_answer_2nd";
+    private static final String BADGE_BEST_ANSWER_3RD = "hidden_best_answer_3rd";
+    private static final String BADGE_DISCUSSION_MASTER = "hidden_discussion_master";
+
+    /**
+     * 답변 생성
+     */
+    @Transactional
+    public InterviewAnswerResponse createAnswer(Long questionId, Long memberId, InterviewAnswerRequest request) {
+        InterviewQuestion question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new RuntimeException("질문을 찾을 수 없습니다."));
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+
+        InterviewAnswer answer = InterviewAnswer.builder()
+                .question(question)
+                .member(member)
+                .content(request.getContent())
+                .build();
+
+        answerRepository.save(answer);
+
+        // 토론왕 배지 체크 (100개 이상)
+        checkDiscussionMasterBadge(memberId);
+
+        return toResponse(answer, memberId);
+    }
+
+    /**
+     * 답변 수정 (본인만)
+     */
+    @Transactional
+    public InterviewAnswerResponse updateAnswer(Long answerId, Long memberId, InterviewAnswerRequest request) {
+        InterviewAnswer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new RuntimeException("답변을 찾을 수 없습니다."));
+
+        if (!answer.getMember().getId().equals(memberId)) {
+            throw new RuntimeException("본인의 답변만 수정할 수 있습니다.");
+        }
+
+        answer.setContent(request.getContent());
+        answerRepository.save(answer);
+
+        return toResponse(answer, memberId);
+    }
+
+    /**
+     * 답변 삭제 (본인만)
+     */
+    @Transactional
+    public void deleteAnswer(Long answerId, Long memberId) {
+        InterviewAnswer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new RuntimeException("답변을 찾을 수 없습니다."));
+
+        if (!answer.getMember().getId().equals(memberId)) {
+            throw new RuntimeException("본인의 답변만 삭제할 수 있습니다.");
+        }
+
+        // 좋아요 먼저 삭제
+        likeRepository.deleteAllByAnswerId(answerId);
+        answerRepository.delete(answer);
+    }
+
+    /**
+     * 좋아요 토글
+     */
+    @Transactional
+    public InterviewAnswerResponse toggleLike(Long answerId, Long memberId) {
+        InterviewAnswer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new RuntimeException("답변을 찾을 수 없습니다."));
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+
+        Optional<InterviewAnswerLike> existingLike = likeRepository.findByAnswerIdAndMemberId(answerId, memberId);
+
+        if (existingLike.isPresent()) {
+            // 좋아요 취소
+            likeRepository.delete(existingLike.get());
+            answer.decreaseLikeCount();
+        } else {
+            // 좋아요 추가
+            InterviewAnswerLike like = InterviewAnswerLike.builder()
+                    .answer(answer)
+                    .member(member)
+                    .build();
+            likeRepository.save(like);
+            answer.increaseLikeCount();
+
+            // 베스트 답변자 배지 체크
+            checkBestAnswerBadges();
+        }
+
+        answerRepository.save(answer);
+        return toResponse(answer, memberId);
+    }
+
+    /**
+     * 특정 질문의 답변 목록 조회 (좋아요순, 페이징)
+     */
+    public Page<InterviewAnswerResponse> getAnswersByQuestion(Long questionId, Long memberId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<InterviewAnswer> answers = answerRepository.findByQuestionIdOrderByLikeCountDescCreatedAtDesc(questionId, pageable);
+
+        // 해당 질문의 좋아요 상위 3개 답변 ID 조회
+        List<Long> top3Ids = answerRepository.findTop3AnswerIdsByQuestionId(questionId, PageRequest.of(0, 3));
+        Set<Long> top3Set = new HashSet<>(top3Ids);
+
+        return answers.map(answer -> {
+            InterviewAnswerResponse response = toResponse(answer, memberId);
+            // 상위 3개 중 하나면 rank 설정
+            int rank = top3Ids.indexOf(answer.getId());
+            if (rank >= 0 && rank < 3) {
+                response.setRank(rank + 1);
+            }
+            return response;
+        });
+    }
+
+    /**
+     * 특정 질문의 답변 개수
+     */
+    public long getAnswerCount(Long questionId) {
+        return answerRepository.countByQuestionId(questionId);
+    }
+
+    /**
+     * 토론왕 배지 체크 (답변 100개 이상)
+     */
+    private void checkDiscussionMasterBadge(Long memberId) {
+        long answerCount = answerRepository.countByMemberId(memberId);
+        if (answerCount >= 100) {
+            boolean awarded = badgeService.awardHiddenBadge(memberId, BADGE_DISCUSSION_MASTER);
+            if (awarded) {
+                log.info("회원 {}에게 토론왕 배지 부여 (답변 {}개)", memberId, answerCount);
+            }
+        }
+    }
+
+    /**
+     * 베스트 답변자 배지 체크 (좋아요 10개 이상 중 1, 2, 3위)
+     */
+    private void checkBestAnswerBadges() {
+        List<Object[]> topAnswers = answerRepository.findTopAnswersByLikeCount();
+
+        if (topAnswers.isEmpty()) return;
+
+        // 상위 3개만 처리
+        for (int i = 0; i < Math.min(3, topAnswers.size()); i++) {
+            Object[] row = topAnswers.get(i);
+            Long memberId = (Long) row[1];
+            int likeCount = (int) row[2];
+
+            if (likeCount < 10) continue;
+
+            String badgeId;
+            switch (i) {
+                case 0:
+                    badgeId = BADGE_BEST_ANSWER_1ST;
+                    break;
+                case 1:
+                    badgeId = BADGE_BEST_ANSWER_2ND;
+                    break;
+                case 2:
+                    badgeId = BADGE_BEST_ANSWER_3RD;
+                    break;
+                default:
+                    continue;
+            }
+
+            boolean awarded = badgeService.awardHiddenBadge(memberId, badgeId);
+            if (awarded) {
+                log.info("회원 {}에게 베스트 답변자 {}위 배지 부여 (좋아요 {}개)", memberId, i + 1, likeCount);
+            }
+        }
+    }
+
+    /**
+     * 엔티티를 Response DTO로 변환
+     */
+    private InterviewAnswerResponse toResponse(InterviewAnswer answer, Long currentMemberId) {
+        Member member = answer.getMember();
+        String displayName = member.getName() != null ? member.getName() : member.getGithubUsername();
+
+        boolean isLiked = currentMemberId != null &&
+                likeRepository.existsByAnswerIdAndMemberId(answer.getId(), currentMemberId);
+
+        boolean isOwner = currentMemberId != null &&
+                answer.getMember().getId().equals(currentMemberId);
+
+        return InterviewAnswerResponse.builder()
+                .id(answer.getId())
+                .questionId(answer.getQuestion().getId())
+                .memberId(member.getId())
+                .memberName(displayName)
+                .memberAvatarUrl(member.getAvatarUrl())
+                .content(answer.getContent())
+                .likeCount(answer.getLikeCount())
+                .isLiked(isLiked)
+                .isOwner(isOwner)
+                .createdAt(answer.getCreatedAt())
+                .updatedAt(answer.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * 핫한 토론 조회 (일주일 내 답변이 많이 달린 질문 상위 N개)
+     */
+    public List<HotQuestionResponse> getHotQuestions(int limit) {
+        java.time.LocalDateTime since = java.time.LocalDateTime.now().minusDays(7);
+        Pageable pageable = PageRequest.of(0, limit);
+
+        List<Object[]> hotQuestionData = answerRepository.findHotQuestionIds(since, pageable);
+
+        if (hotQuestionData.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> questionIds = hotQuestionData.stream()
+                .map(row -> (Long) row[0])
+                .collect(Collectors.toList());
+
+        // 답변 수 맵 생성
+        Map<Long, Long> answerCountMap = hotQuestionData.stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        // 질문 정보 조회
+        List<InterviewQuestion> questions = questionRepository.findAllById(questionIds);
+        Map<Long, InterviewQuestion> questionMap = questions.stream()
+                .collect(Collectors.toMap(InterviewQuestion::getId, q -> q));
+
+        // 순서 유지하면서 응답 생성
+        return questionIds.stream()
+                .map(questionId -> {
+                    InterviewQuestion q = questionMap.get(questionId);
+                    if (q == null) return null;
+
+                    return HotQuestionResponse.builder()
+                            .questionId(q.getId())
+                            .question(q.getQuestion())
+                            .category(q.getCategory())
+                            .company(q.getCompany())
+                            .answerCount(answerCountMap.get(questionId).intValue())
+                            .build();
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 핫한 토론 응답 DTO (내부 클래스)
+     */
+    @lombok.Data
+    @lombok.Builder
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    public static class HotQuestionResponse {
+        private Long questionId;
+        private String question;
+        private String category;
+        private String company;
+        private int answerCount;  // 24시간 내 답변 수
+    }
+}

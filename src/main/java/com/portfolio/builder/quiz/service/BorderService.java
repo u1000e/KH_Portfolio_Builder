@@ -117,6 +117,12 @@ public class BorderService {
         TITLE_DEFINITIONS.put("title_weekly_reviewer_1st", new TitleDefinition("주간 리뷰왕", "💖", "text-pink-500", "#ec4899", 0, "주간 베스트 리뷰어 1등 달성", true));
         TITLE_DEFINITIONS.put("title_weekly_reviewer_2nd", new TitleDefinition("주간 리뷰메이트", "💞", "text-rose-400", "#fb7185", 0, "주간 베스트 리뷰어 2등 달성", true));
         TITLE_DEFINITIONS.put("title_weekly_reviewer_3rd", new TitleDefinition("주간 리뷰버디", "💌", "text-pink-300", "#f9a8d4", 0, "주간 베스트 리뷰어 3등 달성", true));
+
+        // 면접 토론 칭호
+        TITLE_DEFINITIONS.put("title_best_answer_1st", new TitleDefinition("면접 해결사", "🕵️", "text-red-500", "#ef4444", 0, "면접 토론 좋아요 1위 (10개 이상)", true));
+        TITLE_DEFINITIONS.put("title_best_answer_2nd", new TitleDefinition("지식 전도사", "🧙", "text-purple-500", "#a855f7", 0, "면접 토론 좋아요 2위 (10개 이상)", true));
+        TITLE_DEFINITIONS.put("title_best_answer_3rd", new TitleDefinition("답변메이트", "✨", "text-yellow-300", "#fde047", 0, "면접 토론 좋아요 3위 (10개 이상)", true));
+        TITLE_DEFINITIONS.put("title_discussion_master", new TitleDefinition("토론왕", "🏇", "text-blue-500", "#3b82f6", 0, "면접 토론 답변 100개 이상", true));
     }
 
     /**
@@ -279,6 +285,12 @@ public class BorderService {
         result.put("title_weekly_reviewer_1st", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_weekly_reviewer_1st"));
         result.put("title_weekly_reviewer_2nd", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_weekly_reviewer_2nd"));
         result.put("title_weekly_reviewer_3rd", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_weekly_reviewer_3rd"));
+
+        // 면접 토론 칭호 해금 (배지 보유 여부로 판단)
+        result.put("title_best_answer_1st", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_best_answer_1st"));
+        result.put("title_best_answer_2nd", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_best_answer_2nd"));
+        result.put("title_best_answer_3rd", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_best_answer_3rd"));
+        result.put("title_discussion_master", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_discussion_master"));
 
         return result;
     }
