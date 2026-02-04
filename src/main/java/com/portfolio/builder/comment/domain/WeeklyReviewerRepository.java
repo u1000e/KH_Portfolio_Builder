@@ -47,4 +47,9 @@ public interface WeeklyReviewerRepository extends JpaRepository<WeeklyReviewer, 
      * 특정 주간 수상자 존재 여부 확인
      */
     boolean existsByWeekEndDate(LocalDate weekEndDate);
+
+    /**
+     * 회원 삭제용
+     */
+    void deleteAllByMemberId(Long memberId);
 }

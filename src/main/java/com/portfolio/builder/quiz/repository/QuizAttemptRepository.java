@@ -211,4 +211,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         GROUP BY qa.attemptDate
         """)
     List<Object[]> findDailyCountsByMemberId(@Param("memberId") Long memberId);
+
+    // 회원 삭제용
+    void deleteAllByMemberId(Long memberId);
 }

@@ -52,4 +52,7 @@ public interface BadgeRepository extends JpaRepository<Badge, Long> {
         ORDER BY b.earnedAt ASC
         """)
     List<Object[]> findMembersWithRareBadges(@Param("rareBadgeIds") List<String> rareBadgeIds);
+
+    // 회원 삭제용
+    void deleteAllByMemberId(Long memberId);
 }

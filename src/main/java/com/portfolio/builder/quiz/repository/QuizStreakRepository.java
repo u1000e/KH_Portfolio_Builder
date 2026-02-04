@@ -27,4 +27,7 @@ public interface QuizStreakRepository extends JpaRepository<QuizStreak, Long> {
         ORDER BY (qs.correctCount * 1.0 / qs.totalQuizCount) DESC
         """)
     List<QuizStreak> findTopByAccuracy(@Param("minQuizCount") int minQuizCount);
+
+    // 회원 삭제용
+    void deleteByMemberId(Long memberId);
 }

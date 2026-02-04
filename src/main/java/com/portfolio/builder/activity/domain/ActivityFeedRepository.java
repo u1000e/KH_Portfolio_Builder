@@ -43,4 +43,7 @@ public interface ActivityFeedRepository extends JpaRepository<ActivityFeed, Long
             @Param("branch") String branch,
             @Param("classroom") String classroom,
             @Param("cohort") String cohort);
+
+    // 회원 삭제용
+    void deleteAllByMemberId(Long memberId);
 }

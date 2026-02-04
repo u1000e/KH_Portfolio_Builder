@@ -18,6 +18,32 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     Page<InterviewAnswer> findByQuestionIdOrderByLikeCountDescCreatedAtDesc(Long questionId, Pageable pageable);
 
     /**
+     * 특정 질문의 답변 목록 (오래된순, 페이징)
+     */
+    Page<InterviewAnswer> findByQuestionIdOrderByCreatedAtAsc(Long questionId, Pageable pageable);
+
+    /**
+     * 특정 질문의 답변 목록 (특정 ID 제외, 오래된순, 페이징)
+     */
+    Page<InterviewAnswer> findByQuestionIdAndIdNotInOrderByCreatedAtAsc(Long questionId, List<Long> excludeIds, Pageable pageable);
+
+    /**
+     * 특정 질문의 답변 목록 (상위 3개 좋아요순 우선, 나머지 오래된순)
+     */
+    @Query("""
+        SELECT a FROM InterviewAnswer a
+        WHERE a.question.id = :questionId
+        ORDER BY
+            CASE WHEN a.id IN :top3Ids THEN 0 ELSE 1 END,
+            CASE WHEN a.id IN :top3Ids THEN a.likeCount ELSE 0 END DESC,
+            CASE WHEN a.id NOT IN :top3Ids THEN a.createdAt END ASC
+        """)
+    Page<InterviewAnswer> findByQuestionIdWithTop3First(
+            @Param("questionId") Long questionId,
+            @Param("top3Ids") List<Long> top3Ids,
+            Pageable pageable);
+
+    /**
      * 특정 질문의 답변 개수
      */
     long countByQuestionId(Long questionId);
@@ -55,7 +81,7 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     List<Long> findTop3AnswerIdsByQuestionId(@Param("questionId") Long questionId, Pageable pageable);
 
     /**
-     * 24시간 내 답변이 많이 달린 질문 조회 (핫한 토론)
+     * 일주일 내 답변이 많이 달린 질문 조회 (핫한 토론)
      * 반환: [questionId, answerCount]
      */
     @Query("""
@@ -66,4 +92,42 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
         ORDER BY cnt DESC
         """)
     List<Object[]> findHotQuestionIds(@Param("since") java.time.LocalDateTime since, Pageable pageable);
+
+    /**
+     * 특정 회원이 작성한 답변 목록 (최신순, 페이징)
+     */
+    Page<InterviewAnswer> findByMemberIdOrderByCreatedAtDesc(Long memberId, Pageable pageable);
+
+    /**
+     * 특정 회원이 작성한 답변 목록 (카테고리/키워드 필터, 최신순, 페이징)
+     */
+    @Query("""
+        SELECT a FROM InterviewAnswer a
+        WHERE a.member.id = :memberId
+        AND (:category IS NULL OR a.question.category = :category)
+        AND (:keyword IS NULL OR a.content LIKE %:keyword% OR a.question.question LIKE %:keyword%)
+        ORDER BY a.createdAt DESC
+        """)
+    Page<InterviewAnswer> findByMemberIdWithFilters(
+            @Param("memberId") Long memberId,
+            @Param("category") String category,
+            @Param("keyword") String keyword,
+            Pageable pageable);
+
+    /**
+     * 특정 회원이 답변한 질문 ID 목록
+     */
+    @Query("SELECT DISTINCT a.question.id FROM InterviewAnswer a WHERE a.member.id = :memberId")
+    List<Long> findAnsweredQuestionIdsByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 특정 회원이 작성한 답변 ID 목록 (회원 삭제용)
+     */
+    @Query("SELECT a.id FROM InterviewAnswer a WHERE a.member.id = :memberId")
+    List<Long> findIdsByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 회원 삭제용
+     */
+    void deleteAllByMemberId(Long memberId);
 }

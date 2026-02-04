@@ -1,16 +1,24 @@
 package com.portfolio.builder.admin.application;
 
-import com.portfolio.builder.comment.application.CommentService;
+import com.portfolio.builder.activity.domain.ActivityFeedRepository;
 import com.portfolio.builder.comment.domain.Comment;
 import com.portfolio.builder.comment.domain.CommentRepository;
+import com.portfolio.builder.comment.domain.WeeklyReviewerRepository;
 import com.portfolio.builder.comment.dto.CommentResponse;
+import com.portfolio.builder.feedback.domain.FeedbackRepository;
+import com.portfolio.builder.interview.domain.InterviewAnswerLikeRepository;
+import com.portfolio.builder.interview.domain.InterviewAnswerRepository;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.member.dto.MemberResponse;
 import com.portfolio.builder.portfolio.domain.Portfolio;
 import com.portfolio.builder.portfolio.domain.PortfolioLikeRepository;
 import com.portfolio.builder.portfolio.domain.PortfolioRepository;
+import com.portfolio.builder.portfolio.domain.TroubleshootingRepository;
 import com.portfolio.builder.portfolio.dto.PortfolioResponse;
+import com.portfolio.builder.quiz.repository.BadgeRepository;
+import com.portfolio.builder.quiz.repository.QuizAttemptRepository;
+import com.portfolio.builder.quiz.repository.QuizStreakRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +39,15 @@ public class AdminService {
     private final PortfolioRepository portfolioRepository;
     private final PortfolioLikeRepository portfolioLikeRepository;
     private final CommentRepository commentRepository;
+    private final TroubleshootingRepository troubleshootingRepository;
+    private final FeedbackRepository feedbackRepository;
+    private final QuizAttemptRepository quizAttemptRepository;
+    private final QuizStreakRepository quizStreakRepository;
+    private final BadgeRepository badgeRepository;
+    private final InterviewAnswerRepository interviewAnswerRepository;
+    private final InterviewAnswerLikeRepository interviewAnswerLikeRepository;
+    private final WeeklyReviewerRepository weeklyReviewerRepository;
+    private final ActivityFeedRepository activityFeedRepository;
 
     // 관리자 권한 확인
     public void validateAdmin(Long memberId) {
@@ -88,22 +105,75 @@ public class AdminService {
         return MemberResponse.from(updated);
     }
 
+    /**
+     * 회원 하드 삭제 - 모든 관련 데이터 삭제
+     */
     public void deleteMember(Long targetMemberId) {
         Member member = memberRepository.findById(targetMemberId)
                 .orElseThrow(() -> new RuntimeException("Member not found"));
-        
-        // 관련 데이터 삭제
+
+        log.info("Starting hard delete for member {} ({})", targetMemberId, member.getName());
+
+        // 1. 면접 토론 관련 삭제
+        // 1-1. 해당 회원의 답변에 달린 좋아요 삭제
+        List<Long> memberAnswerIds = interviewAnswerRepository.findIdsByMemberId(targetMemberId);
+        if (!memberAnswerIds.isEmpty()) {
+            interviewAnswerLikeRepository.deleteAllByAnswerIdIn(memberAnswerIds);
+            log.info("Deleted likes on member's {} interview answers", memberAnswerIds.size());
+        }
+        // 1-2. 해당 회원이 누른 좋아요 삭제
+        interviewAnswerLikeRepository.deleteAllByMemberId(targetMemberId);
+        log.info("Deleted member's interview answer likes");
+        // 1-3. 해당 회원의 답변 삭제
+        interviewAnswerRepository.deleteAllByMemberId(targetMemberId);
+        log.info("Deleted member's interview answers");
+
+        // 2. 주간 베스트 리뷰어 기록 삭제
+        weeklyReviewerRepository.deleteAllByMemberId(targetMemberId);
+        log.info("Deleted weekly reviewer records");
+
+        // 3. 퀴즈 관련 삭제
+        badgeRepository.deleteAllByMemberId(targetMemberId);
+        log.info("Deleted badges");
+        quizAttemptRepository.deleteAllByMemberId(targetMemberId);
+        log.info("Deleted quiz attempts");
+        quizStreakRepository.deleteByMemberId(targetMemberId);
+        log.info("Deleted quiz streak");
+
+        // 4. 피드백 삭제 (해당 회원이 작성한 피드백)
+        feedbackRepository.deleteAllByMemberId(targetMemberId);
+        log.info("Deleted written feedbacks");
+
+        // 5. 포트폴리오 관련 삭제
         List<Portfolio> portfolios = portfolioRepository.findByMember(member);
         for (Portfolio portfolio : portfolios) {
+            // 포트폴리오에 달린 피드백 삭제
+            feedbackRepository.deleteAllByPortfolioId(portfolio.getId());
+            // 포트폴리오에 달린 좋아요 삭제
             portfolioLikeRepository.deleteAllByPortfolio(portfolio);
+            // 포트폴리오에 달린 댓글 삭제
             commentRepository.deleteAllByPortfolio(portfolio);
+            // 트러블슈팅 삭제
+            troubleshootingRepository.deleteAllByPortfolio(portfolio);
         }
         portfolioRepository.deleteAll(portfolios);
+        log.info("Deleted {} portfolios and related data", portfolios.size());
+
+        // 6. 회원이 누른 좋아요 삭제 (다른 사람 포트폴리오)
         portfolioLikeRepository.deleteAllByMember(member);
+        log.info("Deleted portfolio likes given");
+
+        // 7. 회원이 작성한 댓글 삭제 (다른 사람 포트폴리오)
         commentRepository.deleteAllByMember(member);
-        
+        log.info("Deleted comments written");
+
+        // 8. 활동 피드 삭제
+        activityFeedRepository.deleteAllByMemberId(targetMemberId);
+        log.info("Deleted activity feeds");
+
+        // 9. 최종적으로 회원 삭제
         memberRepository.delete(member);
-        log.info("Member {} deleted", targetMemberId);
+        log.info("Member {} ({}) hard deleted successfully", targetMemberId, member.getName());
     }
 
     // === 포트폴리오 관리 ===

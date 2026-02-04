@@ -39,7 +39,7 @@ public class InterviewAnswerController {
     }
 
     /**
-     * 핫한 토론 조회 (24시간 내 답변이 많이 달린 질문 상위 5개)
+     * 핫한 토론 조회 (일주일 내 답변이 많이 달린 질문 상위 5개)
      */
     @GetMapping("/hot")
     public ResponseEntity<java.util.List<InterviewAnswerService.HotQuestionResponse>> getHotQuestions(
@@ -95,5 +95,43 @@ public class InterviewAnswerController {
 
         InterviewAnswerResponse response = answerService.toggleLike(answerId, memberId);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 내가 작성한 답변 목록 조회 (카테고리/키워드 필터 지원)
+     */
+    @GetMapping("/my-answers")
+    public ResponseEntity<org.springframework.data.domain.Page<InterviewAnswerService.MyAnswerResponse>> getMyAnswers(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @AuthenticationPrincipal Long memberId) {
+
+        return ResponseEntity.ok(answerService.getMyAnswers(memberId, category, keyword, page, size));
+    }
+
+    /**
+     * 내가 좋아요한 답변 목록 조회 (카테고리/키워드 필터 지원)
+     */
+    @GetMapping("/my-likes")
+    public ResponseEntity<org.springframework.data.domain.Page<InterviewAnswerService.LikedAnswerResponse>> getMyLikedAnswers(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "category", required = false) String category,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @AuthenticationPrincipal Long memberId) {
+
+        return ResponseEntity.ok(answerService.getMyLikedAnswers(memberId, category, keyword, page, size));
+    }
+
+    /**
+     * 내가 답변한 질문 ID 목록 조회
+     */
+    @GetMapping("/my-answered-questions")
+    public ResponseEntity<java.util.List<Long>> getMyAnsweredQuestionIds(
+            @AuthenticationPrincipal Long memberId) {
+
+        return ResponseEntity.ok(answerService.getMyAnsweredQuestionIds(memberId));
     }
 }

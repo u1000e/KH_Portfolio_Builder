@@ -130,15 +130,16 @@ public class InterviewAnswerService {
     }
 
     /**
-     * 특정 질문의 답변 목록 조회 (좋아요순, 페이징)
+     * 특정 질문의 답변 목록 조회 (상위 3개는 좋아요순, 나머지는 오래된순)
      */
     public Page<InterviewAnswerResponse> getAnswersByQuestion(Long questionId, Long memberId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<InterviewAnswer> answers = answerRepository.findByQuestionIdOrderByLikeCountDescCreatedAtDesc(questionId, pageable);
-
         // 해당 질문의 좋아요 상위 3개 답변 ID 조회
         List<Long> top3Ids = answerRepository.findTop3AnswerIdsByQuestionId(questionId, PageRequest.of(0, 3));
-        Set<Long> top3Set = new HashSet<>(top3Ids);
+        List<Long> top3IdsForQuery = top3Ids.isEmpty() ? List.of(-1L) : top3Ids;
+
+        // 커스텀 정렬로 조회 (상위 3개 먼저, 나머지 오래된순)
+        Pageable pageable = PageRequest.of(page, size);
+        Page<InterviewAnswer> answers = answerRepository.findByQuestionIdWithTop3First(questionId, top3IdsForQuery, pageable);
 
         return answers.map(answer -> {
             InterviewAnswerResponse response = toResponse(answer, memberId);
@@ -238,6 +239,65 @@ public class InterviewAnswerService {
     }
 
     /**
+     * 내가 작성한 답변 목록 조회 (카테고리/키워드 필터, 최신순, 페이징)
+     */
+    public Page<MyAnswerResponse> getMyAnswers(Long memberId, String category, String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        String categoryParam = (category != null && !category.isEmpty()) ? category : null;
+        String keywordParam = (keyword != null && !keyword.isEmpty()) ? keyword : null;
+
+        Page<InterviewAnswer> answers = answerRepository.findByMemberIdWithFilters(memberId, categoryParam, keywordParam, pageable);
+
+        return answers.map(answer -> MyAnswerResponse.builder()
+                .id(answer.getId())
+                .content(answer.getContent())
+                .likeCount(answer.getLikeCount())
+                .createdAt(answer.getCreatedAt())
+                .questionId(answer.getQuestion().getId())
+                .question(answer.getQuestion().getQuestion())
+                .category(answer.getQuestion().getCategory())
+                .company(answer.getQuestion().getCompany())
+                .build());
+    }
+
+    /**
+     * 내가 좋아요한 답변 목록 조회 (카테고리/키워드 필터, 최신순, 페이징)
+     */
+    public Page<LikedAnswerResponse> getMyLikedAnswers(Long memberId, String category, String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        String categoryParam = (category != null && !category.isEmpty()) ? category : null;
+        String keywordParam = (keyword != null && !keyword.isEmpty()) ? keyword : null;
+
+        Page<InterviewAnswerLike> likes = likeRepository.findByMemberIdWithFilters(memberId, categoryParam, keywordParam, pageable);
+
+        return likes.map(like -> {
+            InterviewAnswer answer = like.getAnswer();
+            Member author = answer.getMember();
+            String authorName = author.getName() != null ? author.getName() : author.getGithubUsername();
+
+            return LikedAnswerResponse.builder()
+                    .id(answer.getId())
+                    .content(answer.getContent())
+                    .likeCount(answer.getLikeCount())
+                    .likedAt(like.getCreatedAt())
+                    .authorName(authorName)
+                    .authorAvatarUrl(author.getAvatarUrl())
+                    .questionId(answer.getQuestion().getId())
+                    .question(answer.getQuestion().getQuestion())
+                    .category(answer.getQuestion().getCategory())
+                    .company(answer.getQuestion().getCompany())
+                    .build();
+        });
+    }
+
+    /**
+     * 내가 답변한 질문 ID 목록 조회
+     */
+    public List<Long> getMyAnsweredQuestionIds(Long memberId) {
+        return answerRepository.findAnsweredQuestionIdsByMemberId(memberId);
+    }
+
+    /**
      * 핫한 토론 조회 (일주일 내 답변이 많이 달린 질문 상위 N개)
      */
     public List<HotQuestionResponse> getHotQuestions(int limit) {
@@ -296,6 +356,44 @@ public class InterviewAnswerService {
         private String question;
         private String category;
         private String company;
-        private int answerCount;  // 24시간 내 답변 수
+        private int answerCount;
+    }
+
+    /**
+     * 내가 작성한 답변 응답 DTO
+     */
+    @lombok.Data
+    @lombok.Builder
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    public static class MyAnswerResponse {
+        private Long id;
+        private String content;
+        private int likeCount;
+        private java.time.LocalDateTime createdAt;
+        private Long questionId;
+        private String question;
+        private String category;
+        private String company;
+    }
+
+    /**
+     * 내가 좋아요한 답변 응답 DTO
+     */
+    @lombok.Data
+    @lombok.Builder
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    public static class LikedAnswerResponse {
+        private Long id;
+        private String content;
+        private int likeCount;
+        private java.time.LocalDateTime likedAt;
+        private String authorName;
+        private String authorAvatarUrl;
+        private Long questionId;
+        private String question;
+        private String category;
+        private String company;
     }
 }
