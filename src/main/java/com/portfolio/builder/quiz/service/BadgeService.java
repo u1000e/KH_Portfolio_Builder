@@ -120,11 +120,13 @@ public class BadgeService {
             new BadgeDefinition("hidden_weekly_reviewer_1st", "주간 리뷰왕", "주간 베스트 리뷰어 1등 달성!", "💖", 1),
             new BadgeDefinition("hidden_weekly_reviewer_2nd", "주간 리뷰메이트", "주간 베스트 리뷰어 2등 달성!", "💞", 1),
             new BadgeDefinition("hidden_weekly_reviewer_3rd", "주간 리뷰버디", "주간 베스트 리뷰어 3등 달성!", "💌", 1),
-            // 면접 토론 배지
-            new BadgeDefinition("hidden_best_answer_1st", "면접 해결사", "면접 토론 좋아요 1위 달성! (10개 이상)", "🕵️", 10),
-            new BadgeDefinition("hidden_best_answer_2nd", "지식 전도사", "면접 토론 좋아요 2위 달성! (10개 이상)", "🧙", 10),
-            new BadgeDefinition("hidden_best_answer_3rd", "답변메이트", "면접 토론 좋아요 3위 달성! (10개 이상)", "✨", 10),
-            new BadgeDefinition("hidden_discussion_master", "토론왕", "면접 토론 답변 100개 이상 작성!", "🏇", 100)
+            // 면접 토론 배지 (총 좋아요 기준)
+            new BadgeDefinition("hidden_best_answer_1st", "면접 해결사", "면접 토론 답변에 총 좋아요 100개 달성!", "🕵️", 100),
+            new BadgeDefinition("hidden_best_answer_2nd", "지식 전도사", "면접 토론 답변에 총 좋아요 50개 달성!", "🧙", 50),
+            new BadgeDefinition("hidden_best_answer_3rd", "답변메이트", "면접 토론 답변에 총 좋아요 10개 달성!", "✨", 10),
+            new BadgeDefinition("hidden_discussion_master", "토론왕", "면접 토론 답변 100개 이상 작성!", "🏇", 100),
+            // 피드백 관련 배지
+            new BadgeDefinition("hidden_feedback_star", "참잘했어요", "피드백 5회 이상 반영!", "🍒", 5)
     );
 
     /**

@@ -165,10 +165,11 @@ public class FeedbackService {
         feedback.markAsResolved();
         log.info("Feedback marked as resolved - feedbackId: {}, memberId: {}", feedbackId, memberId);
 
-        // 히든 배지 체크: 피드백 5회 이상 반영 완료하면 "성실왕" 배지
+        // 히든 배지 체크: 피드백 5회 이상 반영 완료하면 배지 부여
         int totalResolved = feedbackRepository.countResolvedByMemberId(memberId);
         if (totalResolved >= 5) {
-            badgeService.awardHiddenBadge(memberId, "hidden_diligent");
+            badgeService.awardHiddenBadge(memberId, "hidden_diligent");  // 성실왕 배지
+            badgeService.awardHiddenBadge(memberId, "hidden_feedback_star");  // 참잘했어요 배지
         }
 
         return FeedbackResponse.from(feedback);

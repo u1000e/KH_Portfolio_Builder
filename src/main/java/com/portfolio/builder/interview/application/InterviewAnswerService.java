@@ -121,8 +121,8 @@ public class InterviewAnswerService {
             likeRepository.save(like);
             answer.increaseLikeCount();
 
-            // 베스트 답변자 배지 체크
-            checkBestAnswerBadges();
+            // 베스트 답변자 배지 체크 (답변 작성자에게)
+            checkBestAnswerBadges(answer.getMember().getId());
         }
 
         answerRepository.save(answer);
@@ -173,39 +173,35 @@ public class InterviewAnswerService {
     }
 
     /**
-     * 베스트 답변자 배지 체크 (좋아요 10개 이상 중 1, 2, 3위)
+     * 베스트 답변자 배지 체크 (총 좋아요 기준)
+     * - 면접 해결사: 총 좋아요 100개 이상
+     * - 지식 전도사: 총 좋아요 50개 이상
+     * - 답변메이트: 총 좋아요 10개 이상
      */
-    private void checkBestAnswerBadges() {
-        List<Object[]> topAnswers = answerRepository.findTopAnswersByLikeCount();
+    private void checkBestAnswerBadges(Long memberId) {
+        int totalLikes = answerRepository.sumLikeCountByMemberId(memberId);
 
-        if (topAnswers.isEmpty()) return;
-
-        // 상위 3개만 처리
-        for (int i = 0; i < Math.min(3, topAnswers.size()); i++) {
-            Object[] row = topAnswers.get(i);
-            Long memberId = (Long) row[1];
-            int likeCount = (int) row[2];
-
-            if (likeCount < 10) continue;
-
-            String badgeId;
-            switch (i) {
-                case 0:
-                    badgeId = BADGE_BEST_ANSWER_1ST;
-                    break;
-                case 1:
-                    badgeId = BADGE_BEST_ANSWER_2ND;
-                    break;
-                case 2:
-                    badgeId = BADGE_BEST_ANSWER_3RD;
-                    break;
-                default:
-                    continue;
-            }
-
-            boolean awarded = badgeService.awardHiddenBadge(memberId, badgeId);
+        // 답변메이트: 10개 이상
+        if (totalLikes >= 10) {
+            boolean awarded = badgeService.awardHiddenBadge(memberId, BADGE_BEST_ANSWER_3RD);
             if (awarded) {
-                log.info("회원 {}에게 베스트 답변자 {}위 배지 부여 (좋아요 {}개)", memberId, i + 1, likeCount);
+                log.info("회원 {}에게 답변메이트 배지 부여 (총 좋아요 {}개)", memberId, totalLikes);
+            }
+        }
+
+        // 지식 전도사: 50개 이상
+        if (totalLikes >= 50) {
+            boolean awarded = badgeService.awardHiddenBadge(memberId, BADGE_BEST_ANSWER_2ND);
+            if (awarded) {
+                log.info("회원 {}에게 지식 전도사 배지 부여 (총 좋아요 {}개)", memberId, totalLikes);
+            }
+        }
+
+        // 면접 해결사: 100개 이상
+        if (totalLikes >= 100) {
+            boolean awarded = badgeService.awardHiddenBadge(memberId, BADGE_BEST_ANSWER_1ST);
+            if (awarded) {
+                log.info("회원 {}에게 면접 해결사 배지 부여 (총 좋아요 {}개)", memberId, totalLikes);
             }
         }
     }
@@ -345,6 +341,52 @@ public class InterviewAnswerService {
     }
 
     /**
+     * 답변이 가장 많이 달린 질문 조회 (전체 기간)
+     */
+    public List<TopQuestionResponse> getTopQuestionsByAnswerCount(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+
+        List<Object[]> topQuestionData = answerRepository.findTopQuestionsByAnswerCount(pageable);
+
+        if (topQuestionData.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> questionIds = topQuestionData.stream()
+                .map(row -> (Long) row[0])
+                .collect(Collectors.toList());
+
+        // 답변 수 맵 생성
+        Map<Long, Long> answerCountMap = topQuestionData.stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        // 질문 정보 조회
+        List<InterviewQuestion> questions = questionRepository.findAllById(questionIds);
+        Map<Long, InterviewQuestion> questionMap = questions.stream()
+                .collect(Collectors.toMap(InterviewQuestion::getId, q -> q));
+
+        // 순서 유지하면서 응답 생성
+        return questionIds.stream()
+                .map(questionId -> {
+                    InterviewQuestion q = questionMap.get(questionId);
+                    if (q == null) return null;
+
+                    return TopQuestionResponse.builder()
+                            .questionId(q.getId())
+                            .question(q.getQuestion())
+                            .category(q.getCategory())
+                            .company(q.getCompany())
+                            .answerCount(answerCountMap.get(questionId).intValue())
+                            .build();
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 핫한 토론 응답 DTO (내부 클래스)
      */
     @lombok.Data
@@ -352,6 +394,21 @@ public class InterviewAnswerService {
     @lombok.NoArgsConstructor
     @lombok.AllArgsConstructor
     public static class HotQuestionResponse {
+        private Long questionId;
+        private String question;
+        private String category;
+        private String company;
+        private int answerCount;
+    }
+
+    /**
+     * 답변 많은 질문 응답 DTO
+     */
+    @lombok.Data
+    @lombok.Builder
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    public static class TopQuestionResponse {
         private Long questionId;
         private String question;
         private String category;

@@ -130,4 +130,22 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
      * 회원 삭제용
      */
     void deleteAllByMemberId(Long memberId);
+
+    /**
+     * 특정 회원이 받은 총 좋아요 수 (모든 답변의 likeCount 합계)
+     */
+    @Query("SELECT COALESCE(SUM(a.likeCount), 0) FROM InterviewAnswer a WHERE a.member.id = :memberId")
+    int sumLikeCountByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 답변이 가장 많이 달린 질문 조회 (전체 기간)
+     * 반환: [questionId, answerCount]
+     */
+    @Query("""
+        SELECT a.question.id, COUNT(a) as cnt
+        FROM InterviewAnswer a
+        GROUP BY a.question.id
+        ORDER BY cnt DESC
+        """)
+    List<Object[]> findTopQuestionsByAnswerCount(Pageable pageable);
 }

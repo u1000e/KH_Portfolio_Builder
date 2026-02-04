@@ -48,6 +48,15 @@ public class InterviewAnswerController {
     }
 
     /**
+     * 답변이 가장 많이 달린 질문 조회 (전체 기간)
+     */
+    @GetMapping("/top-questions")
+    public ResponseEntity<java.util.List<InterviewAnswerService.TopQuestionResponse>> getTopQuestionsByAnswerCount(
+            @RequestParam(name = "limit", defaultValue = "5") int limit) {
+        return ResponseEntity.ok(answerService.getTopQuestionsByAnswerCount(limit));
+    }
+
+    /**
      * 답변 작성
      */
     @PostMapping("/question/{questionId}")
