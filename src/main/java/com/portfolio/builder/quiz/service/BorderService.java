@@ -110,6 +110,7 @@ public class BorderService {
         TITLE_DEFINITIONS.put("title_effort", new TitleDefinition("노력파", "💪", "text-blue-500", "#3b82f6", 0, "오답 100회 이상", true));
         TITLE_DEFINITIONS.put("title_nevergiveup", new TitleDefinition("포기란 없다", "🥊", "text-rose-500", "#f43f5e", 0, "오답 200회 이상", true));
         TITLE_DEFINITIONS.put("title_500warrior", new TitleDefinition("오백전사", "⚔️", "text-violet-500", "#8b5cf6", 0, "총 500문제 풀기", true));
+        TITLE_DEFINITIONS.put("title_600swordsman", new TitleDefinition("승철링고 정복", "🗡", "text-slate-600", "#475569", 0, "총 600문제 풀기", true));
         TITLE_DEFINITIONS.put("title_lunchtime", new TitleDefinition("밥 좀 드세요", "🍱", "text-amber-500", "#f59e0b", 0, "점심시간(13-14시) 30문제 풀기", true));
         TITLE_DEFINITIONS.put("title_7days", new TitleDefinition("7일 챌린저", "🗓️", "text-cyan-500", "#06b6d4", 0, "7일 연속 학습 달성", true));
 
@@ -279,6 +280,9 @@ public class BorderService {
         // 오백전사: 총 500문제 풀기
         Long totalCount = quizAttemptRepository.countByMemberId(memberId);
         result.put("title_500warrior", totalCount != null && totalCount >= 500);
+
+        // 육백검객: 총 600문제 풀기
+        result.put("title_600swordsman", totalCount != null && totalCount >= 600);
 
         // 밥 좀 드세요: 점심시간(13-14시) 30문제
         Long lunchCount = quizAttemptRepository.countLunchTimeQuizzesByMemberId(memberId);

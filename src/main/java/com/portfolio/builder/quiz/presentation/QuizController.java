@@ -159,13 +159,17 @@ public class QuizController {
     }
 
     /**
-     * 복습 정답 제출 (스트릭에 영향 없음)
+     * 복습 정답 제출
      */
     @PostMapping("/review/submit")
     public ResponseEntity<SubmitResponse> submitReviewAnswer(
             @RequestAttribute("memberId") Long memberId,
             @RequestBody SubmitRequest request) {
-        return ResponseEntity.ok(quizService.submitReviewAnswer(memberId, request));
+        SubmitResponse response = quizService.submitReviewAnswer(memberId, request);
+        // 복습 제출 후에도 배지 자동 체크
+        var newBadges = badgeService.checkAndAwardBadges(memberId);
+        response.setNewBadges(newBadges);
+        return ResponseEntity.ok(response);
     }
 
     // ===== Phase 2: 배지/업적 =====
