@@ -69,4 +69,20 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
      */
     @Query("SELECT COUNT(f) FROM Feedback f WHERE f.portfolio.member.id = :memberId AND f.isResolved = true")
     int countResolvedByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 이번 주 반영왕 (주간 피드백 반영 수 TOP 1, 수강생 기준)
+     */
+    @Query("""
+        SELECT f.portfolio.member.id, f.portfolio.member.name, f.portfolio.member.avatarUrl,
+               COUNT(f) as cnt, f.portfolio.member.githubUsername
+        FROM Feedback f
+        WHERE f.isResolved = true AND f.resolvedAt >= :start AND f.resolvedAt < :end
+        GROUP BY f.portfolio.member.id, f.portfolio.member.name, f.portfolio.member.avatarUrl,
+                 f.portfolio.member.githubUsername
+        ORDER BY cnt DESC, MIN(f.resolvedAt) ASC
+        """)
+    List<Object[]> findWeeklyTopFeedbackResolver(
+            @Param("start") java.time.LocalDateTime start,
+            @Param("end") java.time.LocalDateTime end);
 }

@@ -4,9 +4,13 @@ import com.portfolio.builder.activity.application.ActivityFeedService;
 import com.portfolio.builder.comment.domain.CommentRepository;
 import com.portfolio.builder.comment.domain.WeeklyReviewer;
 import com.portfolio.builder.comment.domain.WeeklyReviewerRepository;
+import com.portfolio.builder.comment.dto.WeeklyRankingResponse;
 import com.portfolio.builder.comment.dto.WeeklyReviewerResponse;
+import com.portfolio.builder.feedback.domain.FeedbackRepository;
+import com.portfolio.builder.interview.domain.InterviewAnswerRepository;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
+import com.portfolio.builder.quiz.repository.QuizAttemptRepository;
 import com.portfolio.builder.quiz.service.BadgeService;
 import com.portfolio.builder.quiz.service.BorderService;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +38,9 @@ public class WeeklyReviewerService {
     private final MemberRepository memberRepository;
     private final BadgeService badgeService;
     private final ActivityFeedService activityFeedService;
+    private final QuizAttemptRepository quizAttemptRepository;
+    private final InterviewAnswerRepository interviewAnswerRepository;
+    private final FeedbackRepository feedbackRepository;
 
     // 순위별 배지 ID
     private static final String[] BADGE_IDS = {
@@ -135,6 +142,78 @@ public class WeeklyReviewerService {
         return reviewers.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 이번 주 주간 랭킹 조회 (복습왕, 토론왕, 반영왕 각 TOP 1)
+     */
+    public List<WeeklyRankingResponse> getWeeklyRankings() {
+        LocalDate today = LocalDate.now();
+        LocalDate thisTuesday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.TUESDAY));
+        LocalDate lastTuesday = thisTuesday.minusWeeks(1);
+        LocalDateTime start = LocalDateTime.of(lastTuesday, LocalTime.of(17, 6));
+        LocalDateTime end = LocalDateTime.of(thisTuesday, LocalTime.of(17, 5));
+
+        // 현재 시각이 이번 주 화요일 17:05 이후면 이번 주~다음 주 기간으로
+        if (LocalDateTime.now().isAfter(end)) {
+            start = LocalDateTime.of(thisTuesday, LocalTime.of(17, 6));
+            end = LocalDateTime.of(thisTuesday.plusWeeks(1), LocalTime.of(17, 5));
+        }
+
+        List<WeeklyRankingResponse> rankings = new ArrayList<>();
+
+        // 복습왕
+        List<Object[]> quizTop = quizAttemptRepository.findWeeklyTopQuizSolver(start, end);
+        if (!quizTop.isEmpty()) {
+            Object[] row = quizTop.get(0);
+            String name = row[1] != null ? (String) row[1] : (String) row[4];
+            rankings.add(WeeklyRankingResponse.builder()
+                    .category("QUIZ")
+                    .title("복습왕")
+                    .emoji("📚")
+                    .memberId((Long) row[0])
+                    .nickname(name)
+                    .avatarUrl((String) row[2])
+                    .count(((Long) row[3]).intValue())
+                    .countLabel(row[3] + "문제")
+                    .build());
+        }
+
+        // 토론왕
+        List<Object[]> answerTop = interviewAnswerRepository.findWeeklyTopAnswerer(start, end);
+        if (!answerTop.isEmpty()) {
+            Object[] row = answerTop.get(0);
+            String name = row[1] != null ? (String) row[1] : (String) row[4];
+            rankings.add(WeeklyRankingResponse.builder()
+                    .category("DISCUSSION")
+                    .title("토론왕")
+                    .emoji("💬")
+                    .memberId((Long) row[0])
+                    .nickname(name)
+                    .avatarUrl((String) row[2])
+                    .count(((Long) row[3]).intValue())
+                    .countLabel(row[3] + "답변")
+                    .build());
+        }
+
+        // 반영왕
+        List<Object[]> feedbackTop = feedbackRepository.findWeeklyTopFeedbackResolver(start, end);
+        if (!feedbackTop.isEmpty()) {
+            Object[] row = feedbackTop.get(0);
+            String name = row[1] != null ? (String) row[1] : (String) row[4];
+            rankings.add(WeeklyRankingResponse.builder()
+                    .category("FEEDBACK")
+                    .title("반영왕")
+                    .emoji("✅")
+                    .memberId((Long) row[0])
+                    .nickname(name)
+                    .avatarUrl((String) row[2])
+                    .count(((Long) row[3]).intValue())
+                    .countLabel(row[3] + "반영")
+                    .build());
+        }
+
+        return rankings;
     }
 
     /**

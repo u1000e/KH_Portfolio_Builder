@@ -233,6 +233,19 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     @Query("SELECT qa.quiz.category, COUNT(DISTINCT qa.quiz.id) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = :quizType GROUP BY qa.quiz.category")
     List<Object[]> countReviewWrongByMemberIdGroupByCategoryAndQuizType(@Param("memberId") Long memberId, @Param("quizType") String quizType);
 
+    // 이번 주 복습왕 (주간 퀴즈 풀이 수 TOP 1)
+    @Query("""
+        SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as cnt,
+               qa.member.githubUsername
+        FROM QuizAttempt qa
+        WHERE qa.createdAt >= :start AND qa.createdAt < :end
+        GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl, qa.member.githubUsername
+        ORDER BY cnt DESC, MIN(qa.createdAt) ASC
+        """)
+    List<Object[]> findWeeklyTopQuizSolver(
+            @Param("start") java.time.LocalDateTime start,
+            @Param("end") java.time.LocalDateTime end);
+
     // 회원 삭제용
     void deleteAllByMemberId(Long memberId);
 }

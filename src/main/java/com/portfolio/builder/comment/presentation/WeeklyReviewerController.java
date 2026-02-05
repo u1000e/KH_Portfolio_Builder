@@ -1,6 +1,7 @@
 package com.portfolio.builder.comment.presentation;
 
 import com.portfolio.builder.comment.application.WeeklyReviewerService;
+import com.portfolio.builder.comment.dto.WeeklyRankingResponse;
 import com.portfolio.builder.comment.dto.WeeklyReviewerResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +27,14 @@ public class WeeklyReviewerController {
     public ResponseEntity<List<WeeklyReviewerResponse>> getCurrentWeeklyReviewers() {
         List<WeeklyReviewerResponse> reviewers = weeklyReviewerService.getCurrentWeeklyReviewers();
         return ResponseEntity.ok(reviewers);
+    }
+
+    /**
+     * 이번 주 주간 랭킹 조회 (복습왕, 토론왕, 반영왕)
+     */
+    @GetMapping("/rankings")
+    public ResponseEntity<List<WeeklyRankingResponse>> getWeeklyRankings() {
+        List<WeeklyRankingResponse> rankings = weeklyReviewerService.getWeeklyRankings();
+        return ResponseEntity.ok(rankings);
     }
 }

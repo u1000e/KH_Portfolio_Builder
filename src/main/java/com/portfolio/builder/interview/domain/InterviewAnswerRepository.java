@@ -167,6 +167,21 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     List<Object[]> findTopByTotalLikes();
 
     /**
+     * 이번 주 토론왕 (주간 답변 작성 수 TOP 1)
+     */
+    @Query("""
+        SELECT a.member.id, a.member.name, a.member.avatarUrl, COUNT(a) as cnt,
+               a.member.githubUsername
+        FROM InterviewAnswer a
+        WHERE a.createdAt >= :start AND a.createdAt < :end
+        GROUP BY a.member.id, a.member.name, a.member.avatarUrl, a.member.githubUsername
+        ORDER BY cnt DESC, MIN(a.createdAt) ASC
+        """)
+    List<Object[]> findWeeklyTopAnswerer(
+            @Param("start") java.time.LocalDateTime start,
+            @Param("end") java.time.LocalDateTime end);
+
+    /**
      * 답변이 가장 많이 달린 질문 조회 (전체 기간)
      * 반환: [questionId, answerCount]
      */
