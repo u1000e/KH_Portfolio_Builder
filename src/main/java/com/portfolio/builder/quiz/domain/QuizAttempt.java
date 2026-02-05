@@ -48,11 +48,18 @@ public class QuizAttempt {
     @Builder.Default
     private String quizType = "INTERVIEW";  // INTERVIEW: 면접 대비, PRACTICE: 수업 복습
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean wrongNoteCleared = false;  // 오답노트에서 정답 맞춰서 클리어했는지
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         if (this.attemptDate == null) {
             this.attemptDate = LocalDate.now();
+        }
+        if (this.wrongNoteCleared == null) {
+            this.wrongNoteCleared = false;
         }
     }
 }

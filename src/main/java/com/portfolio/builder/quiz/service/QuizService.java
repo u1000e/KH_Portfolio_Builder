@@ -366,14 +366,20 @@ public class QuizService {
      */
     public List<WrongAnswerResponse> getWrongAnswers(Long memberId, String category, String quizType) {
         List<QuizAttempt> wrongAttempts;
-        
+
         if (category != null && !category.isEmpty()) {
             wrongAttempts = quizAttemptRepository.findWrongAnswersByMemberIdAndCategoryAndQuizType(memberId, category, quizType);
         } else {
             wrongAttempts = quizAttemptRepository.findWrongAnswersByMemberIdAndQuizType(memberId, quizType);
         }
 
-        return wrongAttempts.stream()
+        // 퀴즈 단위 중복 제거 (같은 퀴즈를 여러 번 틀린 경우 최신 1개만 표시)
+        Map<Long, QuizAttempt> uniqueByQuiz = new LinkedHashMap<>();
+        for (QuizAttempt attempt : wrongAttempts) {
+            uniqueByQuiz.putIfAbsent(attempt.getQuiz().getId(), attempt);
+        }
+
+        return uniqueByQuiz.values().stream()
                 .map(this::toWrongAnswerResponse)
                 .collect(Collectors.toList());
     }
@@ -1087,11 +1093,11 @@ public class QuizService {
         
         switch (mode) {
             case "wrong":
-                // 틀린 문제만
+                // 틀린 문제만 (복습모드 전용: wrongNoteCleared 무관, 원본 오답만)
                 if (category != null && !category.isEmpty()) {
-                    attempts = quizAttemptRepository.findWrongAnswersByMemberIdAndCategoryAndQuizType(memberId, category, quizType);
+                    attempts = quizAttemptRepository.findReviewWrongByMemberIdAndCategoryAndQuizType(memberId, category, quizType);
                 } else {
-                    attempts = quizAttemptRepository.findWrongAnswersByMemberIdAndQuizType(memberId, quizType);
+                    attempts = quizAttemptRepository.findReviewWrongByMemberIdAndQuizType(memberId, quizType);
                 }
                 break;
             case "correct":
@@ -1137,7 +1143,8 @@ public class QuizService {
      */
     public ReviewStatsResponse getReviewStats(Long memberId, String quizType) {
         List<Object[]> solvedByCategory = quizAttemptRepository.countSolvedByMemberIdGroupByCategory(memberId);
-        List<Object[]> wrongByCategory = quizAttemptRepository.countWrongByMemberIdGroupByCategoryAndQuizType(memberId, quizType);
+        // 복습모드 전용: wrongNoteCleared 무관, 원본 오답(isReviewMode=false)만 집계
+        List<Object[]> wrongByCategory = quizAttemptRepository.countReviewWrongByMemberIdGroupByCategoryAndQuizType(memberId, quizType);
 
         // 카테고리별 푼 문제 수
         java.util.Map<String, Long> solvedMap = solvedByCategory.stream()
@@ -1146,7 +1153,7 @@ public class QuizService {
                         row -> ((Number) row[1]).longValue()
                 ));
 
-        // 카테고리별 오답 수
+        // 카테고리별 오답 수 (오답노트 클리어 영향 안 받음)
         java.util.Map<String, Long> wrongMap = wrongByCategory.stream()
                 .collect(Collectors.toMap(
                         row -> (String) row[0],
@@ -1210,6 +1217,51 @@ public class QuizService {
 
         // 복습 모드에서도 스트릭 업데이트
         updateStreak(memberId, isCorrect);
+
+        return SubmitResponse.builder()
+                .quizId(quiz.getId())
+                .isCorrect(isCorrect)
+                .correctAnswer(quiz.getAnswer())
+                .explanation(quiz.getExplanation())
+                .build();
+    }
+
+    /**
+     * 오답노트 정답 제출
+     * - 정답 시: 해당 퀴즈의 모든 미클리어 오답 기록을 클리어 처리
+     * - 오답 시: 새 오답 기록 생성 (오답노트에 유지)
+     * - 정답률(QuizStreak)은 유지
+     */
+    @Transactional
+    public SubmitResponse submitWrongNoteAnswer(Long memberId, SubmitRequest request) {
+        Quiz quiz = quizRepository.findById(request.getQuizId())
+                .orElseThrow(() -> new RuntimeException("문제를 찾을 수 없습니다."));
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+
+        boolean isCorrect = quiz.getAnswer().equals(request.getUserAnswer());
+        String quizType = request.getQuizType() != null ? request.getQuizType() : quiz.getQuizType();
+
+        // 오답노트 풀이 기록 저장
+        QuizAttempt attempt = QuizAttempt.builder()
+                .member(member)
+                .quiz(quiz)
+                .userAnswer(request.getUserAnswer())
+                .isCorrect(isCorrect)
+                .attemptDate(LocalDate.now())
+                .isReviewMode(true)  // 재풀이이므로 review 플래그
+                .quizType(quizType)
+                .wrongNoteCleared(true)  // 이 기록 자체는 오답노트에 안 보이게
+                .build();
+        quizAttemptRepository.save(attempt);
+
+        // 정답이면 해당 퀴즈의 기존 오답 기록들을 오답노트에서 클리어
+        if (isCorrect) {
+            quizAttemptRepository.clearWrongNoteByMemberIdAndQuizId(memberId, quiz.getId());
+        }
+
+        // 오답노트 풀이는 정답률(QuizStreak)에 영향을 주지 않음
 
         return SubmitResponse.builder()
                 .quizId(quiz.getId())

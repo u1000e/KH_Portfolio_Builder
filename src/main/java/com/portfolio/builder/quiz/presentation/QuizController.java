@@ -172,6 +172,19 @@ public class QuizController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 오답노트 정답 제출 (정답 시 오답노트에서 클리어)
+     */
+    @PostMapping("/wrong-note/submit")
+    public ResponseEntity<SubmitResponse> submitWrongNoteAnswer(
+            @RequestAttribute("memberId") Long memberId,
+            @RequestBody SubmitRequest request) {
+        SubmitResponse response = quizService.submitWrongNoteAnswer(memberId, request);
+        var newBadges = badgeService.checkAndAwardBadges(memberId);
+        response.setNewBadges(newBadges);
+        return ResponseEntity.ok(response);
+    }
+
     // ===== Phase 2: 배지/업적 =====
 
     /**

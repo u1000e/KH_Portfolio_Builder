@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import org.springframework.data.jpa.repository.Modifying;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,32 +35,32 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     @Query("SELECT COUNT(DISTINCT qa.quiz.id) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.quiz.category = :category AND qa.isCorrect = true AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL)")
     Long countCorrectByMemberIdAndCategory(@Param("memberId") Long memberId, @Param("category") String category);
 
-    // 사용자가 틀린 문제 목록 (오답 노트용 - 복습 모드 제외, 면접 대비용 기본)
-    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = 'INTERVIEW' ORDER BY qa.createdAt DESC")
+    // 사용자가 틀린 문제 목록 (오답 노트용 - 클리어되지 않은 것만, 면접 대비용 기본)
+    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.wrongNoteCleared = false OR qa.wrongNoteCleared IS NULL) AND qa.quizType = 'INTERVIEW' ORDER BY qa.createdAt DESC")
     List<QuizAttempt> findWrongAnswersByMemberId(@Param("memberId") Long memberId);
 
-    // 사용자가 틀린 문제 목록 (오답 노트용 - 퀴즈타입별)
-    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = :quizType ORDER BY qa.createdAt DESC")
+    // 사용자가 틀린 문제 목록 (오답 노트용 - 클리어되지 않은 것만, 퀴즈타입별)
+    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.wrongNoteCleared = false OR qa.wrongNoteCleared IS NULL) AND qa.quizType = :quizType ORDER BY qa.createdAt DESC")
     List<QuizAttempt> findWrongAnswersByMemberIdAndQuizType(@Param("memberId") Long memberId, @Param("quizType") String quizType);
 
     // 특정 날짜에 사용자가 푼 문제 ID 목록
     @Query("SELECT qa.quiz.id FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.attemptDate = :date")
     List<Long> findQuizIdsByMemberIdAndDate(@Param("memberId") Long memberId, @Param("date") LocalDate date);
 
-    // 카테고리별 오답 수 조회 (복습 모드 제외, 면접 대비용 기본)
-    @Query("SELECT qa.quiz.category, COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = 'INTERVIEW' GROUP BY qa.quiz.category")
+    // 카테고리별 오답 수 조회 (클리어되지 않은 것만, 면접 대비용 기본, 퀴즈 단위 중복 제거)
+    @Query("SELECT qa.quiz.category, COUNT(DISTINCT qa.quiz.id) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.wrongNoteCleared = false OR qa.wrongNoteCleared IS NULL) AND qa.quizType = 'INTERVIEW' GROUP BY qa.quiz.category")
     List<Object[]> countWrongByMemberIdGroupByCategory(@Param("memberId") Long memberId);
 
-    // 카테고리별 오답 수 조회 (퀴즈타입별)
-    @Query("SELECT qa.quiz.category, COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = :quizType GROUP BY qa.quiz.category")
+    // 카테고리별 오답 수 조회 (클리어되지 않은 것만, 퀴즈타입별, 퀴즈 단위 중복 제거)
+    @Query("SELECT qa.quiz.category, COUNT(DISTINCT qa.quiz.id) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.wrongNoteCleared = false OR qa.wrongNoteCleared IS NULL) AND qa.quizType = :quizType GROUP BY qa.quiz.category")
     List<Object[]> countWrongByMemberIdGroupByCategoryAndQuizType(@Param("memberId") Long memberId, @Param("quizType") String quizType);
 
-    // 특정 카테고리의 오답 목록 (복습 모드 제외, 면접 대비용 기본)
-    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND qa.quiz.category = :category AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = 'INTERVIEW' ORDER BY qa.createdAt DESC")
+    // 특정 카테고리의 오답 목록 (클리어되지 않은 것만, 면접 대비용 기본)
+    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND qa.quiz.category = :category AND (qa.wrongNoteCleared = false OR qa.wrongNoteCleared IS NULL) AND qa.quizType = 'INTERVIEW' ORDER BY qa.createdAt DESC")
     List<QuizAttempt> findWrongAnswersByMemberIdAndCategory(@Param("memberId") Long memberId, @Param("category") String category);
 
-    // 특정 카테고리의 오답 목록 (퀴즈타입별)
-    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND qa.quiz.category = :category AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = :quizType ORDER BY qa.createdAt DESC")
+    // 특정 카테고리의 오답 목록 (클리어되지 않은 것만, 퀴즈타입별)
+    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND qa.quiz.category = :category AND (qa.wrongNoteCleared = false OR qa.wrongNoteCleared IS NULL) AND qa.quizType = :quizType ORDER BY qa.createdAt DESC")
     List<QuizAttempt> findWrongAnswersByMemberIdAndCategoryAndQuizType(@Param("memberId") Long memberId, @Param("category") String category, @Param("quizType") String quizType);
 
     // 사용자가 특정 퀴즈를 풀었는지 확인
@@ -211,6 +213,25 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         GROUP BY qa.attemptDate
         """)
     List<Object[]> findDailyCountsByMemberId(@Param("memberId") Long memberId);
+
+    // 오답노트 클리어: 특정 퀴즈의 모든 미클리어 오답을 클리어 처리
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE QuizAttempt qa SET qa.wrongNoteCleared = true WHERE qa.member.id = :memberId AND qa.quiz.id = :quizId AND qa.isCorrect = false AND (qa.wrongNoteCleared = false OR qa.wrongNoteCleared IS NULL)")
+    int clearWrongNoteByMemberIdAndQuizId(@Param("memberId") Long memberId, @Param("quizId") Long quizId);
+
+    // ===== 복습모드 전용 오답 쿼리 (wrongNoteCleared 무관, isReviewMode=false인 원본 오답만) =====
+
+    // 복습모드용 오답 목록 (퀴즈타입별, wrongNoteCleared 무관)
+    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = :quizType ORDER BY qa.createdAt DESC")
+    List<QuizAttempt> findReviewWrongByMemberIdAndQuizType(@Param("memberId") Long memberId, @Param("quizType") String quizType);
+
+    // 복습모드용 카테고리별 오답 목록 (wrongNoteCleared 무관)
+    @Query("SELECT qa FROM QuizAttempt qa JOIN FETCH qa.quiz WHERE qa.member.id = :memberId AND qa.isCorrect = false AND qa.quiz.category = :category AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = :quizType ORDER BY qa.createdAt DESC")
+    List<QuizAttempt> findReviewWrongByMemberIdAndCategoryAndQuizType(@Param("memberId") Long memberId, @Param("category") String category, @Param("quizType") String quizType);
+
+    // 복습모드용 카테고리별 오답 수 (wrongNoteCleared 무관, 퀴즈 단위 중복 제거)
+    @Query("SELECT qa.quiz.category, COUNT(DISTINCT qa.quiz.id) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.isCorrect = false AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL) AND qa.quizType = :quizType GROUP BY qa.quiz.category")
+    List<Object[]> countReviewWrongByMemberIdGroupByCategoryAndQuizType(@Param("memberId") Long memberId, @Param("quizType") String quizType);
 
     // 회원 삭제용
     void deleteAllByMemberId(Long memberId);
