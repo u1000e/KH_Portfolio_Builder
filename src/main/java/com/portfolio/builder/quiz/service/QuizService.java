@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.builder.activity.application.ActivityFeedService;
 import com.portfolio.builder.comment.domain.CommentRepository;
+import com.portfolio.builder.interview.domain.InterviewAnswerRepository;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.portfolio.domain.PortfolioLikeRepository;
 import com.portfolio.builder.member.domain.MemberRepository;
@@ -39,6 +40,7 @@ public class QuizService {
     private final BadgeRepository badgeRepository;
     private final ActivityFeedService activityFeedService;
     private final CommentRepository commentRepository;
+    private final InterviewAnswerRepository interviewAnswerRepository;
     private final PortfolioLikeRepository portfolioLikeRepository;
     private final ObjectMapper objectMapper;
 
@@ -499,6 +501,12 @@ public class QuizService {
                 return getRareBadgeRanking(memberId, limit, currentMember);
             case "level":
                 return getLevelRanking(memberId, limit, currentMember);
+            case "interview_answer":
+                return getInterviewAnswerRanking(memberId, limit, currentMember);
+            case "interview_likes":
+                return getInterviewLikesRanking(memberId, limit, currentMember);
+            case "comment":
+                return getCommentRanking(memberId, limit, currentMember);
         }
         
         List<QuizStreak> streaks;
@@ -1081,6 +1089,38 @@ public class QuizService {
                 .rankings(rankings)
                 .myRanking(myRanking)
                 .build();
+    }
+
+    // ===== 커뮤니티 랭킹 =====
+
+    /**
+     * 💬 면접토론 답변 작성횟수 랭킹
+     */
+    private RankingResponse getInterviewAnswerRanking(Long memberId, int limit, Member currentMember) {
+        return buildGenericRanking(
+            interviewAnswerRepository.findTopByAnswerCount(),
+            memberId, limit, "개", currentMember
+        );
+    }
+
+    /**
+     * ❤️ 면접토론 좋아요 받은 횟수 랭킹
+     */
+    private RankingResponse getInterviewLikesRanking(Long memberId, int limit, Member currentMember) {
+        return buildGenericRanking(
+            interviewAnswerRepository.findTopByTotalLikes(),
+            memberId, limit, "개", currentMember
+        );
+    }
+
+    /**
+     * 📝 포트폴리오 댓글 작성 랭킹
+     */
+    private RankingResponse getCommentRanking(Long memberId, int limit, Member currentMember) {
+        return buildGenericRanking(
+            commentRepository.findTopByCommentCount(),
+            memberId, limit, "개", currentMember
+        );
     }
 
     // ===== Phase 2: 복습 모드 =====

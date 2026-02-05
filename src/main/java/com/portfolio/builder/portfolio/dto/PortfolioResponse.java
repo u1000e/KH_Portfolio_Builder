@@ -127,6 +127,7 @@ public class PortfolioResponse {
         private String colorHex;
         private String gradientFrom;
         private String gradientTo;
+        private boolean isDark;  // 어두운 헤더 (흰색 글자 필요)
     }
 
     /**

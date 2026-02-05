@@ -137,6 +137,35 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     @Query("SELECT COALESCE(SUM(a.likeCount), 0) FROM InterviewAnswer a WHERE a.member.id = :memberId")
     int sumLikeCountByMemberId(@Param("memberId") Long memberId);
 
+    // ===== 랭킹용 쿼리 =====
+
+    /**
+     * 답변 작성횟수 랭킹 (동점 시 먼저 달성한 사람 우선)
+     */
+    @Query("""
+        SELECT a.member.id, a.member.name, a.member.avatarUrl, COUNT(a) as cnt,
+               a.member.position, a.member.branch, a.member.classroom, a.member.cohort
+        FROM InterviewAnswer a
+        GROUP BY a.member.id, a.member.name, a.member.avatarUrl,
+                 a.member.position, a.member.branch, a.member.classroom, a.member.cohort
+        ORDER BY cnt DESC, MIN(a.createdAt) ASC
+        """)
+    List<Object[]> findTopByAnswerCount();
+
+    /**
+     * 좋아요 받은 총 횟수 랭킹 (동점 시 먼저 달성한 사람 우선)
+     */
+    @Query("""
+        SELECT a.member.id, a.member.name, a.member.avatarUrl, SUM(a.likeCount) as totalLikes,
+               a.member.position, a.member.branch, a.member.classroom, a.member.cohort
+        FROM InterviewAnswer a
+        GROUP BY a.member.id, a.member.name, a.member.avatarUrl,
+                 a.member.position, a.member.branch, a.member.classroom, a.member.cohort
+        HAVING SUM(a.likeCount) > 0
+        ORDER BY totalLikes DESC, MIN(a.createdAt) ASC
+        """)
+    List<Object[]> findTopByTotalLikes();
+
     /**
      * 답변이 가장 많이 달린 질문 조회 (전체 기간)
      * 반환: [questionId, answerCount]

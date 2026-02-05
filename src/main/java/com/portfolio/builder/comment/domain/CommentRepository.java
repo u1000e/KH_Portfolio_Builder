@@ -44,6 +44,22 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.member.id = :memberId AND c.portfolio.member.id != :memberId")
     int countCommentsGivenByMemberId(@Param("memberId") Long memberId);
 
+    // ===== 랭킹용 쿼리 =====
+
+    /**
+     * 포트폴리오 댓글 작성 랭킹 (본인 포폴 제외, 동점 시 먼저 달성한 사람 우선)
+     */
+    @Query("""
+        SELECT c.member.id, c.member.name, c.member.avatarUrl, COUNT(c) as cnt,
+               c.member.position, c.member.branch, c.member.classroom, c.member.cohort
+        FROM Comment c
+        WHERE c.member.id != c.portfolio.member.id
+        GROUP BY c.member.id, c.member.name, c.member.avatarUrl,
+                 c.member.position, c.member.branch, c.member.classroom, c.member.cohort
+        ORDER BY cnt DESC, MIN(c.createdAt) ASC
+        """)
+    List<Object[]> findTopByCommentCount();
+
     /**
      * 주간 베스트 리뷰어 후보 조회 (본인 포트폴리오 제외, 최소 3개 이상)
      * 반환: [memberId, commentCount]

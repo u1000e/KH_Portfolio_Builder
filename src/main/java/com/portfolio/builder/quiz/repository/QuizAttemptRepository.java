@@ -104,7 +104,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         WHERE qa.isReviewMode = true
         GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
                  qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
-        ORDER BY reviewCount DESC
+        ORDER BY reviewCount DESC, MIN(qa.createdAt) ASC
         """)
     List<Object[]> findTopByReviewCount();
 
@@ -122,7 +122,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         WHERE EXTRACT(HOUR FROM qa.createdAt) >= 6 AND EXTRACT(HOUR FROM qa.createdAt) < 9
         GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
                  qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
-        ORDER BY earlyCount DESC
+        ORDER BY earlyCount DESC, MIN(qa.createdAt) ASC
         """)
     List<Object[]> findTopByEarlyBird();
 
@@ -134,7 +134,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         WHERE (EXTRACT(HOUR FROM qa.createdAt) >= 22 OR EXTRACT(HOUR FROM qa.createdAt) < 2)
         GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
                  qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
-        ORDER BY nightCount DESC
+        ORDER BY nightCount DESC, MIN(qa.createdAt) ASC
         """)
     List<Object[]> findTopByNightOwl();
 
@@ -146,7 +146,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         WHERE qa.attemptDate = :today
         GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
                  qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
-        ORDER BY todayCount DESC
+        ORDER BY todayCount DESC, MIN(qa.createdAt) ASC
         """)
     List<Object[]> findTopByToday(@Param("today") LocalDate today);
 
@@ -158,7 +158,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         WHERE qa.attemptDate >= :weekStart AND qa.attemptDate <= :weekEnd
         GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
                  qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
-        ORDER BY weekCount DESC
+        ORDER BY weekCount DESC, MIN(qa.createdAt) ASC
         """)
     List<Object[]> findTopByThisWeek(@Param("weekStart") LocalDate weekStart, @Param("weekEnd") LocalDate weekEnd);
 

@@ -279,6 +279,7 @@ public class QuizDto {
         private String gradientTo;    // 그라데이션 끝 색상
         private boolean unlocked;     // 해금 여부
         private boolean selected;     // 현재 선택 여부
+        private String unlockCondition; // 해금 조건 텍스트
     }
 
     @Getter
@@ -316,7 +317,9 @@ public class QuizDto {
         private String name;          // 배경 이름
         private String colorClass;    // Tailwind 색상 클래스
         private String colorHex;      // HEX 색상 코드
+        private boolean unlocked;     // 해금 여부
         private boolean selected;     // 현재 선택 여부
+        private String unlockCondition; // 해금 조건 텍스트
     }
 
     @Getter
@@ -368,6 +371,8 @@ public class QuizDto {
         private String gradientTo;    // 그라데이션 끝 (옵션)
         private boolean unlocked;     // 해금 여부
         private boolean selected;     // 현재 선택 여부
+        private String unlockCondition; // 해금 조건 텍스트 (예: "Lv.10" 또는 "칭호: 주간 리뷰왕")
+        private boolean isDark;        // 어두운 헤더 (흰색 글자 필요)
     }
 
     @Getter

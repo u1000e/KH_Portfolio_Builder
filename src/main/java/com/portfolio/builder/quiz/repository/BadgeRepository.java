@@ -35,7 +35,7 @@ public interface BadgeRepository extends JpaRepository<Badge, Long> {
         FROM Badge b
         GROUP BY b.member.id, b.member.name, b.member.avatarUrl,
                  b.member.position, b.member.branch, b.member.classroom, b.member.cohort
-        ORDER BY badgeCount DESC
+        ORDER BY badgeCount DESC, MIN(b.earnedAt) ASC
         """)
     List<Object[]> findTopByBadgeCount();
 

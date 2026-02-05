@@ -50,6 +50,18 @@ public class BorderService {
         BORDER_DEFINITIONS.put("border_90", new BorderDefinition("오팔", 90, "pink-400", "purple-500"));
         BORDER_DEFINITIONS.put("border_100", new BorderDefinition("레전더리", 100, "amber-400", "pink-500"));
 
+        // 칭호 보유 시 해금 테두리
+        BORDER_DEFINITIONS.put("border_500warrior", new BorderDefinition("바이올렛 그라데이션", 0, "violet-500", "purple-700", "title_500warrior"));
+        BORDER_DEFINITIONS.put("border_600swordsman", new BorderDefinition("실버블레이드 그라데이션", 0, "gray-200", "gray-600", "title_600swordsman"));
+        BORDER_DEFINITIONS.put("border_weekly_1st", new BorderDefinition("루비 그라데이션", 0, "rose-500", "pink-400", "title_weekly_reviewer_1st"));
+        BORDER_DEFINITIONS.put("border_weekly_2nd", new BorderDefinition("선셋 그라데이션", 0, "orange-400", "amber-600", "title_weekly_reviewer_2nd"));
+        BORDER_DEFINITIONS.put("border_weekly_3rd", new BorderDefinition("로즈 그라데이션", 0, "pink-300", "rose-400", "title_weekly_reviewer_3rd"));
+        BORDER_DEFINITIONS.put("border_best_answer", new BorderDefinition("딥블루 그라데이션", 0, "blue-500", "indigo-700", "title_best_answer_1st"));
+        BORDER_DEFINITIONS.put("border_knowledge", new BorderDefinition("퍼플 그라데이션", 0, "purple-400", "violet-600", "title_best_answer_2nd"));
+        BORDER_DEFINITIONS.put("border_answer_mate", new BorderDefinition("옐로우 그라데이션", 0, "yellow-300", "amber-400", "title_best_answer_3rd"));
+        BORDER_DEFINITIONS.put("border_7days", new BorderDefinition("시안 그라데이션", 0, "teal-400", "cyan-600", "title_7days"));
+        BORDER_DEFINITIONS.put("border_streaker", new BorderDefinition("미드나잇 그라데이션", 0, "indigo-600", "slate-800", "title_streaker"));
+
         // 배경색 정의 (backgroundId, name, colorClass, colorHex) - 전체 해금
         BACKGROUND_DEFINITIONS.put("bg_white", new BackgroundDefinition("화이트", "bg-white", "#ffffff"));
         BACKGROUND_DEFINITIONS.put("bg_gray", new BackgroundDefinition("그레이", "bg-gray-100", "#f3f4f6"));
@@ -74,6 +86,16 @@ public class BorderService {
         BACKGROUND_DEFINITIONS.put("bg_teal", new BackgroundDefinition("틸", "bg-teal-50", "#f0fdfa"));
         BACKGROUND_DEFINITIONS.put("bg_cyan", new BackgroundDefinition("시안", "bg-cyan-50", "#ecfeff"));
 
+        // 채도 높은 파스텔 (-100/-200 레벨)
+        BACKGROUND_DEFINITIONS.put("bg_lavender", new BackgroundDefinition("라벤더", "bg-violet-200", "#ddd6fe"));
+        BACKGROUND_DEFINITIONS.put("bg_peach", new BackgroundDefinition("피치", "bg-orange-200", "#fed7aa"));
+        BACKGROUND_DEFINITIONS.put("bg_blush", new BackgroundDefinition("블러시", "bg-rose-200", "#fecdd3"));
+        BACKGROUND_DEFINITIONS.put("bg_butter", new BackgroundDefinition("버터", "bg-amber-100", "#fef3c3"));
+        BACKGROUND_DEFINITIONS.put("bg_sky_deep", new BackgroundDefinition("딥 스카이", "bg-sky-200", "#bae6fd"));
+        BACKGROUND_DEFINITIONS.put("bg_mint_deep", new BackgroundDefinition("딥 민트", "bg-teal-200", "#99f6e4"));
+        BACKGROUND_DEFINITIONS.put("bg_sage", new BackgroundDefinition("세이지", "bg-emerald-200", "#a7f3d0"));
+        BACKGROUND_DEFINITIONS.put("bg_periwinkle", new BackgroundDefinition("페리윙클", "bg-indigo-200", "#c7d2fe"));
+
         // 헤더 색상 정의 (headerId, name, requiredLevel, colorClass, colorHex, gradientFrom, gradientTo)
         HEADER_DEFINITIONS.put("header_0", new HeaderDefinition("기본", 0, "bg-white", "#ffffff", null, null));
         HEADER_DEFINITIONS.put("header_10", new HeaderDefinition("스카이 블루", 10, "bg-sky-100", "#e0f2fe", null, null));
@@ -86,6 +108,18 @@ public class BorderService {
         HEADER_DEFINITIONS.put("header_80", new HeaderDefinition("오로라 그라데이션", 80, null, null, "from-purple-200", "to-pink-300"));
         HEADER_DEFINITIONS.put("header_90", new HeaderDefinition("골드 그라데이션", 90, null, null, "from-amber-200", "to-yellow-300"));
         HEADER_DEFINITIONS.put("header_100", new HeaderDefinition("레전더리 그라데이션", 100, null, null, "from-fuchsia-400", "to-amber-400"));
+
+        // 칭호 보유 시 해금 헤더 (requiredLevel=0, requiredTitleId로 해금)
+        HEADER_DEFINITIONS.put("header_500warrior", new HeaderDefinition("보라 그라데이션", 0, null, null, "from-violet-300", "to-purple-500", "title_500warrior", true));
+        HEADER_DEFINITIONS.put("header_600swordsman", new HeaderDefinition("흰검 그라데이션", 0, null, null, "from-gray-100", "to-gray-700", "title_600swordsman", true));
+        HEADER_DEFINITIONS.put("header_weekly_1st", new HeaderDefinition("루비 그라데이션", 0, null, null, "from-rose-500", "to-pink-300", "title_weekly_reviewer_1st"));
+        HEADER_DEFINITIONS.put("header_weekly_2nd", new HeaderDefinition("선셋 그라데이션", 0, null, null, "from-orange-300", "to-amber-500", "title_weekly_reviewer_2nd"));
+        HEADER_DEFINITIONS.put("header_weekly_3rd", new HeaderDefinition("수채화 그라데이션", 0, null, null, "from-pink-100", "to-rose-200", "title_weekly_reviewer_3rd"));
+        HEADER_DEFINITIONS.put("header_best_answer", new HeaderDefinition("딥블루 그라데이션", 0, null, null, "from-blue-600", "to-indigo-800", "title_best_answer_1st", true));
+        HEADER_DEFINITIONS.put("header_knowledge", new HeaderDefinition("바이올렛 그라데이션", 0, null, null, "from-purple-300", "to-violet-500", "title_best_answer_2nd", true));
+        HEADER_DEFINITIONS.put("header_answer_mate", new HeaderDefinition("파스텔 그라데이션", 0, null, null, "from-yellow-100", "to-amber-200", "title_best_answer_3rd"));
+        HEADER_DEFINITIONS.put("header_7days", new HeaderDefinition("청록 그라데이션", 0, null, null, "from-teal-300", "to-cyan-500", "title_7days", true));
+        HEADER_DEFINITIONS.put("header_streaker", new HeaderDefinition("네이비 그라데이션", 0, null, null, "from-indigo-700", "to-slate-900", "title_streaker", true));
 
         // 레벨 기반 칭호 (titleId, name, emoji, colorClass, colorHex, requiredLevel, condition)
         TITLE_DEFINITIONS.put("title_0", new TitleDefinition("코딩 새싹", "🌱", "text-green-500", "#22c55e", 0, "레벨 0 달성", false));
@@ -150,7 +184,16 @@ public class BorderService {
         for (Map.Entry<String, BorderDefinition> entry : BORDER_DEFINITIONS.entrySet()) {
             String borderId = entry.getKey();
             BorderDefinition def = entry.getValue();
-            boolean unlocked = currentLevel >= def.requiredLevel;
+            boolean unlocked;
+            String unlockCondition;
+            if (def.requiredTitleId != null) {
+                unlocked = specialTitleUnlocked.getOrDefault(def.requiredTitleId, false);
+                TitleDefinition titleDef = TITLE_DEFINITIONS.get(def.requiredTitleId);
+                unlockCondition = "칭호: " + (titleDef != null ? titleDef.name : "특별 칭호");
+            } else {
+                unlocked = currentLevel >= def.requiredLevel;
+                unlockCondition = "Lv." + def.requiredLevel;
+            }
             boolean selected = borderId.equals(selectedBorderId);
 
             borders.add(BorderResponse.builder()
@@ -163,10 +206,11 @@ public class BorderService {
                     .gradientTo(def.gradientTo)
                     .unlocked(unlocked)
                     .selected(selected)
+                    .unlockCondition(unlockCondition)
                     .build());
         }
 
-        // 배경색 목록
+        // 배경색 목록 (전체 해금)
         List<BackgroundResponse> backgrounds = new ArrayList<>();
         for (Map.Entry<String, BackgroundDefinition> entry : BACKGROUND_DEFINITIONS.entrySet()) {
             String bgId = entry.getKey();
@@ -178,6 +222,7 @@ public class BorderService {
                     .name(def.name)
                     .colorClass(def.colorClass)
                     .colorHex(def.colorHex)
+                    .unlocked(true)
                     .selected(selected)
                     .build());
         }
@@ -216,8 +261,24 @@ public class BorderService {
         for (Map.Entry<String, HeaderDefinition> entry : HEADER_DEFINITIONS.entrySet()) {
             String headerId = entry.getKey();
             HeaderDefinition def = entry.getValue();
-            boolean unlocked = currentLevel >= def.requiredLevel;
+            boolean unlocked;
+            if (def.requiredTitleId != null) {
+                // 칭호 보유 시 해금
+                unlocked = specialTitleUnlocked.getOrDefault(def.requiredTitleId, false);
+            } else {
+                // 레벨 기반 해금
+                unlocked = currentLevel >= def.requiredLevel;
+            }
             boolean selected = headerId.equals(selectedHeaderId);
+
+            // 해금 조건 텍스트 생성
+            String unlockCondition;
+            if (def.requiredTitleId != null) {
+                TitleDefinition titleDef = TITLE_DEFINITIONS.get(def.requiredTitleId);
+                unlockCondition = "칭호: " + (titleDef != null ? titleDef.name : "특별 칭호");
+            } else {
+                unlockCondition = "Lv." + def.requiredLevel;
+            }
 
             headers.add(HeaderResponse.builder()
                     .headerId(headerId)
@@ -229,6 +290,8 @@ public class BorderService {
                     .gradientTo(def.gradientTo)
                     .unlocked(unlocked)
                     .selected(selected)
+                    .unlockCondition(unlockCondition)
+                    .isDark(def.isDark)
                     .build());
         }
 
@@ -326,9 +389,18 @@ public class BorderService {
         }
 
         // 해금 여부 확인
-        int currentLevel = calculateLevel(memberId);
-        if (currentLevel < def.requiredLevel) {
-            throw new RuntimeException("아직 해금되지 않은 테두리입니다. (필요 레벨: " + def.requiredLevel + ")");
+        if (def.requiredTitleId != null) {
+            // 칭호 기반 해금
+            Map<String, Boolean> specialUnlocked = checkSpecialTitlesUnlocked(memberId);
+            if (!specialUnlocked.getOrDefault(def.requiredTitleId, false)) {
+                throw new RuntimeException("아직 해금되지 않은 테두리입니다. (필요 칭호 미보유)");
+            }
+        } else {
+            // 레벨 기반 해금
+            int currentLevel = calculateLevel(memberId);
+            if (currentLevel < def.requiredLevel) {
+                throw new RuntimeException("아직 해금되지 않은 테두리입니다. (필요 레벨: " + def.requiredLevel + ")");
+            }
         }
 
         member.setSelectedBorderId(borderId);
@@ -420,7 +492,8 @@ public class BorderService {
         }
 
         // 배경색 존재 여부 확인
-        if (!BACKGROUND_DEFINITIONS.containsKey(backgroundId)) {
+        BackgroundDefinition def = BACKGROUND_DEFINITIONS.get(backgroundId);
+        if (def == null) {
             throw new RuntimeException("존재하지 않는 배경색입니다.");
         }
 
@@ -534,9 +607,17 @@ public class BorderService {
         }
 
         // 해금 여부 확인
-        int currentLevel = calculateLevel(memberId);
-        if (currentLevel < def.requiredLevel) {
-            throw new RuntimeException("아직 해금되지 않은 헤더 색상입니다. (필요 레벨: " + def.requiredLevel + ")");
+        if (def.requiredTitleId != null) {
+            // 칭호 보유 시 해금
+            Map<String, Boolean> specialUnlocked = checkSpecialTitlesUnlocked(memberId);
+            if (!specialUnlocked.getOrDefault(def.requiredTitleId, false)) {
+                throw new RuntimeException("아직 해금되지 않은 헤더 색상입니다. (필요 칭호 미획득)");
+            }
+        } else {
+            int currentLevel = calculateLevel(memberId);
+            if (currentLevel < def.requiredLevel) {
+                throw new RuntimeException("아직 해금되지 않은 헤더 색상입니다. (필요 레벨: " + def.requiredLevel + ")");
+            }
         }
 
         member.setSelectedHeaderId(headerId);
@@ -566,6 +647,7 @@ public class BorderService {
                 .gradientTo(def.gradientTo)
                 .unlocked(true)
                 .selected(false)
+                .isDark(def.isDark)
                 .build();
     }
 
@@ -577,12 +659,18 @@ public class BorderService {
         final int requiredLevel;
         final String gradientFrom;
         final String gradientTo;
+        final String requiredTitleId;
 
         BorderDefinition(String name, int requiredLevel, String gradientFrom, String gradientTo) {
+            this(name, requiredLevel, gradientFrom, gradientTo, null);
+        }
+
+        BorderDefinition(String name, int requiredLevel, String gradientFrom, String gradientTo, String requiredTitleId) {
             this.name = name;
             this.requiredLevel = requiredLevel;
             this.gradientFrom = gradientFrom;
             this.gradientTo = gradientTo;
+            this.requiredTitleId = requiredTitleId;
         }
     }
 
@@ -593,11 +681,17 @@ public class BorderService {
         final String name;
         final String colorClass;
         final String colorHex;
+        final String requiredTitleId;
 
         BackgroundDefinition(String name, String colorClass, String colorHex) {
+            this(name, colorClass, colorHex, null);
+        }
+
+        BackgroundDefinition(String name, String colorClass, String colorHex, String requiredTitleId) {
             this.name = name;
             this.colorClass = colorClass;
             this.colorHex = colorHex;
+            this.requiredTitleId = requiredTitleId;
         }
     }
 
@@ -632,16 +726,28 @@ public class BorderService {
         final int requiredLevel;
         final String colorClass;
         final String colorHex;
-        final String gradientFrom;  // 그라데이션 시작 (고급 헤더용)
-        final String gradientTo;    // 그라데이션 끝 (고급 헤더용)
+        final String gradientFrom;
+        final String gradientTo;
+        final String requiredTitleId;
+        final boolean isDark;  // 어두운 헤더 (흰색 글자 필요)
 
         HeaderDefinition(String name, int requiredLevel, String colorClass, String colorHex, String gradientFrom, String gradientTo) {
+            this(name, requiredLevel, colorClass, colorHex, gradientFrom, gradientTo, null, false);
+        }
+
+        HeaderDefinition(String name, int requiredLevel, String colorClass, String colorHex, String gradientFrom, String gradientTo, String requiredTitleId) {
+            this(name, requiredLevel, colorClass, colorHex, gradientFrom, gradientTo, requiredTitleId, false);
+        }
+
+        HeaderDefinition(String name, int requiredLevel, String colorClass, String colorHex, String gradientFrom, String gradientTo, String requiredTitleId, boolean isDark) {
             this.name = name;
             this.requiredLevel = requiredLevel;
             this.colorClass = colorClass;
             this.colorHex = colorHex;
             this.gradientFrom = gradientFrom;
             this.gradientTo = gradientTo;
+            this.requiredTitleId = requiredTitleId;
+            this.isDark = isDark;
         }
     }
 }

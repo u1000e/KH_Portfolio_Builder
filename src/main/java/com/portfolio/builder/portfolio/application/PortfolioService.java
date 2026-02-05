@@ -253,6 +253,7 @@ public class PortfolioService {
                                         .colorHex(headerInfo.getColorHex())
                                         .gradientFrom(headerInfo.getGradientFrom())
                                         .gradientTo(headerInfo.getGradientTo())
+                                        .isDark(headerInfo.isDark())
                                         .build();
                             }
                         }
@@ -358,6 +359,7 @@ public class PortfolioService {
                                         .colorHex(headerInfo.getColorHex())
                                         .gradientFrom(headerInfo.getGradientFrom())
                                         .gradientTo(headerInfo.getGradientTo())
+                                        .isDark(headerInfo.isDark())
                                         .build();
                             }
                         }
