@@ -332,11 +332,6 @@ public class AdminService {
         Member member = memberRepository.findById(targetMemberId)
                 .orElseThrow(() -> new RuntimeException("Member not found"));
         
-        // 수강생만 기수 설정 가능
-        if (!"수강생".equals(member.getPosition())) {
-            throw new RuntimeException("Only students can have cohort");
-        }
-        
         member.setCohort(cohort);
         
         Member updated = memberRepository.save(member);

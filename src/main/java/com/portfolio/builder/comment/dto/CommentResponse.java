@@ -23,6 +23,8 @@ public class CommentResponse {
     // 뱃지 정보
     private String position;    // 운영팀, 강사, 수강생
     private String branch;      // 종로, 강남
+    private String classroom;   // 강의실 (수강생)
+    private String cohort;      // 기수(수강생) / 별칭(강사) / 부서(운영팀)
     private boolean isOwner;    // 포트폴리오 작성자 여부
     
     // 관리자용 추가 정보
@@ -41,6 +43,8 @@ public class CommentResponse {
                 .avatarUrl(member.getAvatarUrl())
                 .position(member.getPosition())
                 .branch(member.getBranch())
+                .classroom(member.getClassroom())
+                .cohort(member.getCohort())
                 .isOwner(member.getId().equals(portfolioOwnerId))
                 .portfolioId(comment.getPortfolio().getId())
                 .portfolioTitle(comment.getPortfolio().getTitle())
@@ -60,6 +64,8 @@ public class CommentResponse {
                 .avatarUrl(member.getAvatarUrl())
                 .position(member.getPosition())
                 .branch(member.getBranch())
+                .classroom(member.getClassroom())
+                .cohort(member.getCohort())
                 .isOwner(false)
                 .portfolioId(comment.getPortfolio().getId())
                 .portfolioTitle(comment.getPortfolio().getTitle())

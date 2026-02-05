@@ -24,7 +24,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findByPendingPositionIsNotNull();
     
     // 기수 목록 조회 (중복 제거)
-    @Query("SELECT DISTINCT m.cohort FROM Member m WHERE m.cohort IS NOT NULL ORDER BY m.cohort DESC")
+    @Query("SELECT DISTINCT m.cohort FROM Member m WHERE m.position = '수강생' AND m.cohort IS NOT NULL ORDER BY m.cohort DESC")
     List<String> findDistinctCohorts();
     
     // 강의실 목록 조회 (특정 지점의 강의실만)
@@ -32,11 +32,11 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<String> findDistinctClassroomsByBranch(@Param("branch") String branch);
     
     // 기수 목록 조회 (특정 지점의 기수만 - 강의실 무관)
-    @Query("SELECT DISTINCT m.cohort FROM Member m WHERE m.branch = :branch AND m.cohort IS NOT NULL ORDER BY m.cohort DESC")
+    @Query("SELECT DISTINCT m.cohort FROM Member m WHERE m.position = '수강생' AND m.branch = :branch AND m.cohort IS NOT NULL ORDER BY m.cohort DESC")
     List<String> findDistinctCohortsByBranch(@Param("branch") String branch);
     
     // 기수 목록 조회 (특정 지점 + 강의실의 기수만)
-    @Query("SELECT DISTINCT m.cohort FROM Member m WHERE m.branch = :branch AND m.classroom = :classroom AND m.cohort IS NOT NULL ORDER BY m.cohort DESC")
+    @Query("SELECT DISTINCT m.cohort FROM Member m WHERE m.position = '수강생' AND m.branch = :branch AND m.classroom = :classroom AND m.cohort IS NOT NULL ORDER BY m.cohort DESC")
     List<String> findDistinctCohortsByBranchAndClassroom(@Param("branch") String branch, @Param("classroom") String classroom);
     
     // 특정 직급의 회원 수 (희귀 배지 랭킹용)
