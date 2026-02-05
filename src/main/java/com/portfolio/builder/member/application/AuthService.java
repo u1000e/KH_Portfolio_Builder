@@ -202,7 +202,7 @@ public class AuthService {
                             .avatarUrl((String) userInfo.get("avatar_url"))
                             .accessToken(accessToken)
                             .role(Member.Role.USER)
-                            .status(Member.Status.ACTIVE)  // 바로 활성 상태
+                            .status(Member.Status.PENDING)  // 관리자 승인 필요
                             .build();
                     return memberRepository.save(newMember);
                 });
@@ -251,11 +251,6 @@ public class AuthService {
             member.setClassroom(request.getClassroom());
         } else {
             member.setClassroom(null);
-        }
-        
-        // 프로필 설정 완료 시 상태 변경
-        if (member.getStatus() == Member.Status.PENDING) {
-            member.setStatus(Member.Status.ACTIVE);
         }
         
         Member updatedMember = memberRepository.save(member);
