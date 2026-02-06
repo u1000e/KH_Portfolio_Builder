@@ -32,4 +32,11 @@ public class Comment {
 
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Builder.Default
+    private Boolean isRead = false;  // 포폴 주인이 읽었는지
+
+    public void markAsRead() {
+        this.isRead = true;
+    }
 }

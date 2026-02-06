@@ -3,6 +3,7 @@ package com.portfolio.builder.comment.presentation;
 import com.portfolio.builder.comment.application.CommentService;
 import com.portfolio.builder.comment.dto.CommentRequest;
 import com.portfolio.builder.comment.dto.CommentResponse;
+import com.portfolio.builder.comment.dto.ReceivedCommentResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,5 +43,27 @@ public class CommentController {
             @RequestAttribute(name = "memberId") Long memberId) {
         commentService.deleteComment(commentId, memberId);
         return ResponseEntity.noContent().build();
+    }
+
+    // 읽지 않은 댓글 수
+    @GetMapping("/unread/count")
+    public ResponseEntity<Long> getUnreadCount(@RequestAttribute("memberId") Long memberId) {
+        return ResponseEntity.ok(commentService.getUnreadCount(memberId));
+    }
+
+    // 받은 댓글 목록
+    @GetMapping("/received")
+    public ResponseEntity<List<ReceivedCommentResponse>> getReceivedComments(
+            @RequestAttribute("memberId") Long memberId) {
+        return ResponseEntity.ok(commentService.getReceivedComments(memberId));
+    }
+
+    // 포폴의 댓글 일괄 읽음 처리
+    @PutMapping("/portfolio/{portfolioId}/read-all")
+    public ResponseEntity<Void> markAllAsRead(
+            @PathVariable("portfolioId") Long portfolioId,
+            @RequestAttribute("memberId") Long memberId) {
+        commentService.markAllAsRead(portfolioId, memberId);
+        return ResponseEntity.ok().build();
     }
 }

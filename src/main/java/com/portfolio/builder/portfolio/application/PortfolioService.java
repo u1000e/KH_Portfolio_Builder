@@ -210,6 +210,7 @@ public class PortfolioService {
                                         .requiredLevel(borderInfo.getRequiredLevel())
                                         .gradientFrom(borderInfo.getGradientFrom())
                                         .gradientTo(borderInfo.getGradientTo())
+                                        .gradientVia(borderInfo.getGradientVia())
                                         .build();
                             }
                         }
@@ -253,6 +254,7 @@ public class PortfolioService {
                                         .colorHex(headerInfo.getColorHex())
                                         .gradientFrom(headerInfo.getGradientFrom())
                                         .gradientTo(headerInfo.getGradientTo())
+                                        .gradientVia(headerInfo.getGradientVia())
                                         .isDark(headerInfo.isDark())
                                         .build();
                             }
@@ -316,6 +318,7 @@ public class PortfolioService {
                                         .requiredLevel(borderInfo.getRequiredLevel())
                                         .gradientFrom(borderInfo.getGradientFrom())
                                         .gradientTo(borderInfo.getGradientTo())
+                                        .gradientVia(borderInfo.getGradientVia())
                                         .build();
                             }
                         }
@@ -359,6 +362,7 @@ public class PortfolioService {
                                         .colorHex(headerInfo.getColorHex())
                                         .gradientFrom(headerInfo.getGradientFrom())
                                         .gradientTo(headerInfo.getGradientTo())
+                                        .gradientVia(headerInfo.getGradientVia())
                                         .isDark(headerInfo.isDark())
                                         .build();
                             }

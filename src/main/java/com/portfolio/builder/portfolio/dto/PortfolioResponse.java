@@ -87,6 +87,7 @@ public class PortfolioResponse {
         private int requiredLevel;
         private String gradientFrom;
         private String gradientTo;
+        private String gradientVia;  // 3색 그라데이션 중간색
     }
 
     @Getter
@@ -127,6 +128,7 @@ public class PortfolioResponse {
         private String colorHex;
         private String gradientFrom;
         private String gradientTo;
+        private String gradientVia;  // 3색 그라데이션 중간색
         private boolean isDark;  // 어두운 헤더 (흰색 글자 필요)
     }
 

@@ -3,6 +3,7 @@ package com.portfolio.builder.comment.domain;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.portfolio.domain.Portfolio;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -76,4 +77,34 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Object[]> findWeeklyReviewerCandidates(
         @Param("startTime") java.time.LocalDateTime startTime,
         @Param("endTime") java.time.LocalDateTime endTime);
+
+    // ===== 댓글 알림용 쿼리 =====
+
+    /**
+     * 회원이 받은 읽지 않은 댓글 수 (자기 댓글 제외)
+     * NULL도 읽지 않은 것으로 처리
+     */
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.portfolio.member.id = :memberId AND c.member.id != :memberId AND (c.isRead = false OR c.isRead IS NULL)")
+    long countUnreadByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 특정 포폴의 읽지 않은 댓글들 조회
+     * NULL도 읽지 않은 것으로 처리
+     */
+    @Query("SELECT c FROM Comment c WHERE c.portfolio.id = :portfolioId AND (c.isRead = false OR c.isRead IS NULL)")
+    List<Comment> findUnreadByPortfolioId(@Param("portfolioId") Long portfolioId);
+
+    /**
+     * 특정 포폴의 모든 댓글 일괄 읽음 처리
+     * NULL도 읽지 않은 것으로 처리
+     */
+    @Modifying
+    @Query("UPDATE Comment c SET c.isRead = true WHERE c.portfolio.id = :portfolioId AND (c.isRead = false OR c.isRead IS NULL)")
+    int markAllAsReadByPortfolioId(@Param("portfolioId") Long portfolioId);
+
+    /**
+     * 회원이 받은 댓글 목록 (최신순, 자기 댓글 제외)
+     */
+    @Query("SELECT c FROM Comment c JOIN FETCH c.member JOIN FETCH c.portfolio WHERE c.portfolio.member.id = :memberId AND c.member.id != :memberId ORDER BY c.createdAt DESC")
+    List<Comment> findReceivedByMemberId(@Param("memberId") Long memberId);
 }

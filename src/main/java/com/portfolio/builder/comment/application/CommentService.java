@@ -10,6 +10,7 @@ import com.portfolio.builder.comment.domain.Comment;
 import com.portfolio.builder.comment.domain.CommentRepository;
 import com.portfolio.builder.comment.dto.CommentRequest;
 import com.portfolio.builder.comment.dto.CommentResponse;
+import com.portfolio.builder.comment.dto.ReceivedCommentResponse;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.portfolio.domain.Portfolio;
@@ -123,8 +124,37 @@ public class CommentService {
     public void deleteCommentByAdmin(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
-        
+
         commentRepository.delete(comment);
         log.info("Comment deleted by admin: {}", commentId);
+    }
+
+    // 읽지 않은 댓글 수 조회
+    @Transactional(readOnly = true)
+    public long getUnreadCount(Long memberId) {
+        return commentRepository.countUnreadByMemberId(memberId);
+    }
+
+    // 포폴의 모든 댓글 읽음 처리
+    public void markAllAsRead(Long portfolioId, Long memberId) {
+        Portfolio portfolio = portfolioRepository.findById(portfolioId)
+                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+
+        // 포폴 주인만 처리 가능
+        if (!portfolio.getMember().getId().equals(memberId)) {
+            throw new IllegalStateException("권한이 없습니다");
+        }
+
+        int updated = commentRepository.markAllAsReadByPortfolioId(portfolioId);
+        log.info("Marked {} comments as read for portfolio {}", updated, portfolioId);
+    }
+
+    // 받은 댓글 목록 조회
+    @Transactional(readOnly = true)
+    public List<ReceivedCommentResponse> getReceivedComments(Long memberId) {
+        return commentRepository.findReceivedByMemberId(memberId)
+                .stream()
+                .map(ReceivedCommentResponse::from)
+                .collect(Collectors.toList());
     }
 }

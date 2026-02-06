@@ -277,6 +277,7 @@ public class QuizDto {
         private String borderStyleLight; // CSS 스타일 (light mode)
         private String gradientFrom;  // 그라데이션 시작 색상
         private String gradientTo;    // 그라데이션 끝 색상
+        private String gradientVia;   // 그라데이션 중간색 (3색 그라데이션용, 옵션)
         private boolean unlocked;     // 해금 여부
         private boolean selected;     // 현재 선택 여부
         private String unlockCondition; // 해금 조건 텍스트
@@ -369,6 +370,7 @@ public class QuizDto {
         private String colorHex;      // HEX 색상 코드
         private String gradientFrom;  // 그라데이션 시작 (옵션)
         private String gradientTo;    // 그라데이션 끝 (옵션)
+        private String gradientVia;   // 그라데이션 중간색 (3색 그라데이션용, 옵션)
         private boolean unlocked;     // 해금 여부
         private boolean selected;     // 현재 선택 여부
         private String unlockCondition; // 해금 조건 텍스트 (예: "Lv.10" 또는 "칭호: 주간 리뷰왕")
