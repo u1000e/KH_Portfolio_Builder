@@ -52,6 +52,7 @@ public class TILService {
                 .codeLanguage(request.getCodeLanguage())
                 .tags(request.getTags())
                 .imageUrl(request.getImageUrl())
+                .reflection(request.getReflection())
                 .isPublic(request.getIsPublic() != null ? request.getIsPublic() : true)
                 .build();
 
@@ -190,6 +191,7 @@ public class TILService {
         til.setCodeLanguage(request.getCodeLanguage());
         til.setTags(request.getTags());
         til.setImageUrl(request.getImageUrl());
+        til.setReflection(request.getReflection());
         if (request.getIsPublic() != null) {
             til.setIsPublic(request.getIsPublic());
         }
@@ -253,6 +255,72 @@ public class TILService {
     @Transactional(readOnly = true)
     public List<LocalDate> getWrittenDates(Long memberId, int year, int month) {
         return tilRepository.findWrittenDatesByMemberAndMonth(memberId, year, month);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getTilStatsForPortfolio(Long memberId) {
+        long totalCount = tilRepository.countByMemberId(memberId);
+
+        List<TIL> myTils = tilRepository.findByMemberIdOrderByCreatedAtDesc(memberId);
+
+        // 태그 빈도 집계 → 상위 5개
+        Map<String, Long> tagFrequency = new HashMap<>();
+        for (TIL til : myTils) {
+            if (til.getTags() != null && !til.getTags().isEmpty()) {
+                for (String tag : til.getTags().split(",")) {
+                    String trimmed = tag.trim();
+                    if (!trimmed.isEmpty()) {
+                        tagFrequency.merge(trimmed, 1L, Long::sum);
+                    }
+                }
+            }
+        }
+
+        List<String> topTags = tagFrequency.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(5)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        // 스트릭 계산 (연속 학습일)
+        Set<LocalDate> writtenDates = myTils.stream()
+                .map(til -> til.getCreatedAt().toLocalDate())
+                .collect(Collectors.toCollection(TreeSet::new));
+
+        int currentStreak = 0;
+        int maxStreak = 0;
+
+        if (!writtenDates.isEmpty()) {
+            // 현재 스트릭: 오늘/어제부터 역순으로 연속일 카운트
+            LocalDate check = LocalDate.now();
+            if (!writtenDates.contains(check)) {
+                check = check.minusDays(1); // 어제까지 썼으면 유지
+            }
+            while (writtenDates.contains(check)) {
+                currentStreak++;
+                check = check.minusDays(1);
+            }
+
+            // 최대 스트릭
+            List<LocalDate> sorted = new ArrayList<>(new TreeSet<>(writtenDates));
+            int streak = 1;
+            for (int i = 1; i < sorted.size(); i++) {
+                if (sorted.get(i).minusDays(1).equals(sorted.get(i - 1))) {
+                    streak++;
+                } else {
+                    maxStreak = Math.max(maxStreak, streak);
+                    streak = 1;
+                }
+            }
+            maxStreak = Math.max(maxStreak, streak);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalCount", totalCount);
+        result.put("topTags", topTags);
+        result.put("currentStreak", currentStreak);
+        result.put("maxStreak", maxStreak);
+        return result;
     }
 
     private void checkTILBadges(Long memberId, long tilCount) {

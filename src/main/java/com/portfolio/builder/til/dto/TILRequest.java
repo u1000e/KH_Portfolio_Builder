@@ -35,5 +35,8 @@ public class TILRequest {
     @Size(max = 500)
     private String imageUrl;
 
+    @Size(max = 200, message = "한줄 회고는 200자 이내로 작성해주세요.")
+    private String reflection;
+
     private Boolean isPublic;
 }

@@ -44,6 +44,9 @@ public class TIL {
     @Column(length = 500)
     private String imageUrl;
 
+    @Column(length = 200)
+    private String reflection;
+
     @Builder.Default
     private Integer likeCount = 0;
 

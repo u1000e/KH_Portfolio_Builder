@@ -89,6 +89,12 @@ public class TILController {
         return ResponseEntity.ok(tilService.getWrittenDates(memberId, year, month));
     }
 
+    @GetMapping("/my/stats")
+    public ResponseEntity<Map<String, Object>> getMyTilStats(
+            @RequestAttribute(name = "memberId") Long memberId) {
+        return ResponseEntity.ok(tilService.getTilStatsForPortfolio(memberId));
+    }
+
     // 강사용: 반별 TIL 대시보드 (통계)
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getTilDashboard(

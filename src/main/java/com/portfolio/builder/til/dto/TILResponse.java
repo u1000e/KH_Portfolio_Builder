@@ -22,6 +22,7 @@ public class TILResponse {
     private String codeLanguage;
     private List<String> tags;
     private String imageUrl;
+    private String reflection;
     private Integer likeCount;
     private Boolean isLiked;
     private Boolean isPublic;
@@ -52,6 +53,7 @@ public class TILResponse {
                 .codeLanguage(til.getCodeLanguage())
                 .tags(tagList)
                 .imageUrl(til.getImageUrl())
+                .reflection(til.getReflection())
                 .likeCount(til.getLikeCount() != null ? til.getLikeCount() : 0)
                 .isLiked(isLiked)
                 .isPublic(til.getIsPublic())
