@@ -515,6 +515,10 @@ public class QuizService {
                 return getInterviewLikesRanking(memberId, limit, currentMember);
             case "comment":
                 return getCommentRanking(memberId, limit, currentMember);
+            case "til_count":
+                return getTilCountRanking(memberId, limit, currentMember);
+            case "til_likes":
+                return getTilLikesRanking(memberId, limit, currentMember);
         }
         
         List<QuizStreak> streaks;
@@ -1021,14 +1025,18 @@ public class QuizService {
 
         int likesGiven = portfolioLikeRepository.countLikesGivenByMemberId(memberId);
         int commentsGiven = commentRepository.countCommentsGivenByMemberId(memberId);
+        long answerCount = interviewAnswerRepository.countByMemberId(memberId);
+        long tilCount = tilRepository.countByMemberId(memberId);
 
         double rawScore = (streak.getTotalQuizCount() * (accuracy / 100.0))
                 + (reviewCount / 2.0)
                 + (streak.getMaxStreak() * 5)
                 + (likesGiven * 2)
-                + (commentsGiven * 2);
+                + (commentsGiven * 2)
+                + (answerCount * 2)
+                + (tilCount * 2);
 
-        return Math.min(100, (int) Math.floor(rawScore / 10.0));
+        return Math.min(200, (int) Math.floor(rawScore / 10.0));
     }
 
     /**
@@ -1127,6 +1135,28 @@ public class QuizService {
     private RankingResponse getCommentRanking(Long memberId, int limit, Member currentMember) {
         return buildGenericRanking(
             commentRepository.findTopByCommentCount(),
+            memberId, limit, "개", currentMember
+        );
+    }
+
+    // ===== TIL 랭킹 =====
+
+    /**
+     * 📝 TIL 작성 개수 랭킹
+     */
+    private RankingResponse getTilCountRanking(Long memberId, int limit, Member currentMember) {
+        return buildGenericRanking(
+            tilRepository.findTopByTilCount(),
+            memberId, limit, "개", currentMember
+        );
+    }
+
+    /**
+     * ❤️ TIL 좋아요 받은 개수 랭킹
+     */
+    private RankingResponse getTilLikesRanking(Long memberId, int limit, Member currentMember) {
+        return buildGenericRanking(
+            tilRepository.findTopByTotalLikes(),
             memberId, limit, "개", currentMember
         );
     }

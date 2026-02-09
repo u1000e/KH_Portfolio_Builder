@@ -40,6 +40,35 @@ public interface TILRepository extends JpaRepository<TIL, Long> {
 
     void deleteAllByMemberId(Long memberId);
 
+    // ===== 랭킹용 쿼리 =====
+
+    /**
+     * TIL 작성 개수 랭킹 (동점 시 먼저 달성한 사람 우선)
+     */
+    @Query("""
+        SELECT t.member.id, t.member.name, t.member.avatarUrl, COUNT(t) as cnt,
+               t.member.position, t.member.branch, t.member.classroom, t.member.cohort
+        FROM TIL t
+        GROUP BY t.member.id, t.member.name, t.member.avatarUrl,
+                 t.member.position, t.member.branch, t.member.classroom, t.member.cohort
+        ORDER BY cnt DESC, MIN(t.createdAt) ASC
+        """)
+    List<Object[]> findTopByTilCount();
+
+    /**
+     * TIL 좋아요 받은 총 횟수 랭킹 (동점 시 먼저 달성한 사람 우선)
+     */
+    @Query("""
+        SELECT t.member.id, t.member.name, t.member.avatarUrl, SUM(t.likeCount) as totalLikes,
+               t.member.position, t.member.branch, t.member.classroom, t.member.cohort
+        FROM TIL t
+        GROUP BY t.member.id, t.member.name, t.member.avatarUrl,
+                 t.member.position, t.member.branch, t.member.classroom, t.member.cohort
+        HAVING SUM(t.likeCount) > 0
+        ORDER BY totalLikes DESC, MIN(t.createdAt) ASC
+        """)
+    List<Object[]> findTopByTotalLikes();
+
     // 같은 반 필터링 (최신순)
     @Query("SELECT t FROM TIL t JOIN FETCH t.member m WHERE t.isPublic = true AND m.branch = :branch AND m.classroom = :classroom AND m.cohort = :cohort ORDER BY t.createdAt DESC")
     List<TIL> findAllPublicByClassOrderByCreatedAtDesc(@Param("branch") String branch, @Param("classroom") String classroom, @Param("cohort") String cohort, Pageable pageable);
