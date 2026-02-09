@@ -35,6 +35,9 @@ public interface TILRepository extends JpaRepository<TIL, Long> {
     @Query("SELECT t FROM TIL t WHERE t.member.id = :memberId AND t.isPublic = true ORDER BY t.createdAt DESC")
     List<TIL> findRecentByMemberId(@Param("memberId") Long memberId, Pageable pageable);
 
+    @Query("SELECT t FROM TIL t JOIN FETCH t.member WHERE t.member.id = :memberId AND t.isPublic = true ORDER BY t.createdAt DESC")
+    List<TIL> findAllPublicByMemberId(@Param("memberId") Long memberId);
+
     void deleteAllByMemberId(Long memberId);
 
     // 같은 반 필터링 (최신순)

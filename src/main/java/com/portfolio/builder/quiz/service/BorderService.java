@@ -1,9 +1,12 @@
 package com.portfolio.builder.quiz.service;
 
 import com.portfolio.builder.comment.domain.CommentRepository;
+import com.portfolio.builder.interview.domain.InterviewAnswerRepository;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
+import com.portfolio.builder.quiz.domain.Badge;
 import com.portfolio.builder.portfolio.domain.PortfolioLikeRepository;
+import com.portfolio.builder.til.domain.TILRepository;
 import com.portfolio.builder.quiz.domain.QuizStreak;
 import com.portfolio.builder.quiz.dto.QuizDto.*;
 import com.portfolio.builder.quiz.repository.BadgeRepository;
@@ -26,6 +29,8 @@ public class BorderService {
     private final PortfolioLikeRepository portfolioLikeRepository;
     private final CommentRepository commentRepository;
     private final BadgeRepository badgeRepository;
+    private final InterviewAnswerRepository interviewAnswerRepository;
+    private final TILRepository tilRepository;
 
     // 테두리 정의 (10레벨 단위)
     private static final Map<String, BorderDefinition> BORDER_DEFINITIONS = new LinkedHashMap<>();
@@ -63,6 +68,15 @@ public class BorderService {
         BORDER_DEFINITIONS.put("border_streaker", new BorderDefinition("미드나잇 그라데이션", 0, "slate-700", "amber-400", "red-500", "title_streaker"));
         BORDER_DEFINITIONS.put("border_777jackpot", new BorderDefinition("잭팟 그라데이션", 0, "amber-400", "orange-500", "red-500", "title_777jackpot"));
         BORDER_DEFINITIONS.put("border_1000conqueror", new BorderDefinition("컨커러 그라데이션", 0, "rose-500", "teal-500", "amber-500", "title_1000conqueror"));
+
+        // TIL 마일스톤 테두리
+        BORDER_DEFINITIONS.put("border_til_first", new BorderDefinition("그린 그라데이션", 0, "emerald-400", "teal-500", "title_til_first"));
+        BORDER_DEFINITIONS.put("border_til_50", new BorderDefinition("캔디 그라데이션", 0, "yellow-300", "pink-400", "title_til_50"));
+        BORDER_DEFINITIONS.put("border_til_100", new BorderDefinition("코스믹 그라데이션", 0, "cyan-400", "teal-400", "blue-500", "title_til_100"));
+
+        // 고레벨 달성 테두리
+        BORDER_DEFINITIONS.put("border_level_150", new BorderDefinition("스프링 그라데이션", 0, "lime-300", "sky-400", "teal-400", "title_level_150"));
+        BORDER_DEFINITIONS.put("border_level_200", new BorderDefinition("아이스 그라데이션", 0, "sky-500", "slate-700", "indigo-500", "title_level_200"));
 
         // 배경색 정의 (backgroundId, name, colorClass, colorHex) - 전체 해금
         BACKGROUND_DEFINITIONS.put("bg_white", new BackgroundDefinition("화이트", "bg-white", "#ffffff"));
@@ -132,6 +146,15 @@ public class BorderService {
         HEADER_DEFINITIONS.put("header_777jackpot", new HeaderDefinition("잭팟 그라데이션", 0, null, null, "from-yellow-300", "to-orange-500", "via-red-500", "title_777jackpot", true));
         HEADER_DEFINITIONS.put("header_1000conqueror", new HeaderDefinition("컨커러 그라데이션", 0, null, null, "from-rose-400", "to-teal-500", "via-amber-500", "title_1000conqueror", true));
 
+        // TIL 마일스톤 헤더
+        HEADER_DEFINITIONS.put("header_til_first", new HeaderDefinition("그린 그라데이션", 0, null, null, "from-emerald-200", "to-teal-200", "title_til_first"));
+        HEADER_DEFINITIONS.put("header_til_50", new HeaderDefinition("캔디 그라데이션", 0, null, null, "from-yellow-200", "to-pink-300", "title_til_50"));
+        HEADER_DEFINITIONS.put("header_til_100", new HeaderDefinition("코스믹 그라데이션", 0, null, null, "from-cyan-400", "to-teal-300", "via-blue-500", "title_til_100", false));
+
+        // 고레벨 달성 헤더
+        HEADER_DEFINITIONS.put("header_level_150", new HeaderDefinition("스프링 그라데이션", 0, null, null, "from-lime-300", "to-sky-400", "via-teal-400", "title_level_150", false));
+        HEADER_DEFINITIONS.put("header_level_200", new HeaderDefinition("아이스 그라데이션", 0, null, null, "from-sky-500", "to-slate-700", "via-indigo-500", "title_level_200", true));
+
         // 레벨 기반 칭호 (titleId, name, emoji, colorClass, colorHex, requiredLevel, condition)
         TITLE_DEFINITIONS.put("title_0", new TitleDefinition("코딩 새싹", "🌱", "text-green-500", "#22c55e", 0, "레벨 0 달성", false));
         TITLE_DEFINITIONS.put("title_10", new TitleDefinition("버그 사냥꾼", "🐛", "text-amber-600", "#d97706", 10, "레벨 10 달성", false));
@@ -143,7 +166,7 @@ public class BorderService {
         TITLE_DEFINITIONS.put("title_70", new TitleDefinition("풀스택 히어로", "🦸", "text-indigo-500", "#6366f1", 70, "레벨 70 달성", false));
         TITLE_DEFINITIONS.put("title_80", new TitleDefinition("전국재패", "🏴‍☠️", "text-red-500", "#ef4444", 80, "레벨 80 달성", false));
         TITLE_DEFINITIONS.put("title_90", new TitleDefinition("레잔도", "⭐", "text-pink-500", "#ec4899", 90, "레벨 90 달성", false));
-        TITLE_DEFINITIONS.put("title_100", new TitleDefinition("개발왕", "🏅", "text-amber-400", "#fbbf24", 100, "레벨 100 달성 (MAX)", false));
+        TITLE_DEFINITIONS.put("title_100", new TitleDefinition("개발왕", "🏅", "text-amber-400", "#fbbf24", 100, "레벨 100 달성", false));
 
         // 특별 칭호 (레벨 조건 없음, 특정 업적 달성 시)
         TITLE_DEFINITIONS.put("title_earlybird", new TitleDefinition("얼리버드", "🌅", "text-orange-400", "#fb923c", 0, "아침 6-9시 50문제 풀기", true));
@@ -174,6 +197,15 @@ public class BorderService {
 
         // 피드백 칭호
         TITLE_DEFINITIONS.put("title_feedback_star", new TitleDefinition("참잘했어요", "🍒", "text-red-400", "#f87171", 0, "피드백 5회 이상 반영", true));
+
+        // TIL 마일스톤 칭호
+        TITLE_DEFINITIONS.put("title_til_first", new TitleDefinition("TIL 입문자", "📝", "text-emerald-500", "#10b981", 0, "TIL 1개 작성", true));
+        TITLE_DEFINITIONS.put("title_til_50", new TitleDefinition("TIL 장인", "📓", "text-teal-500", "#14b8a6", 0, "TIL 50개 작성", true));
+        TITLE_DEFINITIONS.put("title_til_100", new TitleDefinition("TIL 마스터", "🛸", "text-cyan-600", "#0891b2", 0, "TIL 100개 작성", true));
+
+        // 고레벨 달성 칭호
+        TITLE_DEFINITIONS.put("title_level_150", new TitleDefinition("야근 졸업생", "🎓", "text-teal-500", "#14b8a6", 0, "레벨 150 달성", true));
+        TITLE_DEFINITIONS.put("title_level_200", new TitleDefinition("스택 오버플로우", "🌊", "text-indigo-600", "#4f46e5", 0, "레벨 200 달성", true));
     }
 
     /**
@@ -386,6 +418,16 @@ public class BorderService {
         // 피드백 칭호 해금 (배지 보유 여부로 판단)
         result.put("title_feedback_star", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_feedback_star"));
 
+        // TIL 마일스톤 칭호 해금 (배지 보유 여부로 판단)
+        result.put("title_til_first", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_til_first"));
+        result.put("title_til_50", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_til_50"));
+        result.put("title_til_100", badgeRepository.existsByMemberIdAndBadgeId(memberId, "hidden_til_100"));
+
+        // 고레벨 달성 칭호 해금
+        int currentLevel = calculateLevel(memberId);
+        result.put("title_level_150", currentLevel >= 150);
+        result.put("title_level_200", currentLevel >= 200);
+
         return result;
     }
 
@@ -456,19 +498,40 @@ public class BorderService {
     }
 
     /**
+     * TIL 칭호 해금 (배지를 통한 해금 기록)
+     */
+    @Transactional
+    public void unlockTitleIfNotOwned(Long memberId, String titleId) {
+        String badgeId = "hidden_" + titleId.substring("title_".length());
+        if (!badgeRepository.existsByMemberIdAndBadgeId(memberId, badgeId)) {
+            Member member = memberRepository.findById(memberId).orElse(null);
+            if (member == null) return;
+            Badge badge = Badge.builder()
+                    .member(member)
+                    .badgeId(badgeId)
+                    .build();
+            badgeRepository.save(badge);
+        }
+    }
+
+    /**
      * 레벨 계산 (QuizService와 동일한 공식)
-     * rawScore = (푼 문제 수 × 정답률/100) + (복습 횟수 / 10) + (최대 스트릭 × 5) + (좋아요 × 2) + (댓글 × 2)
+     * rawScore = (푼 문제 수 × 정답률/100) + (복습 횟수 / 2) + (최대 스트릭 × 5) + (좋아요 × 2) + (댓글 × 2) + (면접 답변 수 × 2) + (TIL 작성 수 × 2)
      */
     private int calculateLevel(Long memberId) {
         QuizStreak streak = quizStreakRepository.findByMemberId(memberId)
                 .orElse(null);
 
+        // 면접 답변 + TIL 보너스
+        long answerCount = interviewAnswerRepository.countByMemberId(memberId);
+        long tilCount = tilRepository.countByMemberId(memberId);
+
         if (streak == null) {
             // 스트릭 없어도 커뮤니티 활동으로 레벨업 가능
             int likesGiven = portfolioLikeRepository.countLikesGivenByMemberId(memberId);
             int commentsGiven = commentRepository.countCommentsGivenByMemberId(memberId);
-            double rawScore = (likesGiven * 2) + (commentsGiven * 2);
-            return Math.min(100, (int) Math.floor(rawScore / 10.0));
+            double rawScore = (likesGiven * 2) + (commentsGiven * 2) + (answerCount * 2) + (tilCount * 2);
+            return Math.min(200, (int) Math.floor(rawScore / 10.0));
         }
 
         double accuracy = streak.getTotalQuizCount() > 0
@@ -486,9 +549,11 @@ public class BorderService {
                 + (reviewCount / 2.0)
                 + (streak.getMaxStreak() * 5)
                 + (likesGiven * 2)
-                + (commentsGiven * 2);
+                + (commentsGiven * 2)
+                + (answerCount * 2)
+                + (tilCount * 2);
 
-        return Math.min(100, (int) Math.floor(rawScore / 10.0));
+        return Math.min(200, (int) Math.floor(rawScore / 10.0));
     }
 
     /**

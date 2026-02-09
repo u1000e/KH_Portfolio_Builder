@@ -8,6 +8,7 @@ import com.portfolio.builder.comment.domain.CommentRepository;
 import com.portfolio.builder.interview.domain.InterviewAnswerRepository;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.portfolio.domain.PortfolioLikeRepository;
+import com.portfolio.builder.til.domain.TILRepository;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.quiz.domain.Quiz;
 import com.portfolio.builder.quiz.domain.QuizAttempt;
@@ -42,6 +43,7 @@ public class QuizService {
     private final CommentRepository commentRepository;
     private final InterviewAnswerRepository interviewAnswerRepository;
     private final PortfolioLikeRepository portfolioLikeRepository;
+    private final TILRepository tilRepository;
     private final ObjectMapper objectMapper;
 
     // 스트릭 마일스톤 (7일, 14일, 30일)
@@ -229,7 +231,11 @@ public class QuizService {
         int likesGiven = portfolioLikeRepository.countLikesGivenByMemberId(memberId);
         int commentsGiven = commentRepository.countCommentsGivenByMemberId(memberId);
 
-        double[] levelData = calculateLevel(streak.getTotalQuizCount(), Math.round(totalAccuracy * 10) / 10.0, reviewCount, streak.getMaxStreak(), likesGiven, commentsGiven);
+        // 면접 답변 + TIL 보너스
+        long answerCount = interviewAnswerRepository.countByMemberId(memberId);
+        long tilCount = tilRepository.countByMemberId(memberId);
+
+        double[] levelData = calculateLevel(streak.getTotalQuizCount(), Math.round(totalAccuracy * 10) / 10.0, reviewCount, streak.getMaxStreak(), likesGiven, commentsGiven, answerCount, tilCount);
 
         return StatsResponse.builder()
                 .currentStreak(streak.getCurrentStreak())
@@ -248,19 +254,21 @@ public class QuizService {
 
     /**
      * 레벨 계산
-     * rawScore = (푼 문제 수 × 정답률/100) + (복습 횟수 / 10) + (최대 스트릭 × 5) + (좋아요 × 2) + (댓글 × 2)
+     * rawScore = (푼 문제 수 × 정답률/100) + (복습 횟수 / 2) + (최대 스트릭 × 5) + (좋아요 × 2) + (댓글 × 2) + (면접 답변 수 × 2) + (TIL 작성 수 × 2)
      * Level = rawScore / 10
-     * 최대 레벨: 100
+     * 최대 레벨: 200
      */
-    private double[] calculateLevel(int totalQuizCount, double accuracy, long reviewCount, int maxStreak, int likesGiven, int commentsGiven) {
+    private double[] calculateLevel(int totalQuizCount, double accuracy, long reviewCount, int maxStreak, int likesGiven, int commentsGiven, long answerCount, long tilCount) {
         double rawScore = (totalQuizCount * (accuracy / 100.0))
                 + (reviewCount / 2.0)
                 + (maxStreak * 5)
                 + (likesGiven * 2)
-                + (commentsGiven * 2);
-        int level = Math.min(100, (int) Math.floor(rawScore / 10.0));
-        double currentXp = (level >= 100) ? 10.0 : rawScore % 10.0;
-        double xpProgress = (level >= 100) ? 100.0 : (currentXp / 10.0) * 100.0;
+                + (commentsGiven * 2)
+                + (answerCount * 2)
+                + (tilCount * 2);
+        int level = Math.min(200, (int) Math.floor(rawScore / 10.0));
+        double currentXp = (level >= 200) ? 10.0 : rawScore % 10.0;
+        double xpProgress = (level >= 200) ? 100.0 : (currentXp / 10.0) * 100.0;
         return new double[]{level, Math.round(currentXp * 10) / 10.0, 10.0, Math.round(xpProgress * 10) / 10.0};
     }
 
@@ -1504,17 +1512,29 @@ public class QuizService {
         // 5. 레벨 및 티어 계산
         int likesGiven = portfolioLikeRepository.countLikesGivenByMemberId(memberId);
 
+        // 면접 답변 + TIL 보너스
+        long answerCount = interviewAnswerRepository.countByMemberId(memberId);
+        long tilCount = tilRepository.countByMemberId(memberId);
+
         double rawScore = (totalQuizCount * (accuracyRate / 100.0))
                 + (reviewCount / 2.0)
                 + (maxStreak * 5)
                 + (likesGiven * 2)
-                + (commentsGiven * 2);
-        int level = Math.min(100, (int) Math.floor(rawScore / 10.0));
+                + (commentsGiven * 2)
+                + (answerCount * 2)
+                + (tilCount * 2);
+        int level = Math.min(200, (int) Math.floor(rawScore / 10.0));
 
         // 티어 결정
         String tierName;
         String tierEmoji;
-        if (level >= 100) {
+        if (level >= 200) {
+            tierName = "스택 오버플로우";
+            tierEmoji = "🌊";
+        } else if (level >= 150) {
+            tierName = "야근 졸업생";
+            tierEmoji = "🎓";
+        } else if (level >= 100) {
             tierName = "개발왕";
             tierEmoji = "👑";
         } else if (level >= 80) {

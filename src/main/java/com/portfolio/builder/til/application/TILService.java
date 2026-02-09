@@ -4,6 +4,7 @@ import com.portfolio.builder.comment.application.ProfanityFilterService;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.quiz.service.BadgeService;
+import com.portfolio.builder.quiz.service.BorderService;
 import com.portfolio.builder.til.domain.TIL;
 import com.portfolio.builder.til.domain.TILLike;
 import com.portfolio.builder.til.domain.TILLikeRepository;
@@ -32,6 +33,7 @@ public class TILService {
     private final MemberRepository memberRepository;
     private final ProfanityFilterService profanityFilterService;
     private final BadgeService badgeService;
+    private final BorderService borderService;
 
     public TILResponse createTIL(Long memberId, TILRequest request) {
         Member member = memberRepository.findById(memberId)
@@ -253,6 +255,14 @@ public class TILService {
     }
 
     @Transactional(readOnly = true)
+    public List<TILResponse> getPublicTILsByMemberId(Long memberId) {
+        return tilRepository.findAllPublicByMemberId(memberId)
+                .stream()
+                .map(til -> TILResponse.from(til, null, false))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<LocalDate> getWrittenDates(Long memberId, int year, int month) {
         return tilRepository.findWrittenDatesByMemberAndMonth(memberId, year, month);
     }
@@ -332,6 +342,17 @@ public class TILService {
         }
         if (tilCount == 30) {
             badgeService.awardHiddenBadge(memberId, "hidden_til_month");
+        }
+
+        // TIL 마일스톤 칭호 해금
+        if (tilCount >= 1) {
+            borderService.unlockTitleIfNotOwned(memberId, "title_til_first");
+        }
+        if (tilCount >= 50) {
+            borderService.unlockTitleIfNotOwned(memberId, "title_til_50");
+        }
+        if (tilCount >= 100) {
+            borderService.unlockTitleIfNotOwned(memberId, "title_til_100");
         }
     }
 }
