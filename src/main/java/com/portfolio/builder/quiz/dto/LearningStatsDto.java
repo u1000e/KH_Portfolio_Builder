@@ -20,6 +20,15 @@ public class LearningStatsDto {
     private int maxStreak;             // 최고 연속 일수
     private double accuracyRate;       // 정답률 (%)
     private int earnedBadgeCount;      // 획득 배지 수
+    private long tilCount;             // TIL 작성 수
+    private long interviewAnswerCount; // 면접 토론 답변 수
+    private double currentXp;          // 현재 레벨 내 XP
+    private double nextLevelXp;        // 다음 레벨까지 필요한 XP (항상 10)
+    private double xpProgress;         // XP 진행률 (0~100%)
+    private String selectedTitleName;  // 장착한 칭호 이름
+    private String selectedTitleColor; // 장착한 칭호 색상 (hex)
+    private String selectedBadgeIcon;  // 대표 배지 아이콘 (이모지)
+    private String selectedBadgeName;  // 대표 배지 이름
     private List<StrengthCategory> topStrengths;  // 강점 분야 TOP 3
     private List<StrengthCategory> perfectCategories;  // 100% 정답률 카테고리
     private List<StrengthCategory> weakCategories;     // 60% 이하 정답률 카테고리

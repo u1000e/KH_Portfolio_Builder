@@ -45,6 +45,8 @@ public class QuizService {
     private final PortfolioLikeRepository portfolioLikeRepository;
     private final TILRepository tilRepository;
     private final ObjectMapper objectMapper;
+    private final BorderService borderService;
+    private final BadgeService badgeService;
 
     // 스트릭 마일스톤 (7일, 14일, 30일)
     private static final int[] STREAK_MILESTONES = {7, 14, 30};
@@ -1554,6 +1556,9 @@ public class QuizService {
                 + (answerCount * 2)
                 + (tilCount * 2);
         int level = Math.min(200, (int) Math.floor(rawScore / 10.0));
+        double currentXp = (level >= 200) ? 10.0 : rawScore % 10.0;
+        currentXp = Math.round(currentXp * 10) / 10.0;
+        double xpProgress = (level >= 200) ? 100.0 : Math.round((currentXp / 10.0) * 1000) / 10.0;
 
         // 티어 결정
         String tierName;
@@ -1584,6 +1589,29 @@ public class QuizService {
             tierEmoji = "🌱";
         }
 
+        // 6. 장착한 칭호 & 대표 배지
+        String selectedTitleName = null;
+        String selectedTitleColor = null;
+        String selectedBadgeIcon = null;
+        String selectedBadgeName = null;
+
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if (member != null) {
+            // 칭호
+            if (member.getSelectedTitleId() != null && !member.getSelectedTitleId().isEmpty()) {
+                var titleInfo = borderService.getTitleInfo(member.getSelectedTitleId());
+                if (titleInfo != null) {
+                    selectedTitleName = titleInfo.getName();
+                    selectedTitleColor = titleInfo.getColorHex();
+                }
+            }
+            // 대표 배지
+            if (member.getSelectedBadgeId() != null && !member.getSelectedBadgeId().isEmpty()) {
+                selectedBadgeIcon = badgeService.getBadgeIcon(member.getSelectedBadgeId());
+                selectedBadgeName = badgeService.getBadgeName(member.getSelectedBadgeId());
+            }
+        }
+
         return com.portfolio.builder.quiz.dto.LearningStatsDto.builder()
                 .level(level)
                 .tierName(tierName)
@@ -1592,6 +1620,15 @@ public class QuizService {
                 .maxStreak(maxStreak)
                 .accuracyRate(accuracyRate)
                 .earnedBadgeCount(earnedBadgeCount)
+                .tilCount(tilCount)
+                .interviewAnswerCount(answerCount)
+                .currentXp(currentXp)
+                .nextLevelXp(10.0)
+                .xpProgress(xpProgress)
+                .selectedTitleName(selectedTitleName)
+                .selectedTitleColor(selectedTitleColor)
+                .selectedBadgeIcon(selectedBadgeIcon)
+                .selectedBadgeName(selectedBadgeName)
                 .topStrengths(topStrengths)
                 .perfectCategories(perfectCategories)
                 .weakCategories(weakCategories)
