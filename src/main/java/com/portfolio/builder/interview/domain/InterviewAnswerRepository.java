@@ -15,24 +15,27 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     /**
      * 특정 질문의 답변 목록 (좋아요순, 페이징)
      */
-    Page<InterviewAnswer> findByQuestionIdOrderByLikeCountDescCreatedAtDesc(Long questionId, Pageable pageable);
+    @Query("SELECT a FROM InterviewAnswer a WHERE a.question.id = :questionId AND (a.isHidden = false OR a.isHidden IS NULL) ORDER BY a.likeCount DESC, a.createdAt DESC")
+    Page<InterviewAnswer> findByQuestionIdOrderByLikeCountDescCreatedAtDesc(@Param("questionId") Long questionId, Pageable pageable);
 
     /**
      * 특정 질문의 답변 목록 (오래된순, 페이징)
      */
-    Page<InterviewAnswer> findByQuestionIdOrderByCreatedAtAsc(Long questionId, Pageable pageable);
+    @Query("SELECT a FROM InterviewAnswer a WHERE a.question.id = :questionId AND (a.isHidden = false OR a.isHidden IS NULL) ORDER BY a.createdAt ASC")
+    Page<InterviewAnswer> findByQuestionIdOrderByCreatedAtAsc(@Param("questionId") Long questionId, Pageable pageable);
 
     /**
      * 특정 질문의 답변 목록 (특정 ID 제외, 오래된순, 페이징)
      */
-    Page<InterviewAnswer> findByQuestionIdAndIdNotInOrderByCreatedAtAsc(Long questionId, List<Long> excludeIds, Pageable pageable);
+    @Query("SELECT a FROM InterviewAnswer a WHERE a.question.id = :questionId AND a.id NOT IN :excludeIds AND (a.isHidden = false OR a.isHidden IS NULL) ORDER BY a.createdAt ASC")
+    Page<InterviewAnswer> findByQuestionIdAndIdNotInOrderByCreatedAtAsc(@Param("questionId") Long questionId, @Param("excludeIds") List<Long> excludeIds, Pageable pageable);
 
     /**
      * 특정 질문의 답변 목록 (상위 3개 좋아요순 우선, 나머지 오래된순)
      */
     @Query("""
         SELECT a FROM InterviewAnswer a
-        WHERE a.question.id = :questionId
+        WHERE a.question.id = :questionId AND (a.isHidden = false OR a.isHidden IS NULL)
         ORDER BY
             CASE WHEN a.id IN :top3Ids THEN 0 ELSE 1 END,
             CASE WHEN a.id IN :top3Ids THEN a.likeCount ELSE 0 END DESC,
@@ -46,12 +49,14 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     /**
      * 특정 질문의 답변 개수
      */
-    long countByQuestionId(Long questionId);
+    @Query("SELECT COUNT(a) FROM InterviewAnswer a WHERE a.question.id = :questionId AND (a.isHidden = false OR a.isHidden IS NULL)")
+    long countByQuestionId(@Param("questionId") Long questionId);
 
     /**
      * 특정 회원의 답변 개수
      */
-    long countByMemberId(Long memberId);
+    @Query("SELECT COUNT(a) FROM InterviewAnswer a WHERE a.member.id = :memberId AND (a.isHidden = false OR a.isHidden IS NULL)")
+    long countByMemberId(@Param("memberId") Long memberId);
 
     /**
      * 좋아요 10개 이상 답변 중 상위 3개 (베스트 답변자 선정용)
@@ -60,7 +65,7 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     @Query("""
         SELECT a.id, a.member.id, a.likeCount
         FROM InterviewAnswer a
-        WHERE a.likeCount >= 10
+        WHERE a.likeCount >= 10 AND (a.isHidden = false OR a.isHidden IS NULL)
         ORDER BY a.likeCount DESC
         """)
     List<Object[]> findTopAnswersByLikeCount();
@@ -75,7 +80,7 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
      */
     @Query("""
         SELECT a.id FROM InterviewAnswer a
-        WHERE a.question.id = :questionId
+        WHERE a.question.id = :questionId AND (a.isHidden = false OR a.isHidden IS NULL)
         ORDER BY a.likeCount DESC, a.createdAt ASC
         """)
     List<Long> findTop3AnswerIdsByQuestionId(@Param("questionId") Long questionId, Pageable pageable);
@@ -87,7 +92,7 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     @Query("""
         SELECT a.question.id, COUNT(a) as cnt
         FROM InterviewAnswer a
-        WHERE a.createdAt >= :since
+        WHERE a.createdAt >= :since AND (a.isHidden = false OR a.isHidden IS NULL)
         GROUP BY a.question.id
         ORDER BY cnt DESC
         """)
@@ -134,7 +139,7 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     /**
      * 특정 회원이 받은 총 좋아요 수 (모든 답변의 likeCount 합계)
      */
-    @Query("SELECT COALESCE(SUM(a.likeCount), 0) FROM InterviewAnswer a WHERE a.member.id = :memberId")
+    @Query("SELECT COALESCE(SUM(a.likeCount), 0) FROM InterviewAnswer a WHERE a.member.id = :memberId AND (a.isHidden = false OR a.isHidden IS NULL)")
     int sumLikeCountByMemberId(@Param("memberId") Long memberId);
 
     // ===== 랭킹용 쿼리 =====
@@ -146,6 +151,7 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
         SELECT a.member.id, a.member.name, a.member.avatarUrl, COUNT(a) as cnt,
                a.member.position, a.member.branch, a.member.classroom, a.member.cohort
         FROM InterviewAnswer a
+        WHERE (a.isHidden = false OR a.isHidden IS NULL)
         GROUP BY a.member.id, a.member.name, a.member.avatarUrl,
                  a.member.position, a.member.branch, a.member.classroom, a.member.cohort
         ORDER BY cnt DESC, MIN(a.createdAt) ASC
@@ -159,6 +165,7 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
         SELECT a.member.id, a.member.name, a.member.avatarUrl, SUM(a.likeCount) as totalLikes,
                a.member.position, a.member.branch, a.member.classroom, a.member.cohort
         FROM InterviewAnswer a
+        WHERE (a.isHidden = false OR a.isHidden IS NULL)
         GROUP BY a.member.id, a.member.name, a.member.avatarUrl,
                  a.member.position, a.member.branch, a.member.classroom, a.member.cohort
         HAVING SUM(a.likeCount) > 0
@@ -173,7 +180,7 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
         SELECT a.member.id, a.member.name, a.member.avatarUrl, COUNT(a) as cnt,
                a.member.githubUsername
         FROM InterviewAnswer a
-        WHERE a.createdAt >= :start AND a.createdAt < :end
+        WHERE a.createdAt >= :start AND a.createdAt < :end AND (a.isHidden = false OR a.isHidden IS NULL)
         GROUP BY a.member.id, a.member.name, a.member.avatarUrl, a.member.githubUsername
         ORDER BY cnt DESC, MIN(a.createdAt) ASC
         """)
@@ -188,8 +195,13 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     @Query("""
         SELECT a.question.id, COUNT(a) as cnt
         FROM InterviewAnswer a
+        WHERE (a.isHidden = false OR a.isHidden IS NULL)
         GROUP BY a.question.id
         ORDER BY cnt DESC
         """)
     List<Object[]> findTopQuestionsByAnswerCount(Pageable pageable);
+
+    // 관리자용: 전체 면접답변 조회
+    @Query("SELECT a FROM InterviewAnswer a JOIN FETCH a.member JOIN FETCH a.question ORDER BY a.createdAt DESC")
+    List<InterviewAnswer> findAllWithMemberAndQuestion();
 }

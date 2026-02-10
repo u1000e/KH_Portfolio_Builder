@@ -2,8 +2,10 @@ package com.portfolio.builder.admin.presentation;
 
 import com.portfolio.builder.admin.application.AdminService;
 import com.portfolio.builder.comment.dto.CommentResponse;
+import com.portfolio.builder.interview.dto.InterviewAnswerResponse;
 import com.portfolio.builder.member.dto.MemberResponse;
 import com.portfolio.builder.portfolio.dto.PortfolioResponse;
+import com.portfolio.builder.til.dto.TILResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -139,6 +141,23 @@ public class AdminController {
         return ResponseEntity.ok(adminService.togglePortfolioVisibility(id));
     }
 
+    // === TIL 관리 ===
+    @GetMapping("/tils")
+    public ResponseEntity<List<TILResponse>> getAllTILs(
+            @RequestAttribute(name = "memberId") Long memberId) {
+        adminService.validateAdmin(memberId);
+        return ResponseEntity.ok(adminService.getAllTILs());
+    }
+
+    @PutMapping("/tils/{id}/visibility")
+    public ResponseEntity<Void> toggleTILVisibility(
+            @RequestAttribute(name = "memberId") Long memberId,
+            @PathVariable("id") Long id) {
+        adminService.validateAdmin(memberId);
+        adminService.toggleTILVisibility(id);
+        return ResponseEntity.ok().build();
+    }
+
     // === 댓글 관리 ===
     @GetMapping("/comments")
     public ResponseEntity<List<CommentResponse>> getAllComments(
@@ -154,6 +173,32 @@ public class AdminController {
         adminService.validateAdmin(memberId);
         adminService.deleteComment(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/comments/{id}/visibility")
+    public ResponseEntity<Void> toggleCommentVisibility(
+            @RequestAttribute(name = "memberId") Long memberId,
+            @PathVariable("id") Long id) {
+        adminService.validateAdmin(memberId);
+        adminService.toggleCommentVisibility(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // === 면접답변 관리 ===
+    @GetMapping("/interview-answers")
+    public ResponseEntity<List<InterviewAnswerResponse>> getAllInterviewAnswers(
+            @RequestAttribute(name = "memberId") Long memberId) {
+        adminService.validateAdmin(memberId);
+        return ResponseEntity.ok(adminService.getAllInterviewAnswers());
+    }
+
+    @PutMapping("/interview-answers/{id}/visibility")
+    public ResponseEntity<Void> toggleInterviewAnswerVisibility(
+            @RequestAttribute(name = "memberId") Long memberId,
+            @PathVariable("id") Long id) {
+        adminService.validateAdmin(memberId);
+        adminService.toggleInterviewAnswerVisibility(id);
+        return ResponseEntity.ok().build();
     }
 
     // === 통계 ===

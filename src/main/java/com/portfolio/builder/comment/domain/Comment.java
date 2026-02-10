@@ -36,6 +36,9 @@ public class Comment {
     @Builder.Default
     private Boolean isRead = false;  // 포폴 주인이 읽었는지
 
+    @Builder.Default
+    private Boolean isHidden = false;
+
     public void markAsRead() {
         this.isRead = true;
     }

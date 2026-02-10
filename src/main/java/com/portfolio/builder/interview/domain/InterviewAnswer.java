@@ -36,6 +36,9 @@ public class InterviewAnswer {
     @Column(nullable = false)
     private int likeCount = 0;
 
+    @Builder.Default
+    private Boolean isHidden = false;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

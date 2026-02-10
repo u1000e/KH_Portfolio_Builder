@@ -26,6 +26,7 @@ public class TILResponse {
     private Integer likeCount;
     private Boolean isLiked;
     private Boolean isPublic;
+    private Boolean isHidden;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -57,6 +58,7 @@ public class TILResponse {
                 .likeCount(til.getLikeCount() != null ? til.getLikeCount() : 0)
                 .isLiked(isLiked)
                 .isPublic(til.getIsPublic())
+                .isHidden(til.getIsHidden())
                 .createdAt(til.getCreatedAt())
                 .updatedAt(til.getUpdatedAt())
                 .memberId(member.getId())

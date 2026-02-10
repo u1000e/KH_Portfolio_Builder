@@ -54,6 +54,9 @@ public class TIL {
     private Boolean isPublic = true;
 
     @Builder.Default
+    private Boolean isHidden = false;
+
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt;

@@ -21,6 +21,7 @@ public class InterviewAnswerResponse {
     private int likeCount;
     private boolean isLiked;      // 현재 사용자가 좋아요 했는지
     private boolean isOwner;      // 현재 사용자의 답변인지
+    private boolean isHidden;
     private int rank;             // 좋아요 순위 (1, 2, 3위만 설정, 나머지 0)
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

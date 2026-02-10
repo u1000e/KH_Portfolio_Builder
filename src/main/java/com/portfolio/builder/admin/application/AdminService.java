@@ -6,8 +6,10 @@ import com.portfolio.builder.comment.domain.CommentRepository;
 import com.portfolio.builder.comment.domain.WeeklyReviewerRepository;
 import com.portfolio.builder.comment.dto.CommentResponse;
 import com.portfolio.builder.feedback.domain.FeedbackRepository;
+import com.portfolio.builder.interview.domain.InterviewAnswer;
 import com.portfolio.builder.interview.domain.InterviewAnswerLikeRepository;
 import com.portfolio.builder.interview.domain.InterviewAnswerRepository;
+import com.portfolio.builder.interview.dto.InterviewAnswerResponse;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.member.dto.MemberResponse;
@@ -19,6 +21,9 @@ import com.portfolio.builder.portfolio.dto.PortfolioResponse;
 import com.portfolio.builder.quiz.repository.BadgeRepository;
 import com.portfolio.builder.quiz.repository.QuizAttemptRepository;
 import com.portfolio.builder.quiz.repository.QuizStreakRepository;
+import com.portfolio.builder.til.domain.TIL;
+import com.portfolio.builder.til.domain.TILRepository;
+import com.portfolio.builder.til.dto.TILResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -48,6 +53,7 @@ public class AdminService {
     private final InterviewAnswerLikeRepository interviewAnswerLikeRepository;
     private final WeeklyReviewerRepository weeklyReviewerRepository;
     private final ActivityFeedRepository activityFeedRepository;
+    private final TILRepository tilRepository;
 
     // 관리자 권한 확인
     public void validateAdmin(Long memberId) {
@@ -225,6 +231,64 @@ public class AdminService {
         
         commentRepository.delete(comment);
         log.info("Comment {} deleted by admin", commentId);
+    }
+
+    // === TIL 관리 ===
+    @Transactional(readOnly = true)
+    public List<TILResponse> getAllTILs() {
+        return tilRepository.findAllWithMember()
+                .stream()
+                .map(til -> TILResponse.from(til, null, false))
+                .collect(Collectors.toList());
+    }
+
+    public void toggleTILVisibility(Long tilId) {
+        TIL til = tilRepository.findById(tilId)
+                .orElseThrow(() -> new RuntimeException("TIL not found"));
+        til.setIsHidden(!Boolean.TRUE.equals(til.getIsHidden()));
+        tilRepository.save(til);
+        log.info("TIL {} hidden toggled to {}", tilId, til.getIsHidden());
+    }
+
+    // === 댓글 숨김 토글 ===
+    public void toggleCommentVisibility(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+        comment.setIsHidden(!Boolean.TRUE.equals(comment.getIsHidden()));
+        commentRepository.save(comment);
+        log.info("Comment {} hidden toggled to {}", commentId, comment.getIsHidden());
+    }
+
+    // === 면접답변 관리 ===
+    @Transactional(readOnly = true)
+    public List<InterviewAnswerResponse> getAllInterviewAnswers() {
+        return interviewAnswerRepository.findAllWithMemberAndQuestion()
+                .stream()
+                .map(answer -> {
+                    com.portfolio.builder.member.domain.Member member = answer.getMember();
+                    String displayName = member.getName() != null ? member.getName() : member.getGithubUsername();
+                    return InterviewAnswerResponse.builder()
+                            .id(answer.getId())
+                            .questionId(answer.getQuestion().getId())
+                            .memberId(member.getId())
+                            .memberName(displayName)
+                            .memberAvatarUrl(member.getAvatarUrl())
+                            .content(answer.getContent())
+                            .likeCount(answer.getLikeCount())
+                            .isHidden(Boolean.TRUE.equals(answer.getIsHidden()))
+                            .createdAt(answer.getCreatedAt())
+                            .updatedAt(answer.getUpdatedAt())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    public void toggleInterviewAnswerVisibility(Long answerId) {
+        InterviewAnswer answer = interviewAnswerRepository.findById(answerId)
+                .orElseThrow(() -> new RuntimeException("Interview answer not found"));
+        answer.setIsHidden(!Boolean.TRUE.equals(answer.getIsHidden()));
+        interviewAnswerRepository.save(answer);
+        log.info("Interview answer {} hidden toggled to {}", answerId, answer.getIsHidden());
     }
 
     // === 직급 신청 관리 ===

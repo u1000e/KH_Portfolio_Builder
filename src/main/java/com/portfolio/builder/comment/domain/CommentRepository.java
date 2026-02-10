@@ -15,7 +15,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findByPortfolioOrderByCreatedAtAsc(Portfolio portfolio);
 
-    @Query("SELECT c FROM Comment c JOIN FETCH c.member WHERE c.portfolio = :portfolio ORDER BY c.createdAt ASC")
+    @Query("SELECT c FROM Comment c JOIN FETCH c.member WHERE c.portfolio = :portfolio AND (c.isHidden = false OR c.isHidden IS NULL) ORDER BY c.createdAt ASC")
     List<Comment> findByPortfolioWithMember(@Param("portfolio") Portfolio portfolio);
 
     @Query("SELECT c FROM Comment c JOIN FETCH c.member JOIN FETCH c.portfolio ORDER BY c.createdAt DESC")
@@ -36,13 +36,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     /**
      * 특정 회원이 받은 총 댓글 수 (모든 포트폴리오 합산, 본인 댓글 제외)
      */
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.portfolio.member.id = :memberId AND c.member.id != :memberId")
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.portfolio.member.id = :memberId AND c.member.id != :memberId AND (c.isHidden = false OR c.isHidden IS NULL)")
     int countCommentsReceivedByMemberId(@Param("memberId") Long memberId);
 
     /**
      * 특정 회원이 작성한 총 댓글 수 (본인 포트폴리오 제외)
      */
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.member.id = :memberId AND c.portfolio.member.id != :memberId")
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.member.id = :memberId AND c.portfolio.member.id != :memberId AND (c.isHidden = false OR c.isHidden IS NULL)")
     int countCommentsGivenByMemberId(@Param("memberId") Long memberId);
 
     // ===== 랭킹용 쿼리 =====
@@ -54,7 +54,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
         SELECT c.member.id, c.member.name, c.member.avatarUrl, COUNT(c) as cnt,
                c.member.position, c.member.branch, c.member.classroom, c.member.cohort
         FROM Comment c
-        WHERE c.member.id != c.portfolio.member.id
+        WHERE c.member.id != c.portfolio.member.id AND (c.isHidden = false OR c.isHidden IS NULL)
         GROUP BY c.member.id, c.member.name, c.member.avatarUrl,
                  c.member.position, c.member.branch, c.member.classroom, c.member.cohort
         ORDER BY cnt DESC, MIN(c.createdAt) ASC
@@ -69,7 +69,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
         SELECT c.member.id, COUNT(c) as cnt
         FROM Comment c
         WHERE c.createdAt >= :startTime AND c.createdAt < :endTime
-        AND c.member.id != c.portfolio.member.id
+        AND c.member.id != c.portfolio.member.id AND (c.isHidden = false OR c.isHidden IS NULL)
         GROUP BY c.member.id
         HAVING COUNT(c) >= 3
         ORDER BY cnt DESC
@@ -84,14 +84,14 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
      * 회원이 받은 읽지 않은 댓글 수 (자기 댓글 제외)
      * NULL도 읽지 않은 것으로 처리
      */
-    @Query("SELECT COUNT(c) FROM Comment c WHERE c.portfolio.member.id = :memberId AND c.member.id != :memberId AND (c.isRead = false OR c.isRead IS NULL)")
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.portfolio.member.id = :memberId AND c.member.id != :memberId AND (c.isHidden = false OR c.isHidden IS NULL) AND (c.isRead = false OR c.isRead IS NULL)")
     long countUnreadByMemberId(@Param("memberId") Long memberId);
 
     /**
      * 특정 포폴의 읽지 않은 댓글들 조회
      * NULL도 읽지 않은 것으로 처리
      */
-    @Query("SELECT c FROM Comment c WHERE c.portfolio.id = :portfolioId AND (c.isRead = false OR c.isRead IS NULL)")
+    @Query("SELECT c FROM Comment c WHERE c.portfolio.id = :portfolioId AND (c.isHidden = false OR c.isHidden IS NULL) AND (c.isRead = false OR c.isRead IS NULL)")
     List<Comment> findUnreadByPortfolioId(@Param("portfolioId") Long portfolioId);
 
     /**
@@ -99,12 +99,12 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
      * NULL도 읽지 않은 것으로 처리
      */
     @Modifying
-    @Query("UPDATE Comment c SET c.isRead = true WHERE c.portfolio.id = :portfolioId AND (c.isRead = false OR c.isRead IS NULL)")
+    @Query("UPDATE Comment c SET c.isRead = true WHERE c.portfolio.id = :portfolioId AND (c.isHidden = false OR c.isHidden IS NULL) AND (c.isRead = false OR c.isRead IS NULL)")
     int markAllAsReadByPortfolioId(@Param("portfolioId") Long portfolioId);
 
     /**
      * 회원이 받은 댓글 목록 (최신순, 자기 댓글 제외)
      */
-    @Query("SELECT c FROM Comment c JOIN FETCH c.member JOIN FETCH c.portfolio WHERE c.portfolio.member.id = :memberId AND c.member.id != :memberId ORDER BY c.createdAt DESC")
+    @Query("SELECT c FROM Comment c JOIN FETCH c.member JOIN FETCH c.portfolio WHERE c.portfolio.member.id = :memberId AND c.member.id != :memberId AND (c.isHidden = false OR c.isHidden IS NULL) ORDER BY c.createdAt DESC")
     List<Comment> findReceivedByMemberId(@Param("memberId") Long memberId);
 }

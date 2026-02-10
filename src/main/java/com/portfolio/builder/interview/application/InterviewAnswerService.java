@@ -229,6 +229,7 @@ public class InterviewAnswerService {
                 .likeCount(answer.getLikeCount())
                 .isLiked(isLiked)
                 .isOwner(isOwner)
+                .isHidden(Boolean.TRUE.equals(answer.getIsHidden()))
                 .createdAt(answer.getCreatedAt())
                 .updatedAt(answer.getUpdatedAt())
                 .build();
