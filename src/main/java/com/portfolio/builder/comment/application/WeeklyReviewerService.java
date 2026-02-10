@@ -8,6 +8,7 @@ import com.portfolio.builder.comment.dto.WeeklyRankingResponse;
 import com.portfolio.builder.comment.dto.WeeklyReviewerResponse;
 import com.portfolio.builder.feedback.domain.FeedbackRepository;
 import com.portfolio.builder.interview.domain.InterviewAnswerRepository;
+import com.portfolio.builder.til.domain.TILRepository;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.quiz.repository.QuizAttemptRepository;
@@ -41,6 +42,7 @@ public class WeeklyReviewerService {
     private final QuizAttemptRepository quizAttemptRepository;
     private final InterviewAnswerRepository interviewAnswerRepository;
     private final FeedbackRepository feedbackRepository;
+    private final TILRepository tilRepository;
 
     // 순위별 배지 ID
     private static final String[] BADGE_IDS = {
@@ -210,6 +212,23 @@ public class WeeklyReviewerService {
                     .avatarUrl((String) row[2])
                     .count(((Long) row[3]).intValue())
                     .countLabel(row[3] + "반영")
+                    .build());
+        }
+
+        // 공부왕
+        List<Object[]> tilTop = tilRepository.findWeeklyTopTilWriter(start, end);
+        if (!tilTop.isEmpty()) {
+            Object[] row = tilTop.get(0);
+            String name = row[1] != null ? (String) row[1] : (String) row[4];
+            rankings.add(WeeklyRankingResponse.builder()
+                    .category("TIL")
+                    .title("공부왕")
+                    .emoji("📝")
+                    .memberId((Long) row[0])
+                    .nickname(name)
+                    .avatarUrl((String) row[2])
+                    .count(((Long) row[3]).intValue())
+                    .countLabel(row[3] + "TIL")
                     .build());
         }
 

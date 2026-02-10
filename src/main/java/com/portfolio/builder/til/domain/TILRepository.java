@@ -96,6 +96,19 @@ public interface TILRepository extends JpaRepository<TIL, Long> {
     @Query("SELECT m.id, m.name, m.avatarUrl, m.githubUsername, COUNT(t) as tilCount, MAX(t.createdAt) as lastTilDate FROM TIL t JOIN t.member m WHERE (t.isHidden = false OR t.isHidden IS NULL) AND m.branch = :branch AND m.classroom = :classroom AND m.cohort = :cohort GROUP BY m.id, m.name, m.avatarUrl, m.githubUsername ORDER BY tilCount DESC")
     List<Object[]> findTilStatsByClass(@Param("branch") String branch, @Param("classroom") String classroom, @Param("cohort") String cohort);
 
+    // 주간 공부왕 (주간 TIL 작성 수 TOP 1)
+    @Query("""
+        SELECT t.member.id, t.member.name, t.member.avatarUrl, COUNT(t) as cnt,
+               t.member.githubUsername
+        FROM TIL t
+        WHERE t.createdAt >= :start AND t.createdAt < :end AND (t.isHidden = false OR t.isHidden IS NULL)
+        GROUP BY t.member.id, t.member.name, t.member.avatarUrl, t.member.githubUsername
+        ORDER BY cnt DESC, MIN(t.createdAt) ASC
+        """)
+    List<Object[]> findWeeklyTopTilWriter(
+            @Param("start") java.time.LocalDateTime start,
+            @Param("end") java.time.LocalDateTime end);
+
     // 관리자용: 전체 TIL 조회
     @Query("SELECT t FROM TIL t JOIN FETCH t.member ORDER BY t.createdAt DESC")
     List<TIL> findAllWithMember();
