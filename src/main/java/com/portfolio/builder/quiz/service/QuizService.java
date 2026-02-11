@@ -239,10 +239,14 @@ public class QuizService {
 
         double[] levelData = calculateLevel(streak.getTotalQuizCount(), Math.round(totalAccuracy * 10) / 10.0, reviewCount, streak.getMaxStreak(), likesGiven, commentsGiven, answerCount, tilCount);
 
+        // 표시용 총 문제수: 오답노트 포함 전체 시도 횟수
+        Long displayTotalCount = quizAttemptRepository.countByMemberId(memberId);
+        if (displayTotalCount == null) displayTotalCount = 0L;
+
         return StatsResponse.builder()
                 .currentStreak(streak.getCurrentStreak())
                 .maxStreak(streak.getMaxStreak())
-                .totalQuizCount(streak.getTotalQuizCount())
+                .totalQuizCount(displayTotalCount.intValue())
                 .correctCount(streak.getCorrectCount())
                 .accuracy(Math.round(totalAccuracy * 10) / 10.0)
                 .categoryStats(categoryStats)
@@ -521,16 +525,15 @@ public class QuizService {
                 return getTilCountRanking(memberId, limit, currentMember);
             case "til_likes":
                 return getTilLikesRanking(memberId, limit, currentMember);
+            case "total":
+                return getTotalAttemptRanking(memberId, limit, currentMember);
         }
-        
+
         List<QuizStreak> streaks;
-        
+
         switch (type) {
             case "accuracy":
                 streaks = quizStreakRepository.findTopByAccuracy(10);
-                break;
-            case "total":
-                streaks = quizStreakRepository.findTopByTotalQuizCount();
                 break;
             case "streak":
             default:
@@ -783,6 +786,53 @@ public class QuizService {
             }
         }
         
+        return RankingResponse.builder()
+                .rankings(rankings)
+                .myRanking(myRanking)
+                .build();
+    }
+
+    /**
+     * 📚 총 학습 랭킹 (오답노트 포함 전체 시도 횟수)
+     */
+    private RankingResponse getTotalAttemptRanking(Long memberId, int limit, Member currentMember) {
+        List<Object[]> results = quizAttemptRepository.findTopByTotalAttemptCount();
+
+        if (currentMember != null) {
+            results = results.stream()
+                    .filter(row -> isSameClassFromArray(row, currentMember))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        List<RankingEntry> rankings = new ArrayList<>();
+        RankingEntry myRanking = null;
+
+        for (int i = 0; i < results.size(); i++) {
+            Object[] row = results.get(i);
+            Long rowMemberId = (Long) row[0];
+            String name = (String) row[1];
+            String avatarUrl = (String) row[2];
+            Long totalCount = (Long) row[3];
+
+            RankingEntry entry = RankingEntry.builder()
+                    .rank(i + 1)
+                    .memberId(rowMemberId)
+                    .nickname(name)
+                    .avatarUrl(avatarUrl)
+                    .position(buildPositionStringFromArray(row))
+                    .value(totalCount.intValue())
+                    .displayValue(totalCount + "문제")
+                    .build();
+
+            if (i < limit) {
+                rankings.add(entry);
+            }
+
+            if (rowMemberId.equals(memberId)) {
+                myRanking = entry;
+            }
+        }
+
         return RankingResponse.builder()
                 .rankings(rankings)
                 .myRanking(myRanking)
@@ -1383,6 +1433,10 @@ public class QuizService {
             accuracyRate = Math.round(streak.getCorrectCount() * 1000.0 / streak.getTotalQuizCount()) / 10.0;
         }
 
+        // 표시용 총 문제수: 오답노트 포함 전체 시도 횟수
+        Long displayTotalCount = quizAttemptRepository.countByMemberId(memberId);
+        int displayTotal = displayTotalCount != null ? displayTotalCount.intValue() : 0;
+
         // 2. 배지 수
         int earnedBadgeCount = (int) badgeRepository.countByMemberId(memberId);
 
@@ -1616,7 +1670,7 @@ public class QuizService {
                 .level(level)
                 .tierName(tierName)
                 .tierEmoji(tierEmoji)
-                .totalQuizCount(totalQuizCount)
+                .totalQuizCount(displayTotal)
                 .maxStreak(maxStreak)
                 .accuracyRate(accuracyRate)
                 .earnedBadgeCount(earnedBadgeCount)

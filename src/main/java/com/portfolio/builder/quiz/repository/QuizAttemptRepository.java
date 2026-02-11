@@ -108,6 +108,17 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
         """)
     List<Object[]> findTopByReviewCount();
 
+    // 총 학습 랭킹 (오답노트 포함 전체 시도 횟수)
+    @Query("""
+        SELECT qa.member.id, qa.member.name, qa.member.avatarUrl, COUNT(qa) as totalCount,
+               qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
+        FROM QuizAttempt qa
+        GROUP BY qa.member.id, qa.member.name, qa.member.avatarUrl,
+                 qa.member.position, qa.member.branch, qa.member.classroom, qa.member.cohort
+        ORDER BY totalCount DESC, MIN(qa.createdAt) ASC
+        """)
+    List<Object[]> findTopByTotalAttemptCount();
+
     // 특정 날짜에 사용자가 맞은 문제 수 (복습 모드 제외 - 완벽한 하루 배지용)
     @Query("SELECT COUNT(qa) FROM QuizAttempt qa WHERE qa.member.id = :memberId AND qa.attemptDate = :date AND qa.isCorrect = true AND (qa.isReviewMode = false OR qa.isReviewMode IS NULL)")
     Long countTodayCorrectByMemberId(@Param("memberId") Long memberId, @Param("date") LocalDate date);
