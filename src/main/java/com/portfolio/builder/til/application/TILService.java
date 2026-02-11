@@ -9,6 +9,8 @@ import com.portfolio.builder.til.domain.TIL;
 import com.portfolio.builder.til.domain.TILLike;
 import com.portfolio.builder.til.domain.TILLikeRepository;
 import com.portfolio.builder.til.domain.TILRepository;
+import com.portfolio.builder.til.domain.TILBoosterRepository;
+import com.portfolio.builder.til.dto.TILBoosterData;
 import com.portfolio.builder.til.dto.TILRequest;
 import com.portfolio.builder.til.dto.TILResponse;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,8 @@ public class TILService {
     private final ProfanityFilterService profanityFilterService;
     private final BadgeService badgeService;
     private final BorderService borderService;
+    private final TILBoosterService tilBoosterService;
+    private final TILBoosterRepository tilBoosterRepository;
 
     public TILResponse createTIL(Long memberId, TILRequest request) {
         Member member = memberRepository.findById(memberId)
@@ -64,7 +68,8 @@ public class TILService {
         long tilCount = tilRepository.countByMemberId(memberId);
         checkTILBadges(memberId, tilCount);
 
-        return TILResponse.from(saved, memberId, false);
+        TILBoosterData booster = tilBoosterService.generateAndSave(saved);
+        return TILResponse.from(saved, memberId, false, booster);
     }
 
     @Transactional(readOnly = true)
@@ -102,10 +107,13 @@ public class TILService {
             }
         }
 
+        List<Long> tilIds = tils.stream().map(TIL::getId).collect(Collectors.toList());
+        Map<Long, TILBoosterData> boosterMap = tilBoosterService.getBoosterDataBatch(tilIds);
+
         return tils.stream()
                 .map(til -> {
                     boolean isLiked = tilLikeRepository.existsByTilIdAndMemberId(til.getId(), memberId);
-                    return TILResponse.from(til, memberId, isLiked);
+                    return TILResponse.from(til, memberId, isLiked, boosterMap.get(til.getId()));
                 })
                 .collect(Collectors.toList());
     }
@@ -148,18 +156,22 @@ public class TILService {
         } else {
             tils = tilRepository.findAllByClassOrderByCreatedAtDesc(branch, classroom, cohort);
         }
+        List<Long> tilIds = tils.stream().map(TIL::getId).collect(Collectors.toList());
+        Map<Long, TILBoosterData> boosterMap = tilBoosterService.getBoosterDataBatch(tilIds);
         return tils.stream()
-                .map(til -> TILResponse.from(til, memberId, false))
+                .map(til -> TILResponse.from(til, memberId, false, boosterMap.get(til.getId())))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<TILResponse> getMyTILs(Long memberId) {
-        return tilRepository.findByMemberIdOrderByCreatedAtDesc(memberId)
-                .stream()
+        List<TIL> tils = tilRepository.findByMemberIdOrderByCreatedAtDesc(memberId);
+        List<Long> tilIds = tils.stream().map(TIL::getId).collect(Collectors.toList());
+        Map<Long, TILBoosterData> boosterMap = tilBoosterService.getBoosterDataBatch(tilIds);
+        return tils.stream()
                 .map(til -> {
                     boolean isLiked = tilLikeRepository.existsByTilIdAndMemberId(til.getId(), memberId);
-                    return TILResponse.from(til, memberId, isLiked);
+                    return TILResponse.from(til, memberId, isLiked, boosterMap.get(til.getId()));
                 })
                 .collect(Collectors.toList());
     }
@@ -169,7 +181,8 @@ public class TILService {
         TIL til = tilRepository.findById(tilId)
                 .orElseThrow(() -> new RuntimeException("TIL을 찾을 수 없습니다."));
         boolean isLiked = tilLikeRepository.existsByTilIdAndMemberId(tilId, memberId);
-        return TILResponse.from(til, memberId, isLiked);
+        TILBoosterData booster = tilBoosterService.getBoosterData(tilId);
+        return TILResponse.from(til, memberId, isLiked, booster);
     }
 
     public TILResponse updateTIL(Long tilId, Long memberId, TILRequest request) {
@@ -198,8 +211,9 @@ public class TILService {
             til.setIsPublic(request.getIsPublic());
         }
 
+        TILBoosterData booster = tilBoosterService.generateAndSave(til);
         boolean isLiked = tilLikeRepository.existsByTilIdAndMemberId(tilId, memberId);
-        return TILResponse.from(til, memberId, isLiked);
+        return TILResponse.from(til, memberId, isLiked, booster);
     }
 
     public void deleteTIL(Long tilId, Long memberId) {
@@ -210,6 +224,7 @@ public class TILService {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
 
+        tilBoosterRepository.deleteByTilId(tilId);
         tilLikeRepository.deleteAllByTilId(tilId);
         tilRepository.delete(til);
         log.info("TIL deleted: {} by member: {}", tilId, memberId);
@@ -248,17 +263,21 @@ public class TILService {
     @Transactional(readOnly = true)
     public List<TILResponse> getRecentTILsForPortfolio(Long memberId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        return tilRepository.findRecentByMemberId(memberId, pageable)
-                .stream()
-                .map(til -> TILResponse.from(til, memberId, false))
+        List<TIL> tils = tilRepository.findRecentByMemberId(memberId, pageable);
+        List<Long> tilIds = tils.stream().map(TIL::getId).collect(Collectors.toList());
+        Map<Long, TILBoosterData> boosterMap = tilBoosterService.getBoosterDataBatch(tilIds);
+        return tils.stream()
+                .map(til -> TILResponse.from(til, memberId, false, boosterMap.get(til.getId())))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<TILResponse> getPublicTILsByMemberId(Long memberId) {
-        return tilRepository.findAllPublicByMemberId(memberId)
-                .stream()
-                .map(til -> TILResponse.from(til, null, false))
+        List<TIL> tils = tilRepository.findAllPublicByMemberId(memberId);
+        List<Long> tilIds = tils.stream().map(TIL::getId).collect(Collectors.toList());
+        Map<Long, TILBoosterData> boosterMap = tilBoosterService.getBoosterDataBatch(tilIds);
+        return tils.stream()
+                .map(til -> TILResponse.from(til, null, false, boosterMap.get(til.getId())))
                 .collect(Collectors.toList());
     }
 

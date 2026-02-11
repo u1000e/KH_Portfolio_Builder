@@ -39,7 +39,13 @@ public class TILResponse {
 
     private Boolean isOwner;
 
+    private TILBoosterData booster;
+
     public static TILResponse from(TIL til, Long currentMemberId, boolean isLiked) {
+        return from(til, currentMemberId, isLiked, null);
+    }
+
+    public static TILResponse from(TIL til, Long currentMemberId, boolean isLiked, TILBoosterData booster) {
         Member member = til.getMember();
         List<String> tagList = til.getTags() != null && !til.getTags().isEmpty()
                 ? Arrays.asList(til.getTags().split(","))
@@ -68,6 +74,7 @@ public class TILResponse {
                 .branch(member.getBranch())
                 .classroom(member.getClassroom())
                 .isOwner(member.getId().equals(currentMemberId))
+                .booster(booster)
                 .build();
     }
 }
