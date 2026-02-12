@@ -55,6 +55,10 @@ public class Troubleshooting {
     @Column(length = 30)
     private String codeLanguage;
 
+    @Column(name = "display_order")
+    @Builder.Default
+    private Integer displayOrder = 0;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 

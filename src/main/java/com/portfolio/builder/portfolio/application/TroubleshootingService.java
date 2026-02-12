@@ -25,10 +25,34 @@ public class TroubleshootingService {
     
     private static final int MAX_TROUBLESHOOTINGS = 3;
 
+    // 트러블슈팅 순서 변경
+    public void reorderTroubleshootings(Long memberId, Long portfolioId, List<Long> orderedIds) {
+        Portfolio portfolio = portfolioRepository.findById(portfolioId)
+                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+
+        if (!portfolio.getMember().getId().equals(memberId)) {
+            throw new RuntimeException("Access denied");
+        }
+
+        List<Troubleshooting> troubleshootings = troubleshootingRepository.findByPortfolioIdOrderByDisplayOrderAscCreatedAtDesc(portfolioId);
+
+        for (int i = 0; i < orderedIds.size(); i++) {
+            Long tsId = orderedIds.get(i);
+            int order = i;
+            troubleshootings.stream()
+                    .filter(t -> t.getId().equals(tsId))
+                    .findFirst()
+                    .ifPresent(t -> t.setDisplayOrder(order));
+        }
+
+        troubleshootingRepository.saveAll(troubleshootings);
+        log.info("Troubleshootings reordered: portfolioId={}, order={}", portfolioId, orderedIds);
+    }
+
     // 트러블슈팅 목록 조회
     @Transactional(readOnly = true)
     public List<TroubleshootingResponse> getTroubleshootings(Long portfolioId) {
-        return troubleshootingRepository.findByPortfolioIdOrderByCreatedAtDesc(portfolioId)
+        return troubleshootingRepository.findByPortfolioIdOrderByDisplayOrderAscCreatedAtDesc(portfolioId)
                 .stream()
                 .map(TroubleshootingResponse::from)
                 .collect(Collectors.toList());
@@ -67,6 +91,7 @@ public class TroubleshootingService {
                 .causeCode(request.getCauseCode())
                 .solutionCode(request.getSolutionCode())
                 .codeLanguage(request.getCodeLanguage())
+                .displayOrder(currentCount)
                 .build();
 
         Troubleshooting saved = troubleshootingRepository.save(troubleshooting);

@@ -45,6 +45,16 @@ public class TroubleshootingController {
         return ResponseEntity.ok(troubleshootingService.updateTroubleshooting(memberId, troubleshootingId, request));
     }
 
+    // 트러블슈팅 순서 변경
+    @PutMapping("/reorder")
+    public ResponseEntity<Void> reorderTroubleshootings(
+            @RequestAttribute(name = "memberId") Long memberId,
+            @PathVariable("portfolioId") Long portfolioId,
+            @RequestBody List<Long> orderedIds) {
+        troubleshootingService.reorderTroubleshootings(memberId, portfolioId, orderedIds);
+        return ResponseEntity.ok().build();
+    }
+
     // 트러블슈팅 삭제
     @DeleteMapping("/{troubleshootingId}")
     public ResponseEntity<Void> deleteTroubleshooting(

@@ -53,7 +53,7 @@ public class PortfolioEvaluationService {
         
         // 데이터 파싱
         PortfolioData data = parseData(portfolio.getData());
-        List<Troubleshooting> troubleshootings = troubleshootingRepository.findByPortfolioIdOrderByCreatedAtDesc(portfolioId);
+        List<Troubleshooting> troubleshootings = troubleshootingRepository.findByPortfolioIdOrderByDisplayOrderAscCreatedAtDesc(portfolioId);
         
         // 2. 규칙 기반 점수 계산 (130점 만점)
         ScoreResult completeness = ruleBasedScorer.calculateCompleteness(data);
