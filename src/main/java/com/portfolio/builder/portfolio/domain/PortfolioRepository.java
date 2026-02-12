@@ -63,4 +63,11 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     List<Portfolio> findByMemberId(@Param("memberId") Long memberId);
 
     long countByMember(Member member);
+
+    // 갤러리 통계용
+    @Query("SELECT COUNT(p) FROM Portfolio p WHERE p.member IS NOT NULL")
+    long countAllWithMember();
+
+    @Query("SELECT COUNT(p) FROM Portfolio p WHERE p.isPublic = true AND p.member IS NOT NULL")
+    long countPublicWithMember();
 }

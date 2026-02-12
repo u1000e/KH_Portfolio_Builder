@@ -548,9 +548,23 @@ public class PortfolioService {
     
     private String maskSchool(String school) {
         if (school == null || school.isEmpty()) return school;
-        
+
         // 앞 두 글자만 OO으로 치환
         if (school.length() <= 2) return "OO";
         return "OO" + school.substring(2);
+    }
+
+    // 갤러리 통계
+    @Transactional(readOnly = true)
+    public Map<String, Long> getGalleryStats() {
+        long totalCount = portfolioRepository.countAllWithMember();
+        long publicCount = portfolioRepository.countPublicWithMember();
+        long commentCount = commentRepository.count();
+        return Map.of(
+                "totalCount", totalCount,
+                "publicCount", publicCount,
+                "privateCount", totalCount - publicCount,
+                "commentCount", commentCount
+        );
     }
 }

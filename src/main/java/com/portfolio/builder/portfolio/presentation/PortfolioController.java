@@ -134,6 +134,12 @@ public class PortfolioController {
         return ResponseEntity.ok(portfolioService.getPublicPortfolio(id, memberId));
     }
 
+    // 갤러리 통계 (공개/비공개 포트폴리오 수)
+    @GetMapping("/public/stats")
+    public ResponseEntity<Map<String, Long>> getGalleryStats() {
+        return ResponseEntity.ok(portfolioService.getGalleryStats());
+    }
+
     // 좋아요 토글
     @PostMapping("/{id}/like")
     public ResponseEntity<Map<String, Object>> toggleLike(
