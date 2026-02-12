@@ -405,6 +405,24 @@ public class QuizService {
         return getWrongAnswers(memberId, category, "INTERVIEW");
     }
 
+    // 오답 목록 조회 (페이지네이션 - in-memory)
+    public Map<String, Object> getWrongAnswersPaged(Long memberId, String category, String quizType, int page, int size) {
+        List<WrongAnswerResponse> all = getWrongAnswers(memberId, category, quizType);
+        int totalElements = all.size();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int fromIndex = Math.min(page * size, totalElements);
+        int toIndex = Math.min(fromIndex + size, totalElements);
+        List<WrongAnswerResponse> content = all.subList(fromIndex, toIndex);
+
+        return Map.of(
+                "content", content,
+                "totalElements", totalElements,
+                "totalPages", totalPages,
+                "number", page,
+                "size", size
+        );
+    }
+
     /**
      * 오답 통계 조회 (퀴즈타입별)
      */

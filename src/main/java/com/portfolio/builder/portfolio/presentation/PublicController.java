@@ -8,6 +8,7 @@ import com.portfolio.builder.til.application.TILService;
 import com.portfolio.builder.til.dto.TILResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,10 +24,12 @@ public class PublicController {
     private final TroubleshootingService troubleshootingService;
     private final TILService tilService;
 
-    // 공개 포트폴리오 목록 (인증 없이 접근 가능 - 공유 링크용)
+    // 공개 포트폴리오 목록 (인증 없이 접근 가능 - 공유 링크용, 페이지네이션 지원)
     @GetMapping("/portfolios")
-    public ResponseEntity<List<PortfolioResponse>> getPublicPortfolios() {
-        return ResponseEntity.ok(portfolioService.getPublicPortfolios(null));
+    public ResponseEntity<Page<PortfolioResponse>> getPublicPortfolios(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size) {
+        return ResponseEntity.ok(portfolioService.getPublicPortfoliosPaged(null, page, size));
     }
 
     // 공개 포트폴리오 상세 (인증 없이 접근 가능 - 공유 링크용)

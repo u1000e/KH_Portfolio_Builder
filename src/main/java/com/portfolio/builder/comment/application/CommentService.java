@@ -16,6 +16,8 @@ import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.portfolio.domain.Portfolio;
 import com.portfolio.builder.portfolio.domain.PortfolioRepository;
 import com.portfolio.builder.quiz.service.BadgeService;
+import com.portfolio.builder.global.exception.NotFoundException;
+import com.portfolio.builder.global.exception.ForbiddenException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,14 +36,14 @@ public class CommentService {
 
     public CommentResponse createComment(Long portfolioId, Long memberId, CommentRequest request) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
         
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
 
         // 공개된 포트폴리오에만 댓글 작성 가능
         if (!portfolio.getIsPublic()) {
-            throw new RuntimeException("Cannot comment on a private portfolio");
+            throw new ForbiddenException("Cannot comment on a private portfolio");
         }
 
         // 욕설 필터링 체크
@@ -84,7 +86,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<CommentResponse> getCommentsByPortfolio(Long portfolioId) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
 
         Long portfolioOwnerId = portfolio.getMember().getId();
         
@@ -96,15 +98,15 @@ public class CommentService {
 
     public void deleteComment(Long commentId, Long memberId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new NotFoundException("Comment not found"));
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
 
         // 본인 댓글이거나 관리자만 삭제 가능
         if (!comment.getMember().getId().equals(memberId) && 
             member.getRole() != Member.Role.ADMIN) {
-            throw new RuntimeException("Access denied");
+            throw new ForbiddenException("Access denied");
         }
 
         commentRepository.delete(comment);
@@ -123,7 +125,7 @@ public class CommentService {
     // 관리자용: 댓글 삭제
     public void deleteCommentByAdmin(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new NotFoundException("Comment not found"));
 
         commentRepository.delete(comment);
         log.info("Comment deleted by admin: {}", commentId);
@@ -138,7 +140,7 @@ public class CommentService {
     // 포폴의 모든 댓글 읽음 처리
     public void markAllAsRead(Long portfolioId, Long memberId) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
 
         // 포폴 주인만 처리 가능
         if (!portfolio.getMember().getId().equals(memberId)) {

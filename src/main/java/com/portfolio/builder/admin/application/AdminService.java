@@ -1,6 +1,9 @@
 package com.portfolio.builder.admin.application;
 
 import com.portfolio.builder.activity.domain.ActivityFeedRepository;
+import com.portfolio.builder.global.exception.NotFoundException;
+import com.portfolio.builder.global.exception.ForbiddenException;
+import com.portfolio.builder.global.exception.BadRequestException;
 import com.portfolio.builder.comment.domain.Comment;
 import com.portfolio.builder.comment.domain.CommentRepository;
 import com.portfolio.builder.comment.domain.WeeklyReviewerRepository;
@@ -58,10 +61,10 @@ public class AdminService {
     // 관리자 권한 확인
     public void validateAdmin(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
-        
+                .orElseThrow(() -> new NotFoundException("Member not found"));
+
         if (member.getRole() != Member.Role.ADMIN) {
-            throw new RuntimeException("Admin access required");
+            throw new ForbiddenException("Admin access required");
         }
     }
 
@@ -77,18 +80,18 @@ public class AdminService {
     @Transactional(readOnly = true)
     public MemberResponse getMember(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         return MemberResponse.from(member);
     }
 
     public MemberResponse updateMemberRole(Long targetMemberId, String role) {
         Member member = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         
         try {
             member.setRole(Member.Role.valueOf(role.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid role: " + role);
+            throw new BadRequestException("Invalid role: " + role);
         }
         
         Member updated = memberRepository.save(member);
@@ -98,12 +101,12 @@ public class AdminService {
 
     public MemberResponse updateMemberStatus(Long targetMemberId, String status) {
         Member member = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         
         try {
             member.setStatus(Member.Status.valueOf(status.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid status: " + status);
+            throw new BadRequestException("Invalid status: " + status);
         }
         
         Member updated = memberRepository.save(member);
@@ -116,7 +119,7 @@ public class AdminService {
      */
     public void deleteMember(Long targetMemberId) {
         Member member = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
 
         log.info("Starting hard delete for member {} ({})", targetMemberId, member.getName());
 
@@ -196,7 +199,7 @@ public class AdminService {
 
     public void deletePortfolio(Long portfolioId) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
         
         portfolioLikeRepository.deleteAllByPortfolio(portfolio);
         commentRepository.deleteAllByPortfolio(portfolio);
@@ -206,7 +209,7 @@ public class AdminService {
 
     public PortfolioResponse togglePortfolioVisibility(Long portfolioId) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
         
         portfolio.setIsPublic(!portfolio.getIsPublic());
         Portfolio updated = portfolioRepository.save(portfolio);
@@ -227,7 +230,7 @@ public class AdminService {
 
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new NotFoundException("Comment not found"));
         
         commentRepository.delete(comment);
         log.info("Comment {} deleted by admin", commentId);
@@ -244,7 +247,7 @@ public class AdminService {
 
     public void toggleTILVisibility(Long tilId) {
         TIL til = tilRepository.findById(tilId)
-                .orElseThrow(() -> new RuntimeException("TIL not found"));
+                .orElseThrow(() -> new NotFoundException("TIL not found"));
         til.setIsHidden(!Boolean.TRUE.equals(til.getIsHidden()));
         tilRepository.save(til);
         log.info("TIL {} hidden toggled to {}", tilId, til.getIsHidden());
@@ -253,7 +256,7 @@ public class AdminService {
     // === 댓글 숨김 토글 ===
     public void toggleCommentVisibility(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new NotFoundException("Comment not found"));
         comment.setIsHidden(!Boolean.TRUE.equals(comment.getIsHidden()));
         commentRepository.save(comment);
         log.info("Comment {} hidden toggled to {}", commentId, comment.getIsHidden());
@@ -285,7 +288,7 @@ public class AdminService {
 
     public void toggleInterviewAnswerVisibility(Long answerId) {
         InterviewAnswer answer = interviewAnswerRepository.findById(answerId)
-                .orElseThrow(() -> new RuntimeException("Interview answer not found"));
+                .orElseThrow(() -> new NotFoundException("Interview answer not found"));
         answer.setIsHidden(!Boolean.TRUE.equals(answer.getIsHidden()));
         interviewAnswerRepository.save(answer);
         log.info("Interview answer {} hidden toggled to {}", answerId, answer.getIsHidden());
@@ -305,10 +308,10 @@ public class AdminService {
     // 직급 신청 승인
     public MemberResponse approvePositionRequest(Long targetMemberId) {
         Member member = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         
         if (member.getPendingPosition() == null) {
-            throw new RuntimeException("No pending position request");
+            throw new BadRequestException("No pending position request");
         }
         
         String approvedPosition = member.getPendingPosition();
@@ -324,10 +327,10 @@ public class AdminService {
     // 직급 신청 거절
     public MemberResponse rejectPositionRequest(Long targetMemberId) {
         Member member = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         
         if (member.getPendingPosition() == null) {
-            throw new RuntimeException("No pending position request");
+            throw new BadRequestException("No pending position request");
         }
         
         String rejectedPosition = member.getPendingPosition();
@@ -341,10 +344,10 @@ public class AdminService {
     // 회원 직급 직접 변경 (관리자)
     public MemberResponse updateMemberPosition(Long targetMemberId, String position) {
         Member member = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         
         if (!isValidPosition(position)) {
-            throw new RuntimeException("Invalid position: " + position);
+            throw new BadRequestException("Invalid position: " + position);
         }
         
         member.setPosition(position);
@@ -368,10 +371,10 @@ public class AdminService {
     // 회원 소속(branch) 변경 (관리자)
     public MemberResponse updateMemberBranch(Long targetMemberId, String branch, String classroom) {
         Member member = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         
         if (!isValidBranch(branch)) {
-            throw new RuntimeException("Invalid branch: " + branch);
+            throw new BadRequestException("Invalid branch: " + branch);
         }
         
         member.setBranch(branch);
@@ -379,7 +382,7 @@ public class AdminService {
         // 강의실 설정 (수강생만)
         if ("수강생".equals(member.getPosition()) && classroom != null && !classroom.isEmpty()) {
             if (!isValidClassroom(branch, classroom)) {
-                throw new RuntimeException("Invalid classroom: " + classroom + " for branch: " + branch);
+                throw new BadRequestException("Invalid classroom: " + classroom + " for branch: " + branch);
             }
             member.setClassroom(classroom);
         } else {
@@ -394,7 +397,7 @@ public class AdminService {
     // 회원 기수(cohort) 변경 (관리자)
     public MemberResponse updateMemberCohort(Long targetMemberId, String cohort) {
         Member member = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         
         member.setCohort(cohort);
         

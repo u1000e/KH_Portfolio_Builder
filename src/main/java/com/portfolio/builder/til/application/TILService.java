@@ -15,9 +15,12 @@ import com.portfolio.builder.til.dto.TILRequest;
 import com.portfolio.builder.til.dto.TILResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import com.portfolio.builder.global.exception.NotFoundException;
+import com.portfolio.builder.global.exception.ForbiddenException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -41,7 +44,7 @@ public class TILService {
 
     public TILResponse createTIL(Long memberId, TILRequest request) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
 
         if (profanityFilterService.containsProfanity(request.getTitle()) ||
             profanityFilterService.containsProfanity(request.getDifficulty()) ||
@@ -187,7 +190,7 @@ public class TILService {
     @Transactional(readOnly = true)
     public TILResponse getTIL(Long tilId, Long memberId) {
         TIL til = tilRepository.findById(tilId)
-                .orElseThrow(() -> new RuntimeException("TIL을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("TIL을 찾을 수 없습니다."));
         boolean isLiked = tilLikeRepository.existsByTilIdAndMemberId(tilId, memberId);
         TILBoosterData booster = tilBoosterService.getBoosterData(tilId);
         return TILResponse.from(til, memberId, isLiked, booster);
@@ -195,10 +198,10 @@ public class TILService {
 
     public TILResponse updateTIL(Long tilId, Long memberId, TILRequest request) {
         TIL til = tilRepository.findById(tilId)
-                .orElseThrow(() -> new RuntimeException("TIL을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("TIL을 찾을 수 없습니다."));
 
         if (!til.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("수정 권한이 없습니다.");
+            throw new ForbiddenException("수정 권한이 없습니다.");
         }
 
         if (profanityFilterService.containsProfanity(request.getTitle()) ||
@@ -226,10 +229,10 @@ public class TILService {
 
     public void deleteTIL(Long tilId, Long memberId) {
         TIL til = tilRepository.findById(tilId)
-                .orElseThrow(() -> new RuntimeException("TIL을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("TIL을 찾을 수 없습니다."));
 
         if (!til.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("삭제 권한이 없습니다.");
+            throw new ForbiddenException("삭제 권한이 없습니다.");
         }
 
         tilBoosterRepository.deleteByTilId(tilId);
@@ -240,7 +243,7 @@ public class TILService {
 
     public Map<String, Object> toggleLike(Long tilId, Long memberId) {
         TIL til = tilRepository.findById(tilId)
-                .orElseThrow(() -> new RuntimeException("TIL을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("TIL을 찾을 수 없습니다."));
 
         Optional<TILLike> existingLike = tilLikeRepository.findByTilIdAndMemberId(tilId, memberId);
         boolean isLiked;
@@ -251,7 +254,7 @@ public class TILService {
             isLiked = false;
         } else {
             Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
 
             TILLike like = TILLike.builder()
                     .til(til)
@@ -381,5 +384,21 @@ public class TILService {
         if (tilCount >= 100) {
             borderService.unlockTitleIfNotOwned(memberId, "title_til_100");
         }
+    }
+
+    // 강사용: 반별 TIL 목록 (페이지네이션)
+    @Transactional(readOnly = true)
+    public Page<TILResponse> getTilsByClassPaged(Long memberId, String branch, String classroom, String cohort, int page, int size) {
+        branch = (branch != null && !branch.isEmpty()) ? branch : null;
+        classroom = (classroom != null && !classroom.isEmpty()) ? classroom : null;
+        cohort = (cohort != null && !cohort.isEmpty()) ? cohort : null;
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TIL> tilPage = tilRepository.findAllByClassOrderByCreatedAtDesc(branch, classroom, cohort, pageable);
+
+        List<Long> tilIds = tilPage.getContent().stream().map(TIL::getId).collect(Collectors.toList());
+        Map<Long, TILBoosterData> boosterMap = tilBoosterService.getBoosterDataBatch(tilIds);
+
+        return tilPage.map(til -> TILResponse.from(til, memberId, false, boosterMap.get(til.getId())));
     }
 }

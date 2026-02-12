@@ -1,5 +1,6 @@
 package com.portfolio.builder.til.domain;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -112,4 +113,9 @@ public interface TILRepository extends JpaRepository<TIL, Long> {
     // 관리자용: 전체 TIL 조회
     @Query("SELECT t FROM TIL t JOIN FETCH t.member ORDER BY t.createdAt DESC")
     List<TIL> findAllWithMember();
+
+    // 강사용: 반별 TIL 페이지네이션
+    @Query(value = "SELECT t FROM TIL t JOIN FETCH t.member m WHERE (t.isHidden = false OR t.isHidden IS NULL) AND (:branch IS NULL OR m.branch = :branch) AND (:classroom IS NULL OR m.classroom = :classroom) AND (:cohort IS NULL OR m.cohort = :cohort) ORDER BY t.createdAt DESC",
+           countQuery = "SELECT COUNT(t) FROM TIL t JOIN t.member m WHERE (t.isHidden = false OR t.isHidden IS NULL) AND (:branch IS NULL OR m.branch = :branch) AND (:classroom IS NULL OR m.classroom = :classroom) AND (:cohort IS NULL OR m.cohort = :cohort)")
+    Page<TIL> findAllByClassOrderByCreatedAtDesc(@Param("branch") String branch, @Param("classroom") String classroom, @Param("cohort") String cohort, Pageable pageable);
 }

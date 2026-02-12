@@ -5,6 +5,7 @@ import com.portfolio.builder.interview.dto.InterviewQuestionRequest;
 import com.portfolio.builder.interview.dto.InterviewQuestionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -70,7 +71,7 @@ public class InterviewQuestionController {
      */
     @PostMapping
     public ResponseEntity<InterviewQuestionResponse> addQuestion(
-            @RequestAttribute("memberId") Long memberId,
+            @AuthenticationPrincipal Long memberId,
             @RequestBody InterviewQuestionRequest request
     ) {
         return ResponseEntity.ok(interviewQuestionService.addQuestion(memberId, request));
@@ -81,7 +82,7 @@ public class InterviewQuestionController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteQuestion(
-            @RequestAttribute("memberId") Long memberId,
+            @AuthenticationPrincipal Long memberId,
             @PathVariable("id") Long id
     ) {
         interviewQuestionService.deleteQuestion(memberId, id);

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/quiz")
@@ -87,14 +88,16 @@ public class QuizController {
     // ===== Phase 2: 오답 노트 =====
 
     /**
-     * 오답 목록 조회
+     * 오답 목록 조회 (페이지네이션 지원)
      */
     @GetMapping("/wrong-answers")
-    public ResponseEntity<List<WrongAnswerResponse>> getWrongAnswers(
+    public ResponseEntity<Map<String, Object>> getWrongAnswers(
             @RequestAttribute("memberId") Long memberId,
             @RequestParam(value = "category", required = false) String category,
-            @RequestParam(value = "type", defaultValue = "INTERVIEW") String quizType) {
-        return ResponseEntity.ok(quizService.getWrongAnswers(memberId, category, quizType));
+            @RequestParam(value = "type", defaultValue = "INTERVIEW") String quizType,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
+        return ResponseEntity.ok(quizService.getWrongAnswersPaged(memberId, category, quizType, page, size));
     }
 
     /**

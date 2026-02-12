@@ -1,6 +1,8 @@
 package com.portfolio.builder.portfolio.domain;
 
 import com.portfolio.builder.member.domain.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -70,4 +72,14 @@ public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
 
     @Query("SELECT COUNT(p) FROM Portfolio p WHERE p.isPublic = true AND p.member IS NOT NULL")
     long countPublicWithMember();
+
+    // === 페이지네이션 지원 쿼리 ===
+
+    @Query(value = "SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true ORDER BY p.createdAt DESC",
+           countQuery = "SELECT COUNT(p) FROM Portfolio p WHERE p.isPublic = true AND p.member IS NOT NULL")
+    Page<Portfolio> findByIsPublicTrueOrderByCreatedAtDesc(Pageable pageable);
+
+    @Query(value = "SELECT p FROM Portfolio p JOIN FETCH p.member m WHERE p.isPublic = true AND p.member IS NOT NULL ORDER BY (SELECT COUNT(pl) FROM PortfolioLike pl WHERE pl.portfolio = p) DESC, p.createdAt DESC",
+           countQuery = "SELECT COUNT(p) FROM Portfolio p WHERE p.isPublic = true AND p.member IS NOT NULL")
+    Page<Portfolio> findPublicPortfoliosOrderByLikes(Pageable pageable);
 }

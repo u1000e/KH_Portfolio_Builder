@@ -1,5 +1,7 @@
 package com.portfolio.builder.interview.application;
 
+import com.portfolio.builder.global.exception.NotFoundException;
+import com.portfolio.builder.global.exception.ForbiddenException;
 import com.portfolio.builder.interview.domain.*;
 import com.portfolio.builder.interview.dto.InterviewAnswerRequest;
 import com.portfolio.builder.interview.dto.InterviewAnswerResponse;
@@ -41,10 +43,10 @@ public class InterviewAnswerService {
     @Transactional
     public InterviewAnswerResponse createAnswer(Long questionId, Long memberId, InterviewAnswerRequest request) {
         InterviewQuestion question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new RuntimeException("질문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("질문을 찾을 수 없습니다."));
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
 
         InterviewAnswer answer = InterviewAnswer.builder()
                 .question(question)
@@ -66,10 +68,10 @@ public class InterviewAnswerService {
     @Transactional
     public InterviewAnswerResponse updateAnswer(Long answerId, Long memberId, InterviewAnswerRequest request) {
         InterviewAnswer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new RuntimeException("답변을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("답변을 찾을 수 없습니다."));
 
         if (!answer.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("본인의 답변만 수정할 수 있습니다.");
+            throw new ForbiddenException("본인의 답변만 수정할 수 있습니다.");
         }
 
         answer.setContent(request.getContent());
@@ -84,10 +86,10 @@ public class InterviewAnswerService {
     @Transactional
     public void deleteAnswer(Long answerId, Long memberId) {
         InterviewAnswer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new RuntimeException("답변을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("답변을 찾을 수 없습니다."));
 
         if (!answer.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("본인의 답변만 삭제할 수 있습니다.");
+            throw new ForbiddenException("본인의 답변만 삭제할 수 있습니다.");
         }
 
         // 좋아요 먼저 삭제
@@ -101,10 +103,10 @@ public class InterviewAnswerService {
     @Transactional
     public InterviewAnswerResponse toggleLike(Long answerId, Long memberId) {
         InterviewAnswer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new RuntimeException("답변을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("답변을 찾을 수 없습니다."));
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
 
         Optional<InterviewAnswerLike> existingLike = likeRepository.findByAnswerIdAndMemberId(answerId, memberId);
 

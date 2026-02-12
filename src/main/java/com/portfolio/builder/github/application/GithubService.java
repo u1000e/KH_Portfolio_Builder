@@ -1,5 +1,6 @@
 package com.portfolio.builder.github.application;
 
+import com.portfolio.builder.global.exception.InternalException;
 import com.portfolio.builder.member.application.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +68,7 @@ public class GithubService {
 
         } catch (Exception e) {
             log.error("Failed to fetch GitHub repositories: ", e);
-            throw new RuntimeException("Failed to fetch GitHub repositories");
+            throw new InternalException("Failed to fetch GitHub repositories");
         }
     }
 
@@ -160,7 +161,7 @@ public class GithubService {
             return repo;
         } catch (Exception e) {
             log.error("Failed to fetch repository details: ", e);
-            throw new RuntimeException("Failed to fetch repository details");
+            throw new InternalException("Failed to fetch repository details");
         }
     }
 

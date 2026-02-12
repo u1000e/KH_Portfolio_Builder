@@ -4,8 +4,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.portfolio.builder.global.exception.ForbiddenException;
+import com.portfolio.builder.global.exception.NotFoundException;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +55,7 @@ public class PortfolioService {
 
     public PortfolioResponse createPortfolio(Long memberId, PortfolioRequest request) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
 
         Portfolio portfolio = Portfolio.builder()
                 .member(member)
@@ -68,7 +74,7 @@ public class PortfolioService {
     @Transactional(readOnly = true)
     public List<PortfolioResponse> getMyPortfolios(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
 
         return portfolioRepository.findByMemberOrderByCreatedAtDesc(member)
                 .stream()
@@ -79,7 +85,7 @@ public class PortfolioService {
     @Transactional(readOnly = true)
     public PortfolioResponse getPortfolio(Long memberId, Long portfolioId) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
 
         // 현재 사용자 조회
         Member currentMember = memberRepository.findById(memberId).orElse(null);
@@ -90,7 +96,7 @@ public class PortfolioService {
         
         // 본인 포트폴리오이거나 공개된 포트폴리오이거나 강사/운영팀만 조회 가능
         if (!portfolio.getMember().getId().equals(memberId) && !portfolio.getIsPublic() && !isStaff) {
-            throw new RuntimeException("Access denied");
+            throw new ForbiddenException("Access denied");
         }
 
         int likeCount = portfolioLikeRepository.countByPortfolioId(portfolioId);
@@ -102,11 +108,11 @@ public class PortfolioService {
 
     public PortfolioResponse updatePortfolio(Long memberId, Long portfolioId, PortfolioRequest request) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
 
         // 본인 포트폴리오만 수정 가능
         if (!portfolio.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("Access denied");
+            throw new ForbiddenException("Access denied");
         }
 
         if (request.getTemplateType() != null) {
@@ -138,11 +144,11 @@ public class PortfolioService {
 
     public void deletePortfolio(Long memberId, Long portfolioId) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
 
         // 본인 포트폴리오만 삭제 가능
         if (!portfolio.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("Access denied");
+            throw new ForbiddenException("Access denied");
         }
 
         // 관련 피드백 삭제
@@ -445,7 +451,7 @@ public class PortfolioService {
     @Transactional(readOnly = true)
     public PortfolioResponse getPublicPortfolio(Long portfolioId, Long currentMemberId) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
 
         Member currentMember = currentMemberId != null ? 
                 memberRepository.findById(currentMemberId).orElse(null) : null;
@@ -461,7 +467,7 @@ public class PortfolioService {
         
         // 비공개 포트폴리오는 운영팀/강사/본인만 조회 가능
         if (!portfolio.getIsPublic() && !isStaff && !isOwner) {
-            throw new RuntimeException("This portfolio is not public");
+            throw new ForbiddenException("This portfolio is not public");
         }
 
         int likeCount = portfolioLikeRepository.countByPortfolioId(portfolioId);
@@ -566,5 +572,104 @@ public class PortfolioService {
                 "privateCount", totalCount - publicCount,
                 "commentCount", commentCount
         );
+    }
+
+    // 공개 포트폴리오 조회 (페이지네이션)
+    @Transactional(readOnly = true)
+    public Page<PortfolioResponse> getPublicPortfoliosPaged(Long currentMemberId, int page, int size) {
+        Member currentMember = currentMemberId != null ?
+                memberRepository.findById(currentMemberId).orElse(null) : null;
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Portfolio> portfolioPage = portfolioRepository.findByIsPublicTrueOrderByCreatedAtDesc(pageable);
+
+        return portfolioPage.map(portfolio -> mapToGalleryResponse(portfolio, currentMember));
+    }
+
+    // 좋아요 순 공개 포트폴리오 (페이지네이션)
+    @Transactional(readOnly = true)
+    public Page<PortfolioResponse> getPublicPortfoliosByLikesPaged(Long currentMemberId, int page, int size) {
+        Member currentMember = currentMemberId != null ?
+                memberRepository.findById(currentMemberId).orElse(null) : null;
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Portfolio> portfolioPage = portfolioRepository.findPublicPortfoliosOrderByLikes(pageable);
+
+        return portfolioPage.map(portfolio -> mapToGalleryResponse(portfolio, currentMember));
+    }
+
+    private PortfolioResponse mapToGalleryResponse(Portfolio portfolio, Member currentMember) {
+        int likeCount = portfolioLikeRepository.countByPortfolioId(portfolio.getId());
+        boolean isLiked = currentMember != null &&
+                portfolioLikeRepository.existsByPortfolioAndMember(portfolio, currentMember);
+
+        Long ownerId = portfolio.getMember() != null ? portfolio.getMember().getId() : null;
+        int badgeCount = 0;
+        List<String> recentBadges = List.of();
+        PortfolioResponse.SelectedBadgeInfo selectedBadgeInfo = null;
+        PortfolioResponse.SelectedBorderInfo selectedBorderInfo = null;
+        PortfolioResponse.SelectedBackgroundInfo selectedBackgroundInfo = null;
+        PortfolioResponse.SelectedTitleInfo selectedTitleInfo = null;
+        PortfolioResponse.SelectedHeaderInfo selectedHeaderInfo = null;
+
+        if (ownerId != null) {
+            badgeCount = (int) badgeRepository.countByMemberId(ownerId);
+            recentBadges = badgeRepository.findTop4ByMemberIdOrderByEarnedAtDesc(ownerId)
+                    .stream()
+                    .map(badge -> badgeService.getBadgeIcon(badge.getBadgeId()))
+                    .collect(Collectors.toList());
+
+            Member owner = portfolio.getMember();
+            if (owner.getSelectedBadgeId() != null) {
+                String badgeId = owner.getSelectedBadgeId();
+                selectedBadgeInfo = PortfolioResponse.SelectedBadgeInfo.builder()
+                        .id(badgeId)
+                        .icon(badgeService.getBadgeIcon(badgeId))
+                        .name(badgeService.getBadgeName(badgeId))
+                        .description(badgeService.getBadgeDescription(badgeId))
+                        .build();
+            }
+            if (owner.getSelectedBorderId() != null) {
+                var borderInfo = borderService.getBorderInfo(owner.getSelectedBorderId());
+                if (borderInfo != null) {
+                    selectedBorderInfo = PortfolioResponse.SelectedBorderInfo.builder()
+                            .id(borderInfo.getBorderId()).name(borderInfo.getName())
+                            .requiredLevel(borderInfo.getRequiredLevel())
+                            .gradientFrom(borderInfo.getGradientFrom()).gradientTo(borderInfo.getGradientTo())
+                            .gradientVia(borderInfo.getGradientVia()).build();
+                }
+            }
+            if (owner.getSelectedBackgroundId() != null) {
+                var bgInfo = borderService.getBackgroundInfo(owner.getSelectedBackgroundId());
+                if (bgInfo != null) {
+                    selectedBackgroundInfo = PortfolioResponse.SelectedBackgroundInfo.builder()
+                            .id(bgInfo.getBackgroundId()).name(bgInfo.getName())
+                            .colorClass(bgInfo.getColorClass()).colorHex(bgInfo.getColorHex()).build();
+                }
+            }
+            if (owner.getSelectedTitleId() != null) {
+                var titleInfo = borderService.getTitleInfo(owner.getSelectedTitleId());
+                if (titleInfo != null) {
+                    selectedTitleInfo = PortfolioResponse.SelectedTitleInfo.builder()
+                            .id(titleInfo.getTitleId()).name(titleInfo.getName())
+                            .emoji(titleInfo.getEmoji()).colorClass(titleInfo.getColorClass())
+                            .colorHex(titleInfo.getColorHex()).build();
+                }
+            }
+            if (owner.getSelectedHeaderId() != null) {
+                var headerInfo = borderService.getHeaderInfo(owner.getSelectedHeaderId());
+                if (headerInfo != null) {
+                    selectedHeaderInfo = PortfolioResponse.SelectedHeaderInfo.builder()
+                            .id(headerInfo.getHeaderId()).name(headerInfo.getName())
+                            .requiredLevel(headerInfo.getRequiredLevel())
+                            .colorClass(headerInfo.getColorClass()).colorHex(headerInfo.getColorHex())
+                            .gradientFrom(headerInfo.getGradientFrom()).gradientTo(headerInfo.getGradientTo())
+                            .gradientVia(headerInfo.getGradientVia()).isDark(headerInfo.isDark()).build();
+                }
+            }
+        }
+
+        return PortfolioResponse.from(portfolio, likeCount, isLiked, badgeCount, recentBadges,
+                selectedBadgeInfo, selectedBorderInfo, selectedBackgroundInfo, selectedTitleInfo, selectedHeaderInfo);
     }
 }

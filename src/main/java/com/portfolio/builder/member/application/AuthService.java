@@ -1,5 +1,7 @@
 package com.portfolio.builder.member.application;
 
+import com.portfolio.builder.global.exception.InternalException;
+import com.portfolio.builder.global.exception.NotFoundException;
 import com.portfolio.builder.global.security.JwtTokenProvider;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
@@ -116,7 +118,7 @@ public class AuthService {
             String errorMsg = body != null ? 
                 "error=" + body.get("error") + ", description=" + body.get("error_description") :
                 "Empty response";
-            throw new RuntimeException("Failed to get GitHub access token: " + errorMsg);
+            throw new InternalException("Failed to get GitHub access token: " + errorMsg);
         }
 
         log.info("GitHub access token obtained successfully");
@@ -211,13 +213,13 @@ public class AuthService {
     @Transactional(readOnly = true)
     public MemberResponse getCurrentMember(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         return MemberResponse.from(member);
     }
 
     public MemberResponse updateProfile(Long memberId, ProfileUpdateRequest request) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         
         // 유효성 검사
         if (!isValidPosition(request.getPosition())) {
@@ -271,14 +273,14 @@ public class AuthService {
     @Transactional(readOnly = true)
     public String getGithubAccessToken(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         return member.getAccessToken();
     }
 
     @Transactional(readOnly = true)
     public String getGithubUsername(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
         return member.getGithubUsername();
     }
 }

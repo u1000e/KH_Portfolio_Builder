@@ -6,6 +6,7 @@ import com.portfolio.builder.til.dto.TILResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -104,15 +105,22 @@ public class TILController {
         return ResponseEntity.ok(tilService.getTilDashboard(branch, classroom, cohort));
     }
 
-    // 강사용: 반별 TIL 목록 (날짜 필터 가능)
+    // 강사용: 반별 TIL 목록 (날짜 필터 가능, 페이지네이션 지원)
     @GetMapping("/class")
-    public ResponseEntity<List<TILResponse>> getTilsByClass(
+    public ResponseEntity<?> getTilsByClass(
             @RequestAttribute(name = "memberId") Long memberId,
             @RequestParam(name = "branch", required = false) String branch,
             @RequestParam(name = "classroom", required = false) String classroom,
             @RequestParam(name = "cohort", required = false) String cohort,
-            @RequestParam(name = "date", required = false) String date) {
-        LocalDate localDate = date != null && !date.isEmpty() ? LocalDate.parse(date) : null;
-        return ResponseEntity.ok(tilService.getTilsByClassAndDate(memberId, branch, classroom, cohort, localDate));
+            @RequestParam(name = "date", required = false) String date,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "30") int size) {
+        // 날짜 필터가 있으면 기존 방식 (해당 날짜 전체 반환)
+        if (date != null && !date.isEmpty()) {
+            LocalDate localDate = LocalDate.parse(date);
+            return ResponseEntity.ok(tilService.getTilsByClassAndDate(memberId, branch, classroom, cohort, localDate));
+        }
+        // 날짜 필터 없으면 페이지네이션
+        return ResponseEntity.ok(tilService.getTilsByClassPaged(memberId, branch, classroom, cohort, page, size));
     }
 }

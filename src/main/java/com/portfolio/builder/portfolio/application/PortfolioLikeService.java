@@ -6,6 +6,8 @@ import com.portfolio.builder.portfolio.domain.Portfolio;
 import com.portfolio.builder.portfolio.domain.PortfolioLike;
 import com.portfolio.builder.portfolio.domain.PortfolioLikeRepository;
 import com.portfolio.builder.portfolio.domain.PortfolioRepository;
+import com.portfolio.builder.global.exception.ForbiddenException;
+import com.portfolio.builder.global.exception.NotFoundException;
 import com.portfolio.builder.quiz.service.BadgeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,14 +29,14 @@ public class PortfolioLikeService {
 
     public Map<String, Object> toggleLike(Long portfolioId, Long memberId) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
         
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new NotFoundException("Member not found"));
 
         // 공개된 포트폴리오만 좋아요 가능
         if (!portfolio.getIsPublic()) {
-            throw new RuntimeException("Cannot like a private portfolio");
+            throw new ForbiddenException("Cannot like a private portfolio");
         }
 
         boolean isLiked;

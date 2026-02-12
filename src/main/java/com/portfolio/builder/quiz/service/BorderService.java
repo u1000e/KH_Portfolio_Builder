@@ -12,6 +12,8 @@ import com.portfolio.builder.quiz.dto.QuizDto.*;
 import com.portfolio.builder.quiz.repository.BadgeRepository;
 import com.portfolio.builder.quiz.repository.QuizAttemptRepository;
 import com.portfolio.builder.quiz.repository.QuizStreakRepository;
+import com.portfolio.builder.global.exception.NotFoundException;
+import com.portfolio.builder.global.exception.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -213,7 +215,7 @@ public class BorderService {
      */
     public BorderListResponse getBorders(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
 
         int currentLevel = calculateLevel(memberId);
         String selectedBorderId = member.getSelectedBorderId();
@@ -437,7 +439,7 @@ public class BorderService {
     @Transactional
     public void selectBorder(Long memberId, String borderId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
 
         if (borderId == null || borderId.isEmpty()) {
             member.setSelectedBorderId(null);
@@ -448,7 +450,7 @@ public class BorderService {
         // 테두리 존재 여부 확인
         BorderDefinition def = BORDER_DEFINITIONS.get(borderId);
         if (def == null) {
-            throw new RuntimeException("존재하지 않는 테두리입니다.");
+            throw new NotFoundException("존재하지 않는 테두리입니다.");
         }
 
         // 해금 여부 확인
@@ -456,13 +458,13 @@ public class BorderService {
             // 칭호 기반 해금
             Map<String, Boolean> specialUnlocked = checkSpecialTitlesUnlocked(memberId);
             if (!specialUnlocked.getOrDefault(def.requiredTitleId, false)) {
-                throw new RuntimeException("아직 해금되지 않은 테두리입니다. (필요 칭호 미보유)");
+                throw new ForbiddenException("아직 해금되지 않은 테두리입니다. (필요 칭호 미보유)");
             }
         } else {
             // 레벨 기반 해금
             int currentLevel = calculateLevel(memberId);
             if (currentLevel < def.requiredLevel) {
-                throw new RuntimeException("아직 해금되지 않은 테두리입니다. (필요 레벨: " + def.requiredLevel + ")");
+                throw new ForbiddenException("아직 해금되지 않은 테두리입니다. (필요 레벨: " + def.requiredLevel + ")");
             }
         }
 
@@ -570,7 +572,7 @@ public class BorderService {
     @Transactional
     public void selectBackground(Long memberId, String backgroundId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
 
         if (backgroundId == null || backgroundId.isEmpty()) {
             member.setSelectedBackgroundId(null);
@@ -581,7 +583,7 @@ public class BorderService {
         // 배경색 존재 여부 확인
         BackgroundDefinition def = BACKGROUND_DEFINITIONS.get(backgroundId);
         if (def == null) {
-            throw new RuntimeException("존재하지 않는 배경색입니다.");
+            throw new NotFoundException("존재하지 않는 배경색입니다.");
         }
 
         member.setSelectedBackgroundId(backgroundId);
@@ -616,7 +618,7 @@ public class BorderService {
     @Transactional
     public void selectTitle(Long memberId, String titleId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
 
         if (titleId == null || titleId.isEmpty()) {
             member.setSelectedTitleId(null);
@@ -627,19 +629,19 @@ public class BorderService {
         // 칭호 존재 여부 확인
         TitleDefinition def = TITLE_DEFINITIONS.get(titleId);
         if (def == null) {
-            throw new RuntimeException("존재하지 않는 칭호입니다.");
+            throw new NotFoundException("존재하지 않는 칭호입니다.");
         }
 
         // 해금 여부 확인
         if (def.isSpecial) {
             Map<String, Boolean> specialUnlocked = checkSpecialTitlesUnlocked(memberId);
             if (!specialUnlocked.getOrDefault(titleId, false)) {
-                throw new RuntimeException("아직 해금되지 않은 칭호입니다. (조건: " + def.condition + ")");
+                throw new ForbiddenException("아직 해금되지 않은 칭호입니다. (조건: " + def.condition + ")");
             }
         } else {
             int currentLevel = calculateLevel(memberId);
             if (currentLevel < def.requiredLevel) {
-                throw new RuntimeException("아직 해금되지 않은 칭호입니다. (필요 레벨: " + def.requiredLevel + ")");
+                throw new ForbiddenException("아직 해금되지 않은 칭호입니다. (필요 레벨: " + def.requiredLevel + ")");
             }
         }
 
@@ -679,7 +681,7 @@ public class BorderService {
     @Transactional
     public void selectHeader(Long memberId, String headerId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
 
         if (headerId == null || headerId.isEmpty()) {
             member.setSelectedHeaderId(null);
@@ -690,7 +692,7 @@ public class BorderService {
         // 헤더 존재 여부 확인
         HeaderDefinition def = HEADER_DEFINITIONS.get(headerId);
         if (def == null) {
-            throw new RuntimeException("존재하지 않는 헤더 색상입니다.");
+            throw new NotFoundException("존재하지 않는 헤더 색상입니다.");
         }
 
         // 해금 여부 확인
@@ -698,12 +700,12 @@ public class BorderService {
             // 칭호 보유 시 해금
             Map<String, Boolean> specialUnlocked = checkSpecialTitlesUnlocked(memberId);
             if (!specialUnlocked.getOrDefault(def.requiredTitleId, false)) {
-                throw new RuntimeException("아직 해금되지 않은 헤더 색상입니다. (필요 칭호 미획득)");
+                throw new ForbiddenException("아직 해금되지 않은 헤더 색상입니다. (필요 칭호 미획득)");
             }
         } else {
             int currentLevel = calculateLevel(memberId);
             if (currentLevel < def.requiredLevel) {
-                throw new RuntimeException("아직 해금되지 않은 헤더 색상입니다. (필요 레벨: " + def.requiredLevel + ")");
+                throw new ForbiddenException("아직 해금되지 않은 헤더 색상입니다. (필요 레벨: " + def.requiredLevel + ")");
             }
         }
 

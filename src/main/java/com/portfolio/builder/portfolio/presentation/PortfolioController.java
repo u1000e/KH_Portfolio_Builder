@@ -3,6 +3,7 @@ package com.portfolio.builder.portfolio.presentation;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,18 +71,22 @@ public class PortfolioController {
         return ResponseEntity.noContent().build();
     }
 
-    // 공개 포트폴리오 목록 (갤러리) - 인증 필요
+    // 공개 포트폴리오 목록 (갤러리) - 인증 필요, 페이지네이션 지원
     @GetMapping("/public")
-    public ResponseEntity<List<PortfolioResponse>> getPublicPortfolios(
-            @RequestAttribute(name = "memberId") Long memberId) {
-        return ResponseEntity.ok(portfolioService.getPublicPortfolios(memberId));
+    public ResponseEntity<Page<PortfolioResponse>> getPublicPortfolios(
+            @RequestAttribute(name = "memberId") Long memberId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size) {
+        return ResponseEntity.ok(portfolioService.getPublicPortfoliosPaged(memberId, page, size));
     }
 
-    // 좋아요 순 정렬
+    // 좋아요 순 정렬, 페이지네이션 지원
     @GetMapping("/public/popular")
-    public ResponseEntity<List<PortfolioResponse>> getPopularPortfolios(
-            @RequestAttribute(name = "memberId") Long memberId) {
-        return ResponseEntity.ok(portfolioService.getPublicPortfoliosByLikes(memberId));
+    public ResponseEntity<Page<PortfolioResponse>> getPopularPortfolios(
+            @RequestAttribute(name = "memberId") Long memberId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size) {
+        return ResponseEntity.ok(portfolioService.getPublicPortfoliosByLikesPaged(memberId, page, size));
     }
 
     // 특정 소속(지점)의 공개 포트폴리오

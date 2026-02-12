@@ -7,6 +7,8 @@ import com.portfolio.builder.portfolio.domain.Portfolio;
 import com.portfolio.builder.portfolio.domain.PortfolioRepository;
 import com.portfolio.builder.portfolio.domain.Troubleshooting;
 import com.portfolio.builder.portfolio.domain.TroubleshootingRepository;
+import com.portfolio.builder.global.exception.ForbiddenException;
+import com.portfolio.builder.global.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,11 +46,11 @@ public class PortfolioEvaluationService {
     public EvaluationResponse evaluate(Long portfolioId, Long memberId) {
         // 1. 포트폴리오 조회
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-            .orElseThrow(() -> new RuntimeException("포트폴리오를 찾을 수 없습니다"));
+            .orElseThrow(() -> new NotFoundException("포트폴리오를 찾을 수 없습니다"));
         
         // 권한 체크 (본인 포트폴리오만 평가 가능)
         if (!portfolio.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("본인의 포트폴리오만 평가할 수 있습니다");
+            throw new ForbiddenException("본인의 포트폴리오만 평가할 수 있습니다");
         }
         
         // 데이터 파싱

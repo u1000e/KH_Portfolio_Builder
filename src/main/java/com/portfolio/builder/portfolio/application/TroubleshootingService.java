@@ -6,6 +6,10 @@ import com.portfolio.builder.portfolio.domain.Troubleshooting;
 import com.portfolio.builder.portfolio.domain.TroubleshootingRepository;
 import com.portfolio.builder.portfolio.dto.TroubleshootingRequest;
 import com.portfolio.builder.portfolio.dto.TroubleshootingResponse;
+import com.portfolio.builder.global.exception.NotFoundException;
+import com.portfolio.builder.global.exception.ForbiddenException;
+import com.portfolio.builder.global.exception.BadRequestException;
+import com.portfolio.builder.global.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,10 +32,10 @@ public class TroubleshootingService {
     // 트러블슈팅 순서 변경
     public void reorderTroubleshootings(Long memberId, Long portfolioId, List<Long> orderedIds) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
 
         if (!portfolio.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("Access denied");
+            throw new ForbiddenException("Access denied");
         }
 
         List<Troubleshooting> troubleshootings = troubleshootingRepository.findByPortfolioIdOrderByDisplayOrderAscCreatedAtDesc(portfolioId);
@@ -61,24 +65,24 @@ public class TroubleshootingService {
     // 트러블슈팅 추가
     public TroubleshootingResponse createTroubleshooting(Long memberId, Long portfolioId, TroubleshootingRequest request) {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new RuntimeException("Portfolio not found"));
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
 
         // 본인 포트폴리오만 수정 가능
         if (!portfolio.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("Access denied");
+            throw new ForbiddenException("Access denied");
         }
 
         // 최대 3개 제한 체크
         int currentCount = troubleshootingRepository.countByPortfolioId(portfolioId);
         if (currentCount >= MAX_TROUBLESHOOTINGS) {
-            throw new RuntimeException("트러블슈팅은 최대 " + MAX_TROUBLESHOOTINGS + "개까지만 추가할 수 있습니다.");
+            throw new ConflictException("트러블슈팅은 최대 " + MAX_TROUBLESHOOTINGS + "개까지만 추가할 수 있습니다.");
         }
 
         Troubleshooting.Category category;
         try {
             category = Troubleshooting.Category.valueOf(request.getCategory().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid category: " + request.getCategory());
+            throw new BadRequestException("Invalid category: " + request.getCategory());
         }
 
         Troubleshooting troubleshooting = Troubleshooting.builder()
@@ -102,11 +106,11 @@ public class TroubleshootingService {
     // 트러블슈팅 수정
     public TroubleshootingResponse updateTroubleshooting(Long memberId, Long troubleshootingId, TroubleshootingRequest request) {
         Troubleshooting troubleshooting = troubleshootingRepository.findById(troubleshootingId)
-                .orElseThrow(() -> new RuntimeException("Troubleshooting not found"));
+                .orElseThrow(() -> new NotFoundException("Troubleshooting not found"));
 
         // 본인 포트폴리오만 수정 가능
         if (!troubleshooting.getPortfolio().getMember().getId().equals(memberId)) {
-            throw new RuntimeException("Access denied");
+            throw new ForbiddenException("Access denied");
         }
 
         if (request.getCategory() != null) {
@@ -114,7 +118,7 @@ public class TroubleshootingService {
                 Troubleshooting.Category category = Troubleshooting.Category.valueOf(request.getCategory().toUpperCase());
                 troubleshooting.setCategory(category);
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid category: " + request.getCategory());
+                throw new BadRequestException("Invalid category: " + request.getCategory());
             }
         }
         if (request.getProblem() != null) {
@@ -142,11 +146,11 @@ public class TroubleshootingService {
     // 트러블슈팅 삭제
     public void deleteTroubleshooting(Long memberId, Long troubleshootingId) {
         Troubleshooting troubleshooting = troubleshootingRepository.findById(troubleshootingId)
-                .orElseThrow(() -> new RuntimeException("Troubleshooting not found"));
+                .orElseThrow(() -> new NotFoundException("Troubleshooting not found"));
 
         // 본인 포트폴리오만 삭제 가능
         if (!troubleshooting.getPortfolio().getMember().getId().equals(memberId)) {
-            throw new RuntimeException("Access denied");
+            throw new ForbiddenException("Access denied");
         }
 
         troubleshootingRepository.delete(troubleshooting);
@@ -157,7 +161,7 @@ public class TroubleshootingService {
     @Transactional(readOnly = true)
     public TroubleshootingResponse getTroubleshooting(Long troubleshootingId) {
         Troubleshooting troubleshooting = troubleshootingRepository.findById(troubleshootingId)
-                .orElseThrow(() -> new RuntimeException("Troubleshooting not found"));
+                .orElseThrow(() -> new NotFoundException("Troubleshooting not found"));
         return TroubleshootingResponse.from(troubleshooting);
     }
 }

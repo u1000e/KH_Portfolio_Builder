@@ -1,6 +1,7 @@
 package com.portfolio.builder.quiz.service;
 
 import com.portfolio.builder.activity.application.ActivityFeedService;
+import com.portfolio.builder.global.exception.NotFoundException;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.quiz.domain.Badge;
@@ -219,7 +220,7 @@ public class BadgeService {
     @Transactional
     public List<BadgeResponse> checkAndAwardBadges(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
 
         QuizStreak streak = quizStreakRepository.findByMemberId(memberId).orElse(null);
         List<BadgeResponse> newBadges = new ArrayList<>();
@@ -877,8 +878,8 @@ public class BadgeService {
     @Transactional
     public void selectBadge(Long memberId, String badgeId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
-        
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
+
         // badgeId가 null이면 선택 해제
         if (badgeId == null || badgeId.isEmpty()) {
             member.setSelectedBadgeId(null);
@@ -888,7 +889,7 @@ public class BadgeService {
         
         // 해당 배지를 획득했는지 확인
         if (!badgeRepository.existsByMemberIdAndBadgeId(memberId, badgeId)) {
-            throw new RuntimeException("획득하지 않은 배지입니다.");
+            throw new NotFoundException("획득하지 않은 배지입니다.");
         }
         
         member.setSelectedBadgeId(badgeId);
@@ -900,8 +901,8 @@ public class BadgeService {
      */
     public BadgeResponse getSelectedBadge(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
-        
+                .orElseThrow(() -> new NotFoundException("회원을 찾을 수 없습니다."));
+
         String selectedBadgeId = member.getSelectedBadgeId();
         
         // 선택된 배지가 없으면 최신 획득 배지 반환
