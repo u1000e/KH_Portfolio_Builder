@@ -85,15 +85,15 @@ public interface TILRepository extends JpaRepository<TIL, Long> {
     List<TIL> findByClassAndTagContaining(@Param("branch") String branch, @Param("classroom") String classroom, @Param("cohort") String cohort, @Param("tag") String tag, Pageable pageable);
 
     // 강사용: 반별 TIL 전체 조회 (비공개 포함)
-    @Query("SELECT t FROM TIL t JOIN FETCH t.member m WHERE (t.isHidden = false OR t.isHidden IS NULL) AND m.branch = :branch AND m.classroom = :classroom AND m.cohort = :cohort ORDER BY t.createdAt DESC")
+    @Query("SELECT t FROM TIL t JOIN FETCH t.member m WHERE (t.isHidden = false OR t.isHidden IS NULL) AND (:branch IS NULL OR m.branch = :branch) AND (:classroom IS NULL OR m.classroom = :classroom) AND (:cohort IS NULL OR m.cohort = :cohort) ORDER BY t.createdAt DESC")
     List<TIL> findAllByClassOrderByCreatedAtDesc(@Param("branch") String branch, @Param("classroom") String classroom, @Param("cohort") String cohort);
 
     // 강사용: 반별 특정 날짜 TIL
-    @Query("SELECT t FROM TIL t JOIN FETCH t.member m WHERE (t.isHidden = false OR t.isHidden IS NULL) AND m.branch = :branch AND m.classroom = :classroom AND m.cohort = :cohort AND FUNCTION('DATE', t.createdAt) = :date ORDER BY t.createdAt DESC")
+    @Query("SELECT t FROM TIL t JOIN FETCH t.member m WHERE (t.isHidden = false OR t.isHidden IS NULL) AND (:branch IS NULL OR m.branch = :branch) AND (:classroom IS NULL OR m.classroom = :classroom) AND (:cohort IS NULL OR m.cohort = :cohort) AND FUNCTION('DATE', t.createdAt) = :date ORDER BY t.createdAt DESC")
     List<TIL> findAllByClassAndDate(@Param("branch") String branch, @Param("classroom") String classroom, @Param("cohort") String cohort, @Param("date") LocalDate date);
 
     // 강사용: 반별 TIL 작성 통계
-    @Query("SELECT m.id, m.name, m.avatarUrl, m.githubUsername, COUNT(t) as tilCount, MAX(t.createdAt) as lastTilDate FROM TIL t JOIN t.member m WHERE (t.isHidden = false OR t.isHidden IS NULL) AND m.branch = :branch AND m.classroom = :classroom AND m.cohort = :cohort GROUP BY m.id, m.name, m.avatarUrl, m.githubUsername ORDER BY tilCount DESC")
+    @Query("SELECT m.id, m.name, m.avatarUrl, m.githubUsername, COUNT(t) as tilCount, MAX(t.createdAt) as lastTilDate FROM TIL t JOIN t.member m WHERE (t.isHidden = false OR t.isHidden IS NULL) AND (:branch IS NULL OR m.branch = :branch) AND (:classroom IS NULL OR m.classroom = :classroom) AND (:cohort IS NULL OR m.cohort = :cohort) GROUP BY m.id, m.name, m.avatarUrl, m.githubUsername ORDER BY tilCount DESC")
     List<Object[]> findTilStatsByClass(@Param("branch") String branch, @Param("classroom") String classroom, @Param("cohort") String cohort);
 
     // 주간 공부왕 (주간 TIL 작성 수 TOP 1)

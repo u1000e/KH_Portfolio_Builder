@@ -121,6 +121,10 @@ public class TILService {
     // 강사용: 반별 TIL 대시보드
     @Transactional(readOnly = true)
     public Map<String, Object> getTilDashboard(String branch, String classroom, String cohort) {
+        branch = (branch != null && !branch.isEmpty()) ? branch : null;
+        classroom = (classroom != null && !classroom.isEmpty()) ? classroom : null;
+        cohort = (cohort != null && !cohort.isEmpty()) ? cohort : null;
+
         Map<String, Object> result = new HashMap<>();
 
         // TIL 작성 통계 (학생별)
@@ -150,6 +154,10 @@ public class TILService {
     // 강사용: 반별 특정 날짜 TIL 조회
     @Transactional(readOnly = true)
     public List<TILResponse> getTilsByClassAndDate(Long memberId, String branch, String classroom, String cohort, LocalDate date) {
+        branch = (branch != null && !branch.isEmpty()) ? branch : null;
+        classroom = (classroom != null && !classroom.isEmpty()) ? classroom : null;
+        cohort = (cohort != null && !cohort.isEmpty()) ? cohort : null;
+
         List<TIL> tils;
         if (date != null) {
             tils = tilRepository.findAllByClassAndDate(branch, classroom, cohort, date);

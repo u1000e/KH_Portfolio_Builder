@@ -98,9 +98,9 @@ public class TILController {
     // 강사용: 반별 TIL 대시보드 (통계)
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getTilDashboard(
-            @RequestParam(name = "branch") String branch,
-            @RequestParam(name = "classroom") String classroom,
-            @RequestParam(name = "cohort") String cohort) {
+            @RequestParam(name = "branch", required = false) String branch,
+            @RequestParam(name = "classroom", required = false) String classroom,
+            @RequestParam(name = "cohort", required = false) String cohort) {
         return ResponseEntity.ok(tilService.getTilDashboard(branch, classroom, cohort));
     }
 
@@ -108,9 +108,9 @@ public class TILController {
     @GetMapping("/class")
     public ResponseEntity<List<TILResponse>> getTilsByClass(
             @RequestAttribute(name = "memberId") Long memberId,
-            @RequestParam(name = "branch") String branch,
-            @RequestParam(name = "classroom") String classroom,
-            @RequestParam(name = "cohort") String cohort,
+            @RequestParam(name = "branch", required = false) String branch,
+            @RequestParam(name = "classroom", required = false) String classroom,
+            @RequestParam(name = "cohort", required = false) String cohort,
             @RequestParam(name = "date", required = false) String date) {
         LocalDate localDate = date != null && !date.isEmpty() ? LocalDate.parse(date) : null;
         return ResponseEntity.ok(tilService.getTilsByClassAndDate(memberId, branch, classroom, cohort, localDate));
