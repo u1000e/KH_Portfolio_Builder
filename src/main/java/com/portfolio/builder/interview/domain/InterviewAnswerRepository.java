@@ -204,4 +204,18 @@ public interface InterviewAnswerRepository extends JpaRepository<InterviewAnswer
     // 관리자용: 전체 면접답변 조회
     @Query("SELECT a FROM InterviewAnswer a JOIN FETCH a.member JOIN FETCH a.question ORDER BY a.createdAt DESC")
     List<InterviewAnswer> findAllWithMemberAndQuestion();
+
+    // 강사용: 반별 면접토론 통계
+    @Query("SELECT m.id, m.name, m.avatarUrl, m.githubUsername, " +
+           "COUNT(a) as answerCount, COALESCE(SUM(a.likeCount), 0) as totalLikes, " +
+           "MAX(a.createdAt) as lastAnswerDate " +
+           "FROM InterviewAnswer a JOIN a.member m " +
+           "WHERE (a.isHidden = false OR a.isHidden IS NULL) " +
+           "AND (:branch IS NULL OR m.branch = :branch) " +
+           "AND (:classroom IS NULL OR m.classroom = :classroom) " +
+           "AND (:cohort IS NULL OR m.cohort = :cohort) " +
+           "GROUP BY m.id, m.name, m.avatarUrl, m.githubUsername " +
+           "ORDER BY answerCount DESC")
+    List<Object[]> findInterviewStatsByClass(@Param("branch") String branch,
+            @Param("classroom") String classroom, @Param("cohort") String cohort);
 }

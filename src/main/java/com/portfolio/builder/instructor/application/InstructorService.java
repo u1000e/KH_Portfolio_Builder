@@ -15,10 +15,17 @@ import com.portfolio.builder.feedback.domain.FeedbackRepository;
 import com.portfolio.builder.instructor.dto.CategoryAccuracy;
 import com.portfolio.builder.instructor.dto.ClassDashboardResponse;
 import com.portfolio.builder.instructor.dto.ClassStatistics;
+import com.portfolio.builder.instructor.dto.InterviewDashboardResponse;
+import com.portfolio.builder.instructor.dto.InterviewStatistics;
+import com.portfolio.builder.instructor.dto.OverviewDashboardResponse;
+import com.portfolio.builder.instructor.dto.OverviewStatistics;
 import com.portfolio.builder.instructor.dto.QuizDashboardResponse;
 import com.portfolio.builder.instructor.dto.QuizStatistics;
+import com.portfolio.builder.instructor.dto.StudentInterviewStatusDto;
+import com.portfolio.builder.instructor.dto.StudentOverviewDto;
 import com.portfolio.builder.instructor.dto.StudentQuizStatusDto;
 import com.portfolio.builder.instructor.dto.StudentStatusDto;
+import com.portfolio.builder.interview.domain.InterviewAnswerRepository;
 import com.portfolio.builder.member.domain.Member;
 import com.portfolio.builder.member.domain.MemberRepository;
 import com.portfolio.builder.portfolio.domain.Portfolio;
@@ -26,6 +33,7 @@ import com.portfolio.builder.portfolio.domain.PortfolioRepository;
 import com.portfolio.builder.quiz.domain.QuizStreak;
 import com.portfolio.builder.quiz.repository.QuizAttemptRepository;
 import com.portfolio.builder.quiz.repository.QuizStreakRepository;
+import com.portfolio.builder.til.domain.TILRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +49,8 @@ public class InstructorService {
     private final FeedbackRepository feedbackRepository;
     private final QuizStreakRepository quizStreakRepository;
     private final QuizAttemptRepository quizAttemptRepository;
+    private final TILRepository tilRepository;
+    private final InterviewAnswerRepository interviewAnswerRepository;
 
     /**
      * 강사/운영팀 권한 확인
@@ -290,6 +300,218 @@ public class InstructorService {
                 .build();
 
         return QuizDashboardResponse.builder()
+                .statistics(statistics)
+                .students(studentDtos)
+                .build();
+    }
+
+    /**
+     * 학생별 퀴즈 취약 카테고리 계산
+     */
+    private String calculateWeakCategory(Long memberId) {
+        List<Object[]> categoryStats = quizAttemptRepository.countSolvedByMemberIdGroupByCategory(memberId);
+        Map<String, CategoryAccuracy> studentCategories = new HashMap<>();
+
+        for (Object[] stat : categoryStats) {
+            String category = (String) stat[0];
+            Long solved = (Long) stat[1];
+            Long correct = quizAttemptRepository.countCorrectByMemberIdAndCategory(memberId, category);
+
+            if (solved >= 3) {
+                double catAccuracy = Math.round((double) correct / solved * 1000) / 10.0;
+                studentCategories.put(category, new CategoryAccuracy(category, catAccuracy, solved.intValue()));
+            }
+        }
+
+        return studentCategories.values().stream()
+                .min(Comparator.comparingDouble(CategoryAccuracy::getAccuracy))
+                .map(CategoryAccuracy::getCategory)
+                .orElse(null);
+    }
+
+    /**
+     * 반별 면접토론 현황 대시보드 조회
+     */
+    public InterviewDashboardResponse getInterviewDashboard(String branch, String classroom, String cohort) {
+        List<Member> students = memberRepository.findStudentsByFilters(branch, classroom, cohort);
+
+        if (students.isEmpty()) {
+            return InterviewDashboardResponse.builder()
+                    .statistics(InterviewStatistics.builder()
+                            .totalStudents(0)
+                            .participants(0)
+                            .participationRate(0.0)
+                            .totalAnswers(0)
+                            .averageAnswers(0.0)
+                            .totalLikes(0)
+                            .build())
+                    .students(new ArrayList<>())
+                    .build();
+        }
+
+        // 배치 조회
+        List<Object[]> interviewStats = interviewAnswerRepository.findInterviewStatsByClass(branch, classroom, cohort);
+        Map<Long, Object[]> interviewMap = new HashMap<>();
+        for (Object[] row : interviewStats) {
+            interviewMap.put((Long) row[0], row);
+        }
+
+        int totalStudents = students.size();
+        int participants = 0;
+        long totalAnswers = 0;
+        long totalLikes = 0;
+
+        List<StudentInterviewStatusDto> studentDtos = new ArrayList<>();
+
+        for (Member student : students) {
+            Object[] data = interviewMap.get(student.getId());
+            long answerCount = data != null ? ((Number) data[4]).longValue() : 0;
+            long likes = data != null ? ((Number) data[5]).longValue() : 0;
+            java.time.LocalDateTime lastAnswerDate = data != null ? (java.time.LocalDateTime) data[6] : null;
+
+            if (answerCount > 0) {
+                participants++;
+                totalAnswers += answerCount;
+                totalLikes += likes;
+            }
+
+            studentDtos.add(StudentInterviewStatusDto.builder()
+                    .id(student.getId())
+                    .name(student.getName() != null ? student.getName() : "이름 없음")
+                    .githubUsername(student.getGithubUsername())
+                    .avatarUrl(student.getAvatarUrl())
+                    .answerCount(answerCount)
+                    .totalLikes(likes)
+                    .lastAnswerDate(lastAnswerDate)
+                    .build());
+        }
+
+        double participationRate = totalStudents > 0
+                ? Math.round((double) participants / totalStudents * 1000) / 10.0
+                : 0.0;
+        double averageAnswers = participants > 0
+                ? Math.round((double) totalAnswers / participants * 10) / 10.0
+                : 0.0;
+
+        InterviewStatistics statistics = InterviewStatistics.builder()
+                .totalStudents(totalStudents)
+                .participants(participants)
+                .participationRate(participationRate)
+                .totalAnswers(totalAnswers)
+                .averageAnswers(averageAnswers)
+                .totalLikes(totalLikes)
+                .build();
+
+        return InterviewDashboardResponse.builder()
+                .statistics(statistics)
+                .students(studentDtos)
+                .build();
+    }
+
+    /**
+     * 반별 총괄 현황 대시보드 조회
+     */
+    public OverviewDashboardResponse getClassOverview(String branch, String classroom, String cohort) {
+        List<Member> students = memberRepository.findStudentsByFilters(branch, classroom, cohort);
+
+        if (students.isEmpty()) {
+            return OverviewDashboardResponse.builder()
+                    .statistics(OverviewStatistics.builder()
+                            .totalStudents(0)
+                            .portfolioRate(0.0)
+                            .quizRate(0.0)
+                            .tilRate(0.0)
+                            .interviewRate(0.0)
+                            .build())
+                    .students(new ArrayList<>())
+                    .build();
+        }
+
+        int totalStudents = students.size();
+
+        // 배치 조회: TIL 통계
+        List<Object[]> tilStats = tilRepository.findTilStatsByClass(branch, classroom, cohort);
+        Map<Long, Long> tilCountMap = new HashMap<>();
+        for (Object[] row : tilStats) {
+            tilCountMap.put((Long) row[0], ((Number) row[4]).longValue());
+        }
+
+        // 배치 조회: 면접토론 통계
+        List<Object[]> interviewStats = interviewAnswerRepository.findInterviewStatsByClass(branch, classroom, cohort);
+        Map<Long, Long> interviewCountMap = new HashMap<>();
+        for (Object[] row : interviewStats) {
+            interviewCountMap.put((Long) row[0], ((Number) row[4]).longValue());
+        }
+
+        int portfolioCount = 0;
+        int quizCount = 0;
+        int tilCount = 0;
+        int interviewCount = 0;
+
+        List<StudentOverviewDto> studentDtos = new ArrayList<>();
+
+        for (Member student : students) {
+            // 포트폴리오
+            List<Portfolio> portfolios = portfolioRepository.findByMember(student);
+            boolean hasPortfolio = portfolios != null && !portfolios.isEmpty();
+            if (hasPortfolio) portfolioCount++;
+
+            // 퀴즈
+            QuizStreak streak = quizStreakRepository.findByMemberId(student.getId()).orElse(null);
+            boolean hasQuiz = streak != null && streak.getTotalQuizCount() > 0;
+            int totalQuiz = streak != null ? streak.getTotalQuizCount() : 0;
+            if (hasQuiz) quizCount++;
+
+            // 퀴즈 취약 카테고리
+            String weakCategory = hasQuiz ? calculateWeakCategory(student.getId()) : null;
+
+            // TIL
+            long studentTilCount = tilCountMap.getOrDefault(student.getId(), 0L);
+            if (studentTilCount > 0) tilCount++;
+
+            // 면접토론
+            long studentInterviewCount = interviewCountMap.getOrDefault(student.getId(), 0L);
+            if (studentInterviewCount > 0) interviewCount++;
+
+            boolean inactive = !hasPortfolio && !hasQuiz && studentTilCount == 0 && studentInterviewCount == 0;
+
+            studentDtos.add(StudentOverviewDto.builder()
+                    .id(student.getId())
+                    .name(student.getName() != null ? student.getName() : "이름 없음")
+                    .githubUsername(student.getGithubUsername())
+                    .avatarUrl(student.getAvatarUrl())
+                    .hasPortfolio(hasPortfolio)
+                    .hasQuiz(hasQuiz)
+                    .totalQuizCount(totalQuiz)
+                    .tilCount(studentTilCount)
+                    .interviewAnswerCount(studentInterviewCount)
+                    .quizWeakCategory(weakCategory)
+                    .inactive(inactive)
+                    .build());
+        }
+
+        double portfolioRate = totalStudents > 0
+                ? Math.round((double) portfolioCount / totalStudents * 1000) / 10.0
+                : 0.0;
+        double quizRate = totalStudents > 0
+                ? Math.round((double) quizCount / totalStudents * 1000) / 10.0
+                : 0.0;
+        double tilRate = totalStudents > 0
+                ? Math.round((double) tilCount / totalStudents * 1000) / 10.0
+                : 0.0;
+        double interviewRate = totalStudents > 0
+                ? Math.round((double) interviewCount / totalStudents * 1000) / 10.0
+                : 0.0;
+
+        OverviewStatistics statistics = OverviewStatistics.builder()
+                .totalStudents(totalStudents)
+                .portfolioRate(portfolioRate)
+                .quizRate(quizRate)
+                .tilRate(tilRate)
+                .interviewRate(interviewRate)
+                .build();
+
+        return OverviewDashboardResponse.builder()
                 .statistics(statistics)
                 .students(studentDtos)
                 .build();

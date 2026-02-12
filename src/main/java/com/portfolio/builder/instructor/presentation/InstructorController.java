@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.portfolio.builder.instructor.application.InstructorService;
 import com.portfolio.builder.instructor.dto.ClassDashboardResponse;
+import com.portfolio.builder.instructor.dto.InterviewDashboardResponse;
+import com.portfolio.builder.instructor.dto.OverviewDashboardResponse;
 import com.portfolio.builder.instructor.dto.QuizDashboardResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -63,6 +65,46 @@ public class InstructorController {
         instructorService.validateInstructor(memberId);
 
         QuizDashboardResponse response = instructorService.getQuizDashboard(branch, classroom, cohort);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 반별 총괄 현황 대시보드 조회
+     * GET /api/instructor/overview
+     */
+    @GetMapping("/overview")
+    public ResponseEntity<OverviewDashboardResponse> getClassOverview(
+            @RequestParam(required = false, name = "branch") String branch,
+            @RequestParam(required = false, name = "classroom") String classroom,
+            @RequestParam(required = false, name = "cohort") String cohort,
+            @AuthenticationPrincipal Long memberId) {
+
+        log.info("Overview dashboard requested - branch: {}, classroom: {}, cohort: {}, memberId: {}",
+                branch, classroom, cohort, memberId);
+
+        instructorService.validateInstructor(memberId);
+
+        OverviewDashboardResponse response = instructorService.getClassOverview(branch, classroom, cohort);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 반별 면접토론 현황 대시보드 조회
+     * GET /api/instructor/interview-dashboard
+     */
+    @GetMapping("/interview-dashboard")
+    public ResponseEntity<InterviewDashboardResponse> getInterviewDashboard(
+            @RequestParam(required = false, name = "branch") String branch,
+            @RequestParam(required = false, name = "classroom") String classroom,
+            @RequestParam(required = false, name = "cohort") String cohort,
+            @AuthenticationPrincipal Long memberId) {
+
+        log.info("Interview dashboard requested - branch: {}, classroom: {}, cohort: {}, memberId: {}",
+                branch, classroom, cohort, memberId);
+
+        instructorService.validateInstructor(memberId);
+
+        InterviewDashboardResponse response = instructorService.getInterviewDashboard(branch, classroom, cohort);
         return ResponseEntity.ok(response);
     }
 }
