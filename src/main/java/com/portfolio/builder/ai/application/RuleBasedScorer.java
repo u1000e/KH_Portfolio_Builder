@@ -211,7 +211,7 @@ public class RuleBasedScorer {
         // 기술 숙련도 표시 (3점) - NEW
         if (data.getSkills() != null && !data.getSkills().isEmpty()) {
             boolean hasLevel = data.getSkills().stream()
-                .anyMatch(s -> s.getLevel() != null && s.getLevel() > 0);
+                .anyMatch(s -> s.getLevel() != null && !s.getLevel().isBlank());
             if (hasLevel) {
                 score += 3;
             } else {

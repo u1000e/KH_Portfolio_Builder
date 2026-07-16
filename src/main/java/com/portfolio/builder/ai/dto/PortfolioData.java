@@ -1,5 +1,6 @@
 package com.portfolio.builder.ai.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PortfolioData {
     private String name;
     private String email;
@@ -37,14 +39,16 @@ public class PortfolioData {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SkillData {
         private String name;
-        private Integer level;
+        private String level;  // 프론트엔드 등급 값("main"/"usable"/"experienced"), 과거 숫자도 문자열로 수용
     }
     
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ProjectData {
         private String name;
         private String description;
@@ -83,6 +87,7 @@ public class PortfolioData {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class EducationData {
         private String school;
         private String major;
@@ -93,6 +98,7 @@ public class PortfolioData {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ExperienceData {
         private String company;
         private String position;
@@ -103,6 +109,7 @@ public class PortfolioData {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class CertificateData {
         private String name;
         private String issuer;
