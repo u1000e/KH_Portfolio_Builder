@@ -25,8 +25,10 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${app.frontend.url}")
-    private String frontendUrl;
+    // CORS 허용 오리진(콤마 구분). 로컬=localhost, prod=https://kh-jongno.shop.
+    // 리스트로 외부화 → Step 3에서 CloudFront 도메인을 임시 추가 가능.
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:5174}")
+    private List<String> allowedOrigins;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -55,7 +57,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(frontendUrl, "http://localhost:5173", "http://localhost:5174"));
+        configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

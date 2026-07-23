@@ -27,7 +27,6 @@ public class Portfolio {
 
     private String title;
 
-    @Lob
     @Column(columnDefinition = "text")
     private String data;  // JSON string for portfolio content
 
@@ -37,7 +36,6 @@ public class Portfolio {
     @Builder.Default
     private Boolean showContributionGraph = true;  // GitHub 잔디 표시 여부
 
-    @Lob
     @Column(columnDefinition = "text")
     private String contributionGraphSnapshot;  // GitHub 잔디 스냅샷 JSON
 

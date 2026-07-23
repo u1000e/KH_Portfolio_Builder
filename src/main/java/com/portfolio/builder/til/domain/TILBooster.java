@@ -22,7 +22,6 @@ public class TILBooster {
     @JoinColumn(name = "til_id", nullable = false, unique = true)
     private TIL til;
 
-    @Lob
     @Column(columnDefinition = "text")
     private String feedbackJson;
 
