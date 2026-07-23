@@ -1,3 +1,8 @@
 /gradlew text eol=lf
 *.bat text eol=crlf
 *.jar binary
+
+# 배포 스크립트/설정은 Linux(EC2)에서 실행 — CRLF면 셸이 깨지므로 LF 강제
+*.sh text eol=lf
+Dockerfile text eol=lf
+Caddyfile text eol=lf
