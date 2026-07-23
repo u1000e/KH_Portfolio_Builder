@@ -2,9 +2,11 @@ name: backend-deploy
 
 on:
   push:
-    branches: [main]
+    # ★임시★ phase2-backend-deploy 는 Step 1·2 검증용으로만 추가함 — 검증 끝나면 제거할 것.
+    #        브랜치 push = 빌드 + GHCR push(latest+sha). 배포(AWS/SSM)는 main 전용(아래 if).
+    branches: [main, phase2-backend-deploy]
   pull_request:
-    branches: [main]   # PR은 빌드/이미지 검증만, 배포 스텝은 스킵(아래 if: push)
+    branches: [main]   # PR도 빌드/이미지 검증만, 배포 스텝은 스킵(아래 if)
 
 permissions:
   id-token: write      # OIDC (AWS assume-role)
@@ -54,14 +56,14 @@ jobs:
 
       # ---- 여기부터 배포: main push 에서만 ----
       - name: AWS OIDC 인증
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'   # 배포는 main 전용
         uses: aws-actions/configure-aws-credentials@v4   # 브리프의 v6은 오기(현재 최신 major는 v4)
         with:
           role-to-assume: arn:aws:iam::154667447418:role/gh-backend-deploy
           aws-region: ap-northeast-2
 
       - name: SSM 배포 + 완료 대기 (실패 시 워크플로 실패)
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'   # 배포는 main 전용
         env:
           INSTANCE_ID: "i-0cda2a7683012f57c"   # 배포 대상 EC2 인스턴스
         run: |
