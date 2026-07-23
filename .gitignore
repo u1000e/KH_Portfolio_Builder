@@ -36,13 +36,12 @@ out/
 ### VS Code ###
 .vscode/
 
-### 민감 정보 (절대 커밋 금지!) ###
-application.yml
-application-prod.yml
+### 설정 파일 ###
+# application.yml / application-prod.yml 은 시크릿을 ${ENV}로 외부화하여 커밋한다.
+# (CI 빌드가 jar에 넣어야 컨테이너가 부팅됨. 실제 비밀은 SSM/환경변수로 주입.)
+# 로컬 전용 오버라이드는 시크릿이 담길 수 있어 계속 무시:
 application-private.yml
 application-local.yml
-**/application.yml
-**/application-prod.yml
 **/application-private.yml
 **/application-local.yml
 

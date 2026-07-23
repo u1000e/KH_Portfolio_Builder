@@ -1,0 +1,68 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    # 로컬 개발: SSM 포트포워딩으로 RDS에 터널(localhost:15432). 값은 환경변수/로컬 .env 에서 주입.
+    url: jdbc:postgresql://localhost:15432/mydb?sslmode=require
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.3
+
+  jpa:
+    hibernate:
+      ddl-auto: validate      # 스키마 생성 완료 → validate 로 고정 (Phase 1)
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_OAUTH_CLIENT_ID}
+            client-secret: ${GITHUB_OAUTH_CLIENT_SECRET}
+            scope: user:email,read:user
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000 # 24시간
+
+app:
+  frontend:
+    url: http://localhost:5173
+
+# GitHub OAuth 설정 (AuthService 실사용 경로 — 로컬 개발용 OAuth App)
+github:
+  client:
+    id: ${GITHUB_OAUTH_CLIENT_ID}
+    secret: ${GITHUB_OAUTH_CLIENT_SECRET}
+  redirect:
+    uri: ${GITHUB_OAUTH_REDIRECT_URI:http://localhost:5173/auth/callback}
+
+# AWS S3 설정 (자격증명은 기본 자격증명 체인 — 로컬 AWS 프로파일 / EC2 인스턴스 역할)
+aws:
+  region: ap-northeast-2
+  s3:
+    bucket: kh-501
+
+# Redis 설정
+spring.data:
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+
+# Rate Limiting 설정
+rate-limit:
+  evaluate:
+    daily-limit: 3
+  til-booster:
+    daily-limit: 10

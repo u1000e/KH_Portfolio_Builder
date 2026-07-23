@@ -1,0 +1,80 @@
+# ============================================
+# Portfolio Builder - Production Configuration
+# 도메인: kh-jongno.shop
+# ============================================
+
+server:
+  port: 8081
+
+spring:
+  datasource:
+    # RDS PostgreSQL (사설망, TLS). 자격증명은 SSM/compose 환경변수로 주입.
+    # sslmode=require 로 시작 → verify-full 은 Phase 2(CA 번들)에서 전환.
+    url: jdbc:postgresql://database-1.cfqucs4ycfjy.ap-northeast-2.rds.amazonaws.com:5432/mydb?sslmode=require
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      pool-name: PortfolioHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate      # 마이그레이션 완료 → 운영은 validate 고정 (절대 update 아님)
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_OAUTH_CLIENT_ID}
+            client-secret: ${GITHUB_OAUTH_CLIENT_SECRET}
+            scope: user:email,read:user,repo
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
+
+# 프론트엔드 URL
+app:
+  frontend:
+    url: https://kh-jongno.shop
+
+# GitHub OAuth 설정 (AuthService 실사용 경로 — 운영용 OAuth App)
+github:
+  client:
+    id: ${GITHUB_OAUTH_CLIENT_ID}
+    secret: ${GITHUB_OAUTH_CLIENT_SECRET}
+  redirect:
+    uri: ${GITHUB_OAUTH_REDIRECT_URI:https://kh-jongno.shop/auth/callback}
+
+# AWS S3 설정 (자격증명은 EC2 인스턴스 역할 — 정적 키 미사용)
+aws:
+  region: ap-northeast-2
+  s3:
+    bucket: kh-501
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.portfolio.builder: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  file:
+    name: /tmp/portfolio-api.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 3
+      total-size-cap: 50MB
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
