@@ -28,27 +28,27 @@ public class Troubleshooting {
     private Category category;
 
     // 문제 상황 (필수) - 한글 500자 지원 (CHAR 단위)
-    @Column(nullable = false, columnDefinition = "VARCHAR2(500 CHAR)")
+    @Column(nullable = false, columnDefinition = "varchar(500)")
     private String problem;
 
     // 원인 분석 (필수) - 한글 1000자 지원 (CHAR 단위)
-    @Column(nullable = false, columnDefinition = "VARCHAR2(1000 CHAR)")
+    @Column(nullable = false, columnDefinition = "varchar(1000)")
     private String cause;
 
     // 해결 방법 (필수) - 한글 1000자 지원 (CHAR 단위)
-    @Column(nullable = false, columnDefinition = "VARCHAR2(1000 CHAR)")
+    @Column(nullable = false, columnDefinition = "varchar(1000)")
     private String solution;
 
     // 배운 점 (필수) - 한글 500자 지원 (CHAR 단위)
-    @Column(nullable = false, columnDefinition = "VARCHAR2(500 CHAR)")
+    @Column(nullable = false, columnDefinition = "varchar(500)")
     private String lesson;
 
     // 원인 분석 코드 스니펫 (선택) - 코드 2000자 지원
-    @Column(columnDefinition = "VARCHAR2(2000 CHAR)")
+    @Column(columnDefinition = "varchar(2000)")
     private String causeCode;
 
     // 해결 방법 코드 스니펫 (선택) - 코드 2000자 지원
-    @Column(columnDefinition = "VARCHAR2(2000 CHAR)")
+    @Column(columnDefinition = "varchar(2000)")
     private String solutionCode;
 
     // 코드 언어 (선택) - Java, JavaScript, SQL 등

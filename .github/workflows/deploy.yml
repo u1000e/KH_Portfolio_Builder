@@ -1,102 +1,101 @@
-name: Build and Deploy Spring Boot App
+name: backend-deploy
 
 on:
   push:
-    branches: [main]
+    # ★임시★ phase2-backend-deploy 는 Step 1·2 검증용으로만 추가함 — 검증 끝나면 제거할 것.
+    #        브랜치 push = 빌드 + GHCR push(latest+sha). 배포(AWS/SSM)는 main 전용(아래 if).
+    branches: [main, phase2-backend-deploy]
   pull_request:
-    branches: [main]
+    branches: [main]   # PR도 빌드/이미지 검증만, 배포 스텝은 스킵(아래 if)
+
+permissions:
+  id-token: write      # OIDC (AWS assume-role)
+  contents: read
+  packages: write      # GHCR push
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Java
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
-          java-version: "21"
-          cache: "gradle"
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
 
-      - name: Grant execute permission for gradle
-        run: chmod +x ./gradlew
-
-      - name: Build to Boot Project
-        run: ./gradlew bootJar -x test
-
-      - name: Verify Build jar
+      - name: Build bootJar (러너 x86 네이티브 빌드 — QEMU 회피)
         run: |
-          JAR_FILE=$(ls build/libs/*.jar 2>/dev/null | grep -v plain | head -1)
-          if [ -z "$JAR_FILE" ]; then
-            echo "빌드 실패"
-            exit 1
-          fi
-          echo "빌드파일: $JAR_FILE"
-          # plain.jar 제거
+          chmod +x ./gradlew
+          ./gradlew clean bootJar --no-daemon
           rm -f build/libs/*-plain.jar
-          # 파일명 통일
-          mv $JAR_FILE build/libs/portfolio-api.jar
           ls -la build/libs/
 
-      - name: Change Maintenance Mode
-        if: github.event_name == 'push'
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /home/ubuntu/deploy
-            mkdir -p /home/ubuntu/deploy/maintenance
-            cp /home/ubuntu/deploy/front/dist/index.html /home/ubuntu/deploy/maintenance/index_tmp.html
-            if [ -f /home/ubuntu/deploy/maintenance/index.html ]; then
-              cp /home/ubuntu/deploy/maintenance/index.html /home/ubuntu/deploy/front/dist/index.html
-              docker compose restart web
-              echo "유지보수 모드 활성화~"
-              sleep 5
-            fi
+      - uses: docker/setup-buildx-action@v3
 
-      - name: Prepare Target Directory
-        if: github.event_name == 'push'
-        uses: appleboy/ssh-action@master
+      - uses: docker/login-action@v3
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            mkdir -p /home/ubuntu/deploy/back/backup
-            find /home/ubuntu/deploy/back/backup -name "backup-*.jar" -mtime +3 -delete
-            if [ -f /home/ubuntu/deploy/back/portfolio-api.jar ]; then
-              mv /home/ubuntu/deploy/back/portfolio-api.jar /home/ubuntu/deploy/back/backup/backup-$(date +%Y%m%d%H%M%S).jar
-            fi
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Deploy Boot App To EC2
-        if: github.event_name == 'push'
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          source: "build/libs/portfolio-api.jar"
-          target: "/home/ubuntu/deploy/back"
-          strip_components: 2
+      - name: GHCR 이미지 경로 소문자화 (GHCR는 소문자만 허용)
+        id: img
+        run: echo "repo=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
 
-      - name: Restart Container
-        if: github.event_name == 'push'
-        uses: appleboy/ssh-action@master
+      - name: Build & push arm64 image (COPY만이라 빠름)
+        uses: docker/build-push-action@v6
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /home/ubuntu/deploy
-            docker compose restart api
-            sleep 30
-            if [ -f /home/ubuntu/deploy/maintenance/index_tmp.html ]; then
-              cp /home/ubuntu/deploy/maintenance/index_tmp.html /home/ubuntu/deploy/front/dist/index.html
-              rm /home/ubuntu/deploy/maintenance/index_tmp.html
-              docker compose restart web
-              echo "정상 모드 복원 완료"
-            fi
+          context: .
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ steps.img.outputs.repo }}/api:latest
+            ghcr.io/${{ steps.img.outputs.repo }}/api:${{ github.sha }}
+
+      # ---- 여기부터 배포: main push 에서만 ----
+      - name: AWS OIDC 인증
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'   # 배포는 main 전용
+        uses: aws-actions/configure-aws-credentials@v4   # 브리프의 v6은 오기(현재 최신 major는 v4)
+        with:
+          role-to-assume: arn:aws:iam::154667447418:role/gh-backend-deploy
+          aws-region: ap-northeast-2
+
+      - name: SSM 배포 + 완료 대기 (실패 시 워크플로 실패)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'   # 배포는 main 전용
+        env:
+          INSTANCE_ID: "i-0cda2a7683012f57c"   # 배포 대상 EC2 인스턴스
+        run: |
+          set -euo pipefail
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "backend-deploy ${GITHUB_SHA::7}" \
+            --parameters 'commands=["cd /srv/app && sudo bash deploy.sh"]' \
+            --query "Command.CommandId" --output text)
+          echo "CommandId=$CMD_ID"
+
+          # send-command는 비동기 → 완료/실패까지 폴링하고 종료코드 전파
+          STATUS=Pending
+          for i in $(seq 1 40); do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            echo "  status=$STATUS"
+            case "$STATUS" in
+              Success) break ;;
+              Failed|Cancelled|TimedOut)
+                echo "::error::배포 실패 ($STATUS)"
+                aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+                  --query StandardErrorContent --output text || true
+                exit 1 ;;
+            esac
+            sleep 15
+          done
+          if [ "$STATUS" != Success ]; then
+            echo "::error::배포 시간초과 (마지막 status=$STATUS)"; exit 1
+          fi
+          echo "---- deploy.sh 출력 ----"
+          aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardOutputContent --output text

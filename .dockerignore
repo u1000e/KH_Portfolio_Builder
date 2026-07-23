@@ -1,0 +1,24 @@
+# 이미지 빌드 컨텍스트에서 제외 — COPY 대상은 build/libs/*.jar 뿐.
+.git
+.github
+.gradle
+.settings
+.classpath
+.project
+.idea
+bin/
+src/
+docs/
+deploy/
+gradle/
+gradlew
+gradlew.bat
+*.md
+HELP.md
+# build 산출물 중 jar만 필요, 나머지 무거운 것 제외
+build/classes/
+build/resources/
+build/tmp/
+build/reports/
+build/generated/
+build/test-results/

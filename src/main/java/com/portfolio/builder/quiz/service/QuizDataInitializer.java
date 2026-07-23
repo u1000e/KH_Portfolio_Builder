@@ -8,6 +8,8 @@ import com.portfolio.builder.quiz.repository.QuizRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,10 @@ import java.io.InputStream;
 import java.util.List;
 
 @Service
+// 운영(prod)에서는 자동 시딩 금지 — TB_QUIZ 원본은 Oracle 이며 시드는 "빈 DB" 개발용이다.
+@Profile("!prod")
+// 비-prod 환경에서도 끌 수 있는 스위치. app.quiz.auto-seed=false 로 비활성화(기본 활성).
+@ConditionalOnProperty(prefix = "app.quiz", name = "auto-seed", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 @Slf4j
 public class QuizDataInitializer {

@@ -29,7 +29,7 @@ public class InterviewAnswer {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR2(4000 CHAR)")
+    @Column(nullable = false, columnDefinition = "varchar(4000)")
     private String content;
 
     @Builder.Default

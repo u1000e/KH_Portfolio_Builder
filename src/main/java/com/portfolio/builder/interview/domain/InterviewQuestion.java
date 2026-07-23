@@ -26,7 +26,7 @@ public class InterviewQuestion {
     @Column(nullable = false, length = 50)
     private String category;  // "기술/Java", "기술/Spring", "인성" 등
 
-    @Column(nullable = false, columnDefinition = "VARCHAR2(2000 CHAR)")
+    @Column(nullable = false, columnDefinition = "varchar(2000)")
     private String question;
 
     @Column(length = 100)
