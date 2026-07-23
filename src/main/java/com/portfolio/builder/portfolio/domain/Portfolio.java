@@ -28,7 +28,7 @@ public class Portfolio {
     private String title;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "text")
     private String data;  // JSON string for portfolio content
 
     @Builder.Default
@@ -38,7 +38,7 @@ public class Portfolio {
     private Boolean showContributionGraph = true;  // GitHub 잔디 표시 여부
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "text")
     private String contributionGraphSnapshot;  // GitHub 잔디 스냅샷 JSON
 
     private Integer aiScore;  // 마지막 AI 평가 점수 (null = 미평가)
