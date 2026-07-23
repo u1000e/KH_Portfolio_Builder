@@ -47,6 +47,9 @@ jwt:
 app:
   frontend:
     url: https://kh-jongno.shop
+  cors:
+    # CORS 허용 오리진(콤마 구분, 공백 없이). Step 3 CloudFront 테스트 시 도메인 임시 추가.
+    allowed-origins: https://kh-jongno.shop
 
 # GitHub OAuth 설정 (AuthService 실사용 경로 — 운영용 OAuth App)
 github:
