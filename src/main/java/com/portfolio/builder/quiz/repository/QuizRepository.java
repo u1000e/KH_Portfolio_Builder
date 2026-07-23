@@ -23,15 +23,15 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT DISTINCT q.category FROM Quiz q WHERE q.quizType = :quizType ORDER BY q.category")
     List<String> findAllCategoriesByQuizType(@Param("quizType") String quizType);
 
-    // 카테고리별 랜덤 문제 조회 (Oracle) - 면접 대비용
-    @Query(value = "SELECT * FROM (SELECT * FROM TB_QUIZ WHERE category = :category AND quiz_type = 'INTERVIEW' ORDER BY DBMS_RANDOM.VALUE) WHERE ROWNUM <= :limit", nativeQuery = true)
+    // 카테고리별 랜덤 문제 조회 (PostgreSQL) - 면접 대비용
+    @Query(value = "SELECT * FROM tb_quiz WHERE category = :category AND quiz_type = 'INTERVIEW' ORDER BY RANDOM() LIMIT :limit", nativeQuery = true)
     List<Quiz> findRandomByCategory(@Param("category") String category, @Param("limit") int limit);
 
-    // 카테고리별 랜덤 문제 조회 (Oracle) - 퀴즈타입별
-    @Query(value = "SELECT * FROM (SELECT * FROM TB_QUIZ WHERE category = :category AND quiz_type = :quizType ORDER BY DBMS_RANDOM.VALUE) WHERE ROWNUM <= :limit", nativeQuery = true)
+    // 카테고리별 랜덤 문제 조회 (PostgreSQL) - 퀴즈타입별
+    @Query(value = "SELECT * FROM tb_quiz WHERE category = :category AND quiz_type = :quizType ORDER BY RANDOM() LIMIT :limit", nativeQuery = true)
     List<Quiz> findRandomByCategoryAndQuizType(@Param("category") String category, @Param("quizType") String quizType, @Param("limit") int limit);
 
-    // 사용자가 아직 풀지 않은 문제 중 랜덤 조회 (Oracle) - 면접 대비용
+    // 사용자가 아직 풀지 않은 문제 중 랜덤 조회 (PostgreSQL) - 면접 대비용
     @Query(value = """
         SELECT * FROM (
             SELECT q.* FROM TB_QUIZ q 
@@ -41,15 +41,15 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
                 SELECT qa.quiz_id FROM TB_QUIZ_ATTEMPT qa 
                 WHERE qa.member_id = :memberId
             )
-            ORDER BY DBMS_RANDOM.VALUE
-        ) WHERE ROWNUM <= :limit
+            ORDER BY RANDOM()
+        ) AS sub LIMIT :limit
         """, nativeQuery = true)
     List<Quiz> findUnsolvedRandomByCategory(
             @Param("category") String category, 
             @Param("memberId") Long memberId, 
             @Param("limit") int limit);
 
-    // 사용자가 아직 풀지 않은 문제 중 랜덤 조회 (Oracle) - 수업 복습용
+    // 사용자가 아직 풀지 않은 문제 중 랜덤 조회 (PostgreSQL) - 수업 복습용
     @Query(value = """
         SELECT * FROM (
             SELECT q.* FROM TB_QUIZ q 
@@ -59,8 +59,8 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
                 SELECT qa.quiz_id FROM TB_QUIZ_ATTEMPT qa 
                 WHERE qa.member_id = :memberId AND qa.quiz_type = :quizType
             )
-            ORDER BY DBMS_RANDOM.VALUE
-        ) WHERE ROWNUM <= :limit
+            ORDER BY RANDOM()
+        ) AS sub LIMIT :limit
         """, nativeQuery = true)
     List<Quiz> findUnsolvedRandomByCategoryAndQuizType(
             @Param("category") String category, 
