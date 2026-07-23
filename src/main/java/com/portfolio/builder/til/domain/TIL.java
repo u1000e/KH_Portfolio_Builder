@@ -32,7 +32,6 @@ public class TIL {
     @Column(length = 2000)
     private String description;
 
-    @Lob
     @Column(columnDefinition = "text")
     private String codeSnippet;
 
