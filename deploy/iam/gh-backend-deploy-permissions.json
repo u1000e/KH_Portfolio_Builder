@@ -1,0 +1,23 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SendDeployCommand",
+      "Effect": "Allow",
+      "Action": "ssm:SendCommand",
+      "Resource": [
+        "arn:aws:ssm:ap-northeast-2::document/AWS-RunShellScript",
+        "arn:aws:ec2:ap-northeast-2:154667447418:instance/i-0cda2a7683012f57c"
+      ]
+    },
+    {
+      "Sid": "ReadCommandResult",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetCommandInvocation",
+        "ssm:ListCommandInvocations"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
