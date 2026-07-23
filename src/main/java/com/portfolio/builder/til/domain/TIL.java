@@ -33,6 +33,7 @@ public class TIL {
     private String description;
 
     @Lob
+    @Column(columnDefinition = "text")
     private String codeSnippet;
 
     @Column(length = 50)

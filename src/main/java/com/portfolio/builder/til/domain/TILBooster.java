@@ -23,6 +23,7 @@ public class TILBooster {
     private TIL til;
 
     @Lob
+    @Column(columnDefinition = "text")
     private String feedbackJson;
 
     @Builder.Default
