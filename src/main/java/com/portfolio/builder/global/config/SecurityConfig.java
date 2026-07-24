@@ -39,6 +39,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 헬스체크 (ALB용)
                 .requestMatchers("/health", "/health/**").permitAll()
+                // 모니터링(Actuator): 노출한 2개만 permitAll. Caddy가 /actuator/* 를 외부에서 404로
+                // 차단하므로 compose 내부 네트워크(Alloy 스크레이프)에서만 접근 가능 → 안전.
+                .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
                 // 공개 엔드포인트
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
