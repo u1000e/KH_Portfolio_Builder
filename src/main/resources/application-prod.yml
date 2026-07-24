@@ -65,6 +65,23 @@ aws:
   s3:
     bucket: kh-501
 
+# Actuator / Micrometer (Phase 4 모니터링)
+# Spring Boot 3.3.5 문법: endpoint 활성/비활성은 `enabled` 사용 (`access`는 3.4+).
+# /actuator/* 는 Caddy에서 외부 404 처리 → Alloy가 compose 내부 네트워크로만 스크레이프.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus     # 필요한 것만. 절대 "*" 금지
+  endpoint:
+    health:
+      show-details: never              # 내부 구성/의존성 상태 외부 노출 방지
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: portfolio-api       # 지표에 앱 식별 태그
+
 # Logging
 logging:
   level:
