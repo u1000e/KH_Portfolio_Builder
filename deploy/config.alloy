@@ -1,0 +1,33 @@
+// Phase 4 모니터링 — Grafana Alloy 수집기 설정 (B안: Grafana Cloud remote write)
+//
+// 자격증명(URL/USER/TOKEN)은 이 파일에 하드코딩하지 않는다.
+// deploy 시 alloy 전용 .env.alloy 로 공급 → sys.env 로 읽는다 (관심사 분리, 브리프 §3-4 (b)안).
+// 블록 라벨 "metrics_hosted_prometheus" 는 Grafana Cloud 온보딩 생성 이름과 일치시킴.
+//
+// 스크레이프 대상 2개(Spring Boot Actuator, node-exporter) → Grafana Cloud 로 remote write.
+// scrape_interval 30s: 짧을수록 샘플 수가 늘어 무료 한도에 영향 (브리프 §3-3).
+
+prometheus.scrape "springboot" {
+  targets         = [{ __address__ = "api:8081" }]
+  metrics_path    = "/actuator/prometheus"
+  scrape_interval = "30s"
+  forward_to      = [prometheus.remote_write.metrics_hosted_prometheus.receiver]
+}
+
+prometheus.scrape "node" {
+  targets         = [{ __address__ = "node-exporter:9100" }]
+  scrape_interval = "30s"
+  forward_to      = [prometheus.remote_write.metrics_hosted_prometheus.receiver]
+}
+
+// ↓ Grafana Cloud 온보딩이 생성한 remote_write 블록 그대로 (값은 SSM → env 참조).
+prometheus.remote_write "metrics_hosted_prometheus" {
+  endpoint {
+    name = "hosted-prometheus"
+    url  = sys.env("GRAFANA_CLOUD_PROM_URL")
+    basic_auth {
+      username = sys.env("GRAFANA_CLOUD_PROM_USER")
+      password = sys.env("GRAFANA_CLOUD_API_KEY")
+    }
+  }
+}

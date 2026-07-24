@@ -1,11 +1,12 @@
 # Caddy가 Let's Encrypt 인증서를 자동 발급·갱신 (ACM/ALB 불필요).
 # 도메인 DNS가 이 인스턴스 EIP를 가리켜야 발급됨(브리프 §4 Step 3~4).
 api.kh-jongno.shop {
-    reverse_proxy api:8081
+    # actuator는 외부 차단 — Alloy가 compose 내부 네트워크(api:8081)로만 스크레이프.
+    # handle 은 우선순위가 높아 reverse_proxy 보다 먼저 매칭됨.
+    # 커스텀 /health 는 별개 엔드포인트라 계속 외부 접근 가능(배포 헬스체크가 사용).
+    handle /actuator/* {
+        respond 404
+    }
 
-    # Phase 4 대비: Actuator를 붙이면 /actuator/* 를 외부에서 차단할 자리.
-    # 지금은 Actuator가 없으므로 주석으로만 표시.
-    # handle /actuator/* {
-    #     respond 404
-    # }
+    reverse_proxy api:8081
 }
