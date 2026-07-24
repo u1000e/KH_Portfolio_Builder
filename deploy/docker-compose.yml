@@ -29,6 +29,34 @@ services:
     restart: unless-stopped
     mem_limit: 64m
 
+  # ── Phase 4 모니터링 수집기 (인프라 컨테이너) ──────────────────────────
+  # deploy.sh 는 `--no-deps api` 로 api만 교체하므로 아래 둘은 배포 시 재시작되지 않음.
+  # 최초 1회 `docker compose up -d node-exporter alloy` 로 기동.
+  node-exporter:
+    image: prom/node-exporter:latest
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - '/:/host:ro,rslave'   # 호스트 파일시스템 지표 수집 (읽기 전용)
+    pid: host                 # 호스트 프로세스/네트워크 지표
+    restart: unless-stopped
+    mem_limit: 64m
+    # 포트는 호스트에 노출하지 않음 — alloy가 compose 내부 DNS(node-exporter:9100)로만 접근
+
+  alloy:
+    image: grafana/alloy:latest
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - alloy_data:/var/lib/alloy/data
+    env_file: .env.alloy      # GRAFANA_CLOUD_* 전용(deploy.sh가 생성, chmod 600). api .env과 분리.
+    restart: unless-stopped
+    mem_limit: 128m
+
 volumes:
   caddy_data:
   caddy_config:
+  alloy_data:

@@ -7,21 +7,29 @@ REGION="ap-northeast-2"
 PREFIX="/portfolio/prod"
 APP_DIR="/srv/app"
 ENV_FILE="$APP_DIR/.env"
+ENV_ALLOY="$APP_DIR/.env.alloy"
 cd "$APP_DIR"
 
-echo "[1/6] SSM에서 .env 생성 (앱 시크릿만; GHCR_* 는 제외)"
+echo "[1/6] SSM에서 .env / .env.alloy 생성 (앱 시크릿과 모니터링 자격증명 분리; GHCR_* 는 둘 다 제외)"
 umask 077
+# 두 파일을 먼저 비운다 — 파라미터가 하나도 없어도 compose가 env_file 파싱에 실패하지 않도록 존재 보장.
+: > "$ENV_FILE"
+: > "$ENV_ALLOY"
 aws ssm get-parameters-by-path --region "$REGION" --path "$PREFIX" --recursive --with-decryption \
   --query "Parameters[].[Name,Value]" --output text \
   | while IFS=$'\t' read -r name value; do
       key="${name##*/}"
-      case "$key" in GHCR_*) continue ;; esac   # GHCR 자격증명은 앱 env에 넣지 않음
-      printf '%s=%s\n' "$key" "$value"
-    done > "$ENV_FILE"
-chmod 600 "$ENV_FILE"
-# .env 에 평문 시크릿이 남으므로 600 필수(소유자 root). 컨테이너 재시작 시 필요해서 유지한다
+      case "$key" in
+        GHCR_*)          continue ;;                                      # GHCR 자격증명은 어느 앱 env에도 안 넣음(login은 stdin 별도)
+        GRAFANA_CLOUD_*) printf '%s=%s\n' "$key" "$value" >> "$ENV_ALLOY" ;;  # alloy 전용 — 앱은 알 필요 없음
+        *)               printf '%s=%s\n' "$key" "$value" >> "$ENV_FILE" ;;   # api 앱 env
+      esac
+    done
+chmod 600 "$ENV_FILE" "$ENV_ALLOY"
+# 평문 시크릿이 남으므로 600 필수(소유자 root). 컨테이너 재시작 시 필요해서 유지한다
 # (브리프 §3-4: run 시점에만 생성/삭제하는 방식보다 실용적이라는 판단).
-echo "  .env keys: $(cut -d= -f1 "$ENV_FILE" | tr '\n' ' ')"
+echo "  .env keys:       $(cut -d= -f1 "$ENV_FILE" | tr '\n' ' ')"
+echo "  .env.alloy keys: $(cut -d= -f1 "$ENV_ALLOY" | tr '\n' ' ')"
 
 echo "[2/6] GHCR 로그인 (PAT는 SSM에서 직접 읽어 stdin으로 — .env/디스크에 안 남김)"
 GHCR_USERNAME=$(aws ssm get-parameter --region "$REGION" --name "$PREFIX/GHCR_USERNAME" --query Parameter.Value --output text)
