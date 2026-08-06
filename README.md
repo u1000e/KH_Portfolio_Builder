@@ -2,10 +2,40 @@
 
 # Portfolio Builder
 
-**교육생 포트폴리오의 품질 편차와 획일성을 해소하기 위한 학습관리 도구**
+6개월 개발자 양성과정에서 교육생이 포트폴리오를 끝까지 완성하도록 만든 도구입니다.
+GitHub 커밋을 자동으로 끌어와 초안을 구성하고, 규칙·활동·LLM 3중 채점으로
+기준점을 넘긴 경우에만 강사 피드백을 요청할 수 있게 설계했습니다.
 
-GitHub 저장소를 연동해 개별 코드베이스에서 포트폴리오를 구성하고,
-LLM이 일관된 기준의 1차 피드백을 제공한다.
+강사 검토 1인당 40분 → 10분 · 프로그램 저작권 등록 (C-2026-029550)
+
+## 아키텍처
+
+| 영역 | 구성 |
+|---|---|
+| Frontend | S3 + CloudFront |
+| Backend | Spring Boot 3.5 (Java 21) |
+| Database | Amazon RDS |
+| Storage | S3 |
+| AI | Spring AI (temperature 0.3) |
+| Secrets | AWS Systems Manager Parameter Store |
+| Monitoring | Grafana Cloud, Google Analytics |
+| CI/CD | GitHub Actions |
+
+### 초기 구조에서 바꾼 것
+
+| | 이전 | 현재 |
+|---|---|---|
+| 프론트 배포 | 서버 직접 서빙 | S3 + CloudFront |
+| DB | 강의실 로컬 Oracle | RDS PostgreSQL |
+| 시크릿 | 설정 파일 직접 기재 | Parameter Store |
+| 관측 | 없음 | Grafana Cloud · Google Analytics |
+
+만들어놓고 잘 돌고 있겠거니 두면 안 된다고 봐서 관측을 먼저 붙였습니다.
+기능별 참여율은 관리자 화면에서, 서버 상태와 유입은 Grafana와 GA에서 봅니다.
+
+세 항목의 기준점을 넘겨야 강사 피드백을 요청할 수 있습니다.
+평가 도구라 출력이 매번 달라지면 곤란해서 temperature는 0.3으로 고정했습니다.
+
 
 <br>
 
@@ -19,7 +49,7 @@ LLM이 일관된 기준의 1차 피드백을 제공한다.
 
 <br>
 
-**2026.01 배포 · 운영 중 · 누적 사용자 80명 · 프로그램 저작권 등록 (2026.05)**
+**2026.01 배포 · 운영 중 · 누적 사용자 59명 · 프로그램 저작권 등록 (2026.06)**
 개인 프로젝트 · 기획–개발–배포–운영 단독 수행 · 운영비 자비 부담 (월 약 8만원)
 
 [**데모**](https://kh-jongno.shop/) · [**스크린샷**](#screenshots) · [**아키텍처**](#3-아키텍처)
@@ -120,27 +150,20 @@ OAuth를 통해 교육생의 실제 저장소를 조회하고, 커밋·언어·�
 
 ## 3. 아키텍처
 
-```
-                  ┌──────────────────────┐
-                  │      React SPA       │   Vite · 별도 저장소(비공개*)
-                  └──────────┬───────────┘
-                             │  JWT
-        ┌────────────────────▼──────────────────────┐
-        │       Spring Boot 3.5  /  Java 21         │
-        │                                           │
-        │   Spring Security  ──  JWT 인증           │
-        │   GitHub OAuth2    ──  저장소 조회         │
-        │   Spring AI        ──  OpenAI gpt-4o-mini │
-        │   Spring Data JPA                         │
-        └───┬──────────────┬──────────────┬─────────┘
-            │              │              │
-     ┌──────▼─────┐  ┌────▼─────┐  ┌─────▼──────┐
-     │ Oracle 18c │  │  Redis   │  │  AWS  S3   │
-     │ 영속 데이터 │  │  캐싱    │  │  산출물     │
-     │            │  │Rate Limit│  │  이미지     │
-     └────────────┘  └──────────┘  └────────────┘
+```mermaid
+flowchart TD
+    CF["CloudFront<br/>React SPA (Vite) · origin S3"]
+    BE["Spring Boot 3.5 · Java 21 (EC2/Docker)<br/>Spring Security · GitHub OAuth2<br/>Spring AI (gpt-4o-mini, t=0.3) · JPA"]
+    DB[("RDS PostgreSQL<br/>영속 데이터")]
+    RD[("Redis<br/>캐싱 · Rate Limit")]
+    S3[("S3<br/>산출물 · 이미지")]
+    PS[("Parameter Store<br/>시크릿 전량 관리")]
 
-     CI/CD : GitHub Actions        배포 : AWS EC2 / Docker
+    CF -->|JWT| BE
+    BE --> DB
+    BE --> RD
+    BE --> S3
+    BE --> PS
 ```
 
 <sub>*프론트엔드 저장소는 교육생 개인정보 및 운영 설정을 포함하여 비공개로 관리한다.</sub>
@@ -254,80 +277,37 @@ TIL과 퀴즈는 교육자의 필요에서 출발한 기능이다.**
 
 ## 로컬 실행
 
-<details>
-<summary><b>설정 및 실행</b></summary>
 
-<br>
+## 설정
 
-### 1. 설정 파일
+DB 접속 정보, GitHub OAuth, JWT 시크릿, OpenAI 키 등 모든 민감 정보는
+AWS Systems Manager Parameter Store에서 조회합니다. 저장소에는 값이 없습니다.
 
-`src/main/resources/application.yml`
+| 파라미터 | 용도 |
+|---|---|
+| `/portfolio/db/*` | RDS 접속 정보 |
+| `/portfolio/github/*` | OAuth client id · secret |
+| `/portfolio/jwt/secret` | 토큰 서명 키 |
+| `/portfolio/openai/api-key` | Spring AI 호출 |
 
-```yaml
-server:
-  port: 8081
+S3 접근은 IAM Role로 처리하며 액세스 키를 코드나 설정에 두지 않습니다.
 
-spring:
-  datasource:
-    url: jdbc:oracle:thin:@<DB_HOST>:<DB_PORT>:XE
-    username: <DB_USER>
-    password: <DB_PASSWORD>
-    driver-class-name: oracle.jdbc.driver.OracleDriver
+## 실행
 
-  jpa:
-    hibernate:
-      ddl-auto: none
-
-  data:
-    redis:
-      host: <REDIS_HOST>
-      port: 6379
-
-  security:
-    oauth2:
-      client:
-        registration:
-          github:
-            client-id: <GITHUB_CLIENT_ID>
-            client-secret: <GITHUB_CLIENT_SECRET>
-            scope: user:email,read:user,public_repo
-
-jwt:
-  secret: <JWT_SECRET_KEY_64자_이상>
-  expiration: 86400000
-
-aws:
-  access-key: <AWS_ACCESS_KEY>
-  secret-key: <AWS_SECRET_KEY>
-  region: ap-northeast-2
-  s3:
-    bucket: <S3_BUCKET_NAME>
-
-spring.ai:
-  openai:
-    api-key: ${OPENAI_API_KEY}
-    chat:
-      options:
-        model: gpt-4o-mini
-        temperature: 0.3
-
-app:
-  rate-limit:
-    feedback-per-day: 3
-```
-
-### 2. 실행
+AWS 자격증명이 설정된 환경에서 실행합니다.
 
 ```bash
 ./gradlew bootRun
 ```
 
-### 3. 배포
+## 배포
 
 ```bash
 ./gradlew bootJar
 java -jar build/libs/portfolio-api-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
 ```
+
+GitHub Actions로 빌드 후 배포합니다.
 
 </details>
 
